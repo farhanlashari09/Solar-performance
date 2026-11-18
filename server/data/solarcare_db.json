@@ -1,0 +1,233 @@
+{
+  "users": [
+    {
+      "id": "usr-001",
+      "name": "Farhan Tariq",
+      "email": "farhan@example.com",
+      "passwordHash": "solar12345",
+      "isVerified": true,
+      "preferredLanguage": "en",
+      "createdAt": "2026-01-15T10:00:00Z",
+      "role": "customer"
+    },
+    {
+      "id": "usr-002",
+      "name": "Admin SolarCare",
+      "email": "admin@solarcare.com",
+      "passwordHash": "admin12345",
+      "isVerified": true,
+      "preferredLanguage": "en",
+      "createdAt": "2026-02-01T08:30:00Z",
+      "role": "admin"
+    },
+    {
+      "id": "usr-1791812436077",
+      "name": "Zainab Solar",
+      "email": "zainab.solar@example.com",
+      "passwordHash": "password1234",
+      "isVerified": true,
+      "preferredLanguage": "en",
+      "createdAt": "2026-10-12T13:40:36.077Z"
+    },
+    {
+      "id": "usr-1791812668559",
+      "name": "Farhan Lashari",
+      "email": "farhanlashar61675@gmail.com",
+      "passwordHash": "farhan0987",
+      "isVerified": true,
+      "preferredLanguage": "en",
+      "createdAt": "2026-10-12T13:44:28.559Z"
+    },
+    {
+      "id": "usr-1792591897154",
+      "name": "Farhan Lashari",
+      "email": "farhankhan61675@gmail.com",
+      "passwordHash": "Farhan@0987",
+      "isVerified": true,
+      "preferredLanguage": "en",
+      "createdAt": "2026-10-21T14:11:37.154Z"
+    },
+    {
+      "id": "usr-1794348843534",
+      "name": "Farhan Lashari",
+      "email": "zakhmi823@gmail.com",
+      "passwordHash": "Farhan@0987",
+      "isVerified": true,
+      "preferredLanguage": "en",
+      "createdAt": "2026-11-10T22:14:03.534Z"
+    }
+  ],
+  "verificationCodes": {
+    "zainab.solar@example.com": {
+      "code": "575378",
+      "expiresAt": 1791813035987,
+      "isVerified": true
+    },
+    "farhanlashar61675@gmail.com": {
+      "code": "697946",
+      "expiresAt": 1791813200517,
+      "isVerified": true
+    },
+    "testuser99@gmail.com": {
+      "code": "984174",
+      "expiresAt": 1792588039504,
+      "isVerified": false
+    },
+    "farhanlashari61675@gmail.com": {
+      "code": "364234",
+      "expiresAt": 1794345467193,
+      "isVerified": false
+    },
+    "newuser_1793517785368@gmail.com": {
+      "code": "716799",
+      "expiresAt": 1793518385379,
+      "isVerified": false
+    },
+    "newuser_1794344475069@gmail.com": {
+      "code": "138896",
+      "expiresAt": 1794345075081,
+      "isVerified": false
+    },
+    "zakhmi823@gmail.com": {
+      "code": "674836",
+      "expiresAt": 1794349315226,
+      "isVerified": true
+    },
+    "arslanchaudhary820@gmail.com": {
+      "code": "277277",
+      "expiresAt": 1794494984056,
+      "isVerified": false
+    },
+    "haierled@gmail.com": {
+      "code": "399077",
+      "expiresAt": 1794570392614,
+      "isVerified": false
+    }
+  },
+  "solarSystems": [
+    {
+      "id": "sys-1",
+      "userId": "usr-001",
+      "name": "GreenHome 10kW Rooftop",
+      "location": "Lahore, Punjab (DHA Phase 6)",
+      "capacityKw": 10,
+      "inverterBrand": "Huawei",
+      "inverterModel": "SUN2000-10KTL-M1",
+      "installationDate": "2023-04-15",
+      "connectionMethod": "Huawei FusionSolar Cloud API",
+      "connectionStatus": "connected",
+      "panelCount": 18,
+      "panelType": "585W Monofacial Tier-1 N-Type TOPCon"
+    },
+    {
+      "id": "sys-2",
+      "userId": "usr-001",
+      "name": "Sunrise Farm 25kW Agrivoltaic",
+      "location": "Multan, Punjab (Bosan Road)",
+      "capacityKw": 25,
+      "inverterBrand": "Growatt",
+      "inverterModel": "MAX 25KTL3-X",
+      "installationDate": "2022-11-20",
+      "connectionMethod": "Growatt ShineServer API",
+      "connectionStatus": "connected",
+      "panelCount": 46,
+      "panelType": "550W Bifacial Perc Panels"
+    },
+    {
+      "userId": "usr-1792591897154",
+      "name": "Mera Rooftop Solar",
+      "location": "Lahore, Punjab",
+      "capacityKw": 10,
+      "inverterBrand": "Huawei",
+      "inverterModel": "SUN2000-10KTL-M1",
+      "installationDate": "2026-10-21",
+      "connectionMethod": "WiFi Inverter Cloud Datalogger",
+      "connectionStatus": "connected",
+      "panelCount": 18,
+      "panelType": "585W Monofacial Tier-1 N-Type TOPCon",
+      "batteryCapacityKwh": 0,
+      "createdAt": "2026-10-21T14:12:03.960Z",
+      "id": "sys-1792591923960"
+    },
+    {
+      "userId": "usr-1794348843534",
+      "name": "My Rooftop Solar",
+      "location": "Lahore, Punjab",
+      "capacityKw": 10,
+      "inverterBrand": "Huawei",
+      "inverterModel": "SUN2000-10KTL-M1",
+      "installationDate": "2026-11-10",
+      "connectionMethod": "WiFi Inverter Cloud Datalogger",
+      "connectionStatus": "connected",
+      "panelCount": 18,
+      "panelType": "585W Monofacial Tier-1 N-Type TOPCon",
+      "batteryCapacityKwh": 0,
+      "createdAt": "2026-11-10T22:14:25.644Z",
+      "id": "sys-1794348865645"
+    },
+    {
+      "userId": "usr-002",
+      "name": "My Rooftop Solar",
+      "location": "Lahore, Punjab",
+      "capacityKw": 10,
+      "inverterBrand": "Huawei",
+      "inverterModel": "SUN2000-10KTL-M1",
+      "installationDate": "2026-11-10",
+      "connectionMethod": "WiFi Inverter Cloud Datalogger",
+      "connectionStatus": "connected",
+      "panelCount": 18,
+      "panelType": "585W Monofacial Tier-1 N-Type TOPCon",
+      "batteryCapacityKwh": 0,
+      "createdAt": "2026-11-10T22:20:01.567Z",
+      "id": "sys-1794349201567"
+    },
+    {
+      "userId": "usr-002",
+      "name": "My Rooftop Solar",
+      "location": "Lahore, Punjab",
+      "capacityKw": 10,
+      "inverterBrand": "Huawei",
+      "inverterModel": "SUN2000-10KTL-M1",
+      "installationDate": "2026-11-10",
+      "connectionMethod": "WiFi Inverter Cloud Datalogger",
+      "connectionStatus": "connected",
+      "panelCount": 18,
+      "panelType": "585W Monofacial Tier-1 N-Type TOPCon",
+      "batteryCapacityKwh": 0,
+      "createdAt": "2026-11-10T22:20:16.090Z",
+      "id": "sys-1794349216090"
+    }
+  ],
+  "serviceRequests": [
+    {
+      "id": "REQ-2026-8841",
+      "userId": "usr-001",
+      "systemId": "sys-1",
+      "technicianId": "tech-1",
+      "technicianName": "Engr. Tariq Mehmood",
+      "problemCategory": "Panel Cleaning & Dust/Soiling Removal",
+      "description": "Dust accumulation after rain storm. Midday yield reduced by ~15%.",
+      "preferredDate": "2026-10-15",
+      "createdAt": "2026-10-11 15:30",
+      "status": "In Progress",
+      "statusTimeline": [
+        {
+          "status": "Requested",
+          "timestamp": "2026-10-11 15:30",
+          "note": "Customer logged service request."
+        },
+        {
+          "status": "Accepted",
+          "timestamp": "2026-10-11 17:15",
+          "note": "Technician confirmed arrival schedule."
+        },
+        {
+          "status": "In Progress",
+          "timestamp": "2026-10-12 09:45",
+          "note": "Technician arrived on-site. Washing underway."
+        }
+      ]
+    }
+  ],
+  "chatLogs": []
+}
