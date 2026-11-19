@@ -55,55 +55,51 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
 
   // ── Theme tokens ───────────────────────────────────────────────────────────
 const th = {
-  bg:          dark ? 'bg-[#06251c]' : 'bg-[#F7FCF9]',
-  bgCard:      dark ? 'bg-[#0B3326]' : 'bg-white',
-  bgCardHover: dark ? 'hover:bg-[#104331]' : 'hover:bg-emerald-50',
-  bgSubtle:    dark ? 'bg-[#092d22]' : 'bg-[#EAF5EF]',
-  bgInput:     dark ? 'bg-[#0B3326]' : 'bg-white',
+  bg:          dark ? 'bg-[#050505]' : 'bg-white',
+  bgCard:      dark ? 'bg-[#111111]' : 'bg-white',
+  bgCardHover: dark ? 'hover:bg-[#1a1a1a]' : 'hover:bg-slate-50',
+  bgSubtle:    dark ? 'bg-[#0b0b0b]' : 'bg-[#f5f5f5]',
+  bgInput:     dark ? 'bg-[#111111]' : 'bg-white',
 
-  border:      dark ? 'border-white/10' : 'border-emerald-100',
+  border:      dark ? 'border-white/10' : 'border-black/10',
   borderFocus: dark ? 'border-emerald-400/60' : 'border-emerald-600',
 
-  text:        dark ? 'text-white' : 'text-[#12352A]',
-  textSub:     dark ? 'text-white/70' : 'text-[#35594A]',
-  textMuted:   dark ? 'text-white/45' : 'text-[#688276]',
+  text:        dark ? 'text-white' : 'text-[#111111]',
+  textSub:     dark ? 'text-white/70' : 'text-[#444444]',
+  textMuted:   dark ? 'text-white/45' : 'text-[#666666]',
   textLabel:   dark ? 'text-emerald-300' : 'text-emerald-800',
 
   nav:         dark
-    ? 'bg-[#06251c]/95 border-white/10'
-    : 'bg-white/95 border-emerald-100 shadow-sm',
+    ? 'bg-[#050505]/95 border-white/10'
+    : 'bg-white/95 border-black/10 shadow-sm',
   navLink:     dark
     ? 'text-white/70 hover:text-white'
-    : 'text-[#35594A] hover:text-emerald-800',
-
-  statVal:     dark ? 'text-emerald-300' : 'text-emerald-800',
+    : 'text-[#444444] hover:text-emerald-800',
 
   card:        dark
-    ? 'bg-[#0B3326] border-white/10 hover:border-emerald-400/40'
-    : 'bg-white border-emerald-100 shadow-sm hover:border-emerald-300 hover:shadow-lg',
+    ? 'bg-[#111111] border-white/10 hover:border-emerald-400/40'
+    : 'bg-white border-black/10 shadow-sm hover:border-emerald-300 hover:shadow-lg',
 
-  faqClosed:   dark ? 'bg-[#0B3326] border-white/10' : 'bg-white border-emerald-100 shadow-sm',
+  faqClosed:   dark ? 'bg-[#111111] border-white/10' : 'bg-white border-black/10 shadow-sm',
   faqOpen:     dark ? 'bg-emerald-400/10 border-emerald-300/40' : 'bg-emerald-50 border-emerald-300 shadow-sm',
-  faqQ:        dark ? 'text-white/85 hover:text-white' : 'text-[#12352A] hover:text-emerald-800',
+  faqQ:        dark ? 'text-white/85 hover:text-white' : 'text-[#111111] hover:text-emerald-800',
   faqQOpen:    dark ? 'text-emerald-200' : 'text-emerald-800',
-  faqA:        dark ? 'text-white/65' : 'text-[#35594A]',
+  faqA:        dark ? 'text-white/65' : 'text-[#444444]',
 
-  ctaBg:       'bg-gradient-to-br from-emerald-800 via-emerald-900 to-[#06251c]',
-  footerBg:    'bg-[#06251c] border-white/10 text-emerald-50',
+  footerBg:    'bg-[#050505] border-white/10 text-white',
 
-  metricCard:  dark ? 'bg-[#092d22] border-white/10' : 'bg-white border-emerald-100 shadow-sm',
-  metricLabel: dark ? 'text-white/50' : 'text-[#688276]',
-  metricVal:   dark ? 'text-white' : 'text-[#12352A]',
-  metricSub:   dark ? 'text-white/45' : 'text-[#557363]',
+  metricLabel: dark ? 'text-white/65' : 'text-[#555555]',
+  metricVal:   dark ? 'text-white' : 'text-[#111111]',
+  metricSub:   dark ? 'text-white/65' : 'text-[#555555]',
 
   toggleBg:    dark
-    ? 'bg-[#0B3326] border-white/10 text-white/85'
-    : 'bg-white border-emerald-200 text-emerald-900 shadow-sm',
+    ? 'bg-[#111111] border-white/10 text-white/85'
+    : 'bg-white border-black/10 text-[#111111] shadow-sm',
 
   stepNum:     dark ? 'text-white/[0.05]' : 'text-emerald-100',
   stepCard:    dark
-    ? 'bg-[#0B3326] border-white/10 hover:border-emerald-400/40'
-    : 'bg-white border-emerald-100 shadow-sm hover:border-emerald-300',
+    ? 'bg-[#111111] border-white/10 hover:border-emerald-400/40'
+    : 'bg-white border-black/10 shadow-sm hover:border-emerald-300',
 };
 
   // ── Reused RTL-aware class ─────────────────────────────────────────────────
@@ -111,13 +107,6 @@ const th = {
   const urduP  = isRtl ? 'leading-[2.4]' : 'leading-relaxed';
 
   // ── Data ──────────────────────────────────────────────────────────────────
-  const stats = [
-    { value: '12,000+', label: t('Solar Systems',     'سولر سسٹمز',    'Solar Systems')    },
-    { value: '99.4%',   label: t('Fault Accuracy',    'فالٹ درستگی',   'Fault Accuracy')   },
-    { value: '< 15 min',label: t('Tech Dispatch',     'ٹیک ریسپانس',   'Tech Dispatch')    },
-    { value: '41 GWh',  label: t('Energy Monitored',  'توانائی مانیٹر', 'Energy Monitored') },
-  ];
-
   const features = [
     {
       icon: <Zap className="w-5 h-5" />,
@@ -146,36 +135,6 @@ const th = {
       desc:  t('Book a vetted solar engineer in your city — upfront pricing, no hidden fees.',
                'اپنے شہر کے تصدیق شدہ انجینئر کی بکنگ — شفاف قیمت۔',
                'Apne shehar ke verified engineer ki booking — shuruaat se clear rate.'),
-    },
-  ];
-
-  const testimonials = [
-    {
-      quote: t(
-        '"Caught a string imbalance within minutes. Saved us weeks of lost production."',
-        '"چند منٹوں میں سٹرنگ خرابی پکڑی — ہفتوں کا نقصان بچایا۔"',
-        '"Chand minuton mein string kharabi pakri. Hafton ka nuqsan bachaya."',
-      ),
-      name: 'M. Bilal Siddiqui',
-      role: t('20 kW Commercial · Lahore', '20 کلو واٹ تجارتی · لاہور', '20 kW Commercial · Lahore'),
-    },
-    {
-      quote: t(
-        '"The Urdu interface is a game-changer for our field teams."',
-        '"اردو انٹرفیس ہماری فیلڈ ٹیم کے لیے بہترین تجربہ ہے۔"',
-        '"Urdu interface hamaari field team ke liye best experience hai."',
-      ),
-      name: 'Kamran Raza',
-      role: t('Operations Director · CleanTech PK', 'آپریشنز ڈائریکٹر · کلین ٹیک', 'Operations Director · CleanTech PK'),
-    },
-    {
-      quote: t(
-        '"Net-metering audit found a 280-unit billing error. The platform pays for itself."',
-        '"280 یونٹ کی بلنگ غلطی پکڑی گئی — پلیٹ فارم نے خود کو پیسے واپس کروائے۔"',
-        '"280 unit ki billing ghalti pakri. Platform ne khud ko pay karwa diya."',
-      ),
-      name: 'Dr. Asim Farooqi',
-      role: t('12 kW Residential · Islamabad', '12 کلو واٹ رہائشی · اسلام آباد', '12 kW Residential · Islamabad'),
     },
   ];
 
@@ -220,73 +179,6 @@ const th = {
   return (
     <div className={`min-h-screen font-sans transition-colors duration-300 ${th.bg} ${th.text} selection:bg-emerald-500/30 ${isRtl ? 'font-urdu' : ''}`}>
 
-{/* Right — image-backed metric cards */}
-<div className="relative isolate overflow-hidden rounded-3xl min-h-[360px] p-4 sm:p-6">
-  <img
-    src="https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=1400&q=85"
-    alt="Solar panels under a bright sky"
-    loading="lazy"
-    className="absolute inset-0 h-full w-full object-cover object-center"
-  />
-
-  {/* Light tint preserves image detail while keeping the cards readable. */}
-  <div
-    aria-hidden="true"
-    className="absolute inset-0 bg-emerald-950/35"
-  />
-
-  <div className="relative z-10 grid h-full grid-cols-2 gap-4">
-    {[
-      {
-        icon: <Zap className="w-5 h-5 text-orange-500" />,
-        label: t('Current Output', 'موجودہ آؤٹ پٹ', 'Current Output'),
-        value: '8.42 kW',
-        sub: '94% rated capacity',
-      },
-      {
-        icon: <ShieldCheck className="w-5 h-5 text-emerald-500" />,
-        label: t('Inverter Health', 'انورٹر کی صحت', 'Inverter Health'),
-        value: '98.8%',
-        sub: 'Temp: 41 °C',
-      },
-      {
-        icon: <Activity className="w-5 h-5 text-emerald-500" />,
-        label: t("Today's Yield", 'آج کی پیداوار', 'Aaj ki Yield'),
-        value: '44.1 kWh',
-        sub: '+12% vs avg',
-      },
-      {
-        icon: <Clock className={`w-5 h-5 ${th.textMuted}`} />,
-        label: t('Last Sync', 'آخری سنک', 'Aakhri Sync'),
-        value: '< 30 s',
-        sub: 'All strings live',
-      },
-    ].map((card, i) => (
-      <div
-        key={i}
-        style={{ animationDelay: `${i * 100}ms` }}
-        className={`solar-card solar-reveal min-h-[145px] rounded-2xl border p-4 sm:p-5 backdrop-blur-md ${
-          dark
-            ? 'border-white/20 bg-[#06251c]/75'
-            : 'border-white/70 bg-white/90 shadow-lg'
-        }`}
-      >
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <span className={`text-xs font-medium ${th.metricLabel} ${urduLH}`}>
-            {card.label}
-          </span>
-          {card.icon}
-        </div>
-        <p className={`text-xl sm:text-2xl font-extrabold ${th.metricVal}`}>
-          {card.value}
-        </p>
-        <p className={`mt-2 text-xs font-medium ${th.metricSub}`}>
-          {card.sub}
-        </p>
-      </div>
-    ))}
-  </div>
-</div>
       {/* ══════════════════════════════════════════════════════════
           NAVBAR
       ══════════════════════════════════════════════════════════ */}
@@ -442,40 +334,17 @@ const th = {
       ══════════════════════════════════════════════════════════ */}
       <section className="relative overflow-hidden pt-24 pb-28 sm:pt-32 sm:pb-36">
 
-<img
-  src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2000&q=85"
-  alt=""
-  aria-hidden="true"
-  fetchPriority="high"
-  className="absolute inset-0 h-full w-full object-cover object-center"
-/>
-<div
-  aria-hidden="true"
-  className="absolute inset-0"
-  style={{
-    background: dark
-      ? 'linear-gradient(180deg, rgba(6,37,28,.28) 0%, rgba(6,37,28,.42) 48%, rgba(6,37,28,.88) 100%)'
-      : 'linear-gradient(180deg, rgba(247,252,249,.30) 0%, rgba(247,252,249,.58) 55%, rgba(247,252,249,.94) 100%)',
-  }}
-/>
-
-        {/* Ambient glows */}
-        <div className="absolute inset-0 pointer-events-none select-none" aria-hidden>
-          <div className={`absolute top-[-100px] left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full blur-[130px] transition-opacity duration-500 ${dark ? 'opacity-100 bg-emerald-700/20' : 'opacity-60 bg-emerald-400/15'}`} />
-          <div className={`absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full blur-[150px] transition-opacity duration-500 ${dark ? 'opacity-100 bg-solar/8' : 'opacity-50 bg-solar/10'}`} />
-        </div>
-
-        {/* Subtle dot grid — only in dark */}
-        {dark && (
-          <div
-            className="absolute inset-0 opacity-[0.035] pointer-events-none"
-            style={{
-              backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.6) 1px, transparent 1px)',
-              backgroundSize: '36px 36px',
-            }}
-            aria-hidden
-          />
-        )}
+        <img
+          src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2000&q=85"
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+        <div
+          aria-hidden="true"
+          className={`absolute inset-0 ${dark ? 'bg-black/35' : 'bg-white/45'}`}
+        />
 
        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center solar-enter">
 
@@ -529,35 +398,6 @@ const th = {
             </button>
           </div>
 
-          {/* Trust micro badges */}
-          <div className={`mt-10 flex flex-wrap items-center justify-center gap-5 text-xs font-medium ${th.textMuted}`}>
-            {[
-              t('No credit card',         'کریڈٹ کارڈ نہیں',    'Credit card nahi'),
-              t('95% inverter brands',    '95٪ انورٹر برانڈز', '95% inverter brands'),
-              t('English & Urdu support', 'انگریزی اور اردو',   'English & Urdu support'),
-            ].map((item, i) => (
-              <span key={i} className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                {item}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════
-          STAT BAR
-      ══════════════════════════════════════════════════════════ */}
-      <section className={`border-y py-14 transition-colors duration-300 ${dark ? 'border-white/[0.07] bg-[#0d1824]' : 'border-slate-300/70 bg-[#E2E8F0]/60'}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
-            {stats.map((s, i) => (
-              <div key={i}>
-                <p className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${th.statVal}`}>{s.value}</p>
-                <p className={`mt-1 text-xs sm:text-sm font-medium ${th.textSub} ${urduLH}`}>{s.label}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -580,7 +420,8 @@ const th = {
             {features.map((f, i) => (
               <div
                 key={i}
-                className={`solar-card group p-6 rounded-2xl border transition-all duration-300 cursor-default ${th.card}`}
+                style={{ animationDelay: `${i * 100}ms` }}
+                className={`solar-card solar-reveal group p-6 rounded-2xl border transition-all duration-300 cursor-default ${th.card}`}
               >
                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-105 ${
                   dark ? 'bg-emerald-500/15 border border-emerald-500/25 text-emerald-400' : 'bg-emerald-100 text-emerald-700'
@@ -598,7 +439,7 @@ const th = {
       {/* ══════════════════════════════════════════════════════════
           HOW IT WORKS
       ══════════════════════════════════════════════════════════ */}
-      <section id="how-it-works" className={`py-24 sm:py-32 border-y transition-colors duration-300 scroll-mt-16 ${dark ? 'bg-[#0d1824] border-white/[0.07]' : 'bg-[#E2E8F0]/40 border-slate-300/70'}`}>
+      <section id="how-it-works" className={`py-24 sm:py-32 border-y transition-colors duration-300 scroll-mt-16 ${dark ? 'bg-[#0b0b0b] border-white/[0.07]' : 'bg-[#f5f5f5] border-black/10'}`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
           <div className="text-center mb-14">
@@ -637,7 +478,7 @@ const th = {
                          'Live data, AI alerts aur booking — sab ek dashboard mein.'),
               },
             ].map((step, i) => (
-              <div key={i} className={`solar-card relative p-8 rounded-2xl border transition-all duration-300 group ${th.stepCard}`}>
+              <div key={i} style={{ animationDelay: `${i * 100}ms` }} className={`solar-card solar-reveal relative p-8 rounded-2xl border transition-all duration-300 group ${th.stepCard}`}>
                 <div className={`absolute top-5 right-6 text-6xl font-black select-none transition-colors ${th.stepNum}`}>
                   {step.step}
                 </div>
@@ -709,7 +550,7 @@ const th = {
   {/* Light tint preserves image detail while keeping the cards readable. */}
   <div
     aria-hidden="true"
-    className="absolute inset-0 bg-emerald-950/35"
+    className="absolute inset-0 bg-black/20"
   />
 
   <div className="relative z-10 grid h-full grid-cols-2 gap-4">
@@ -744,7 +585,7 @@ const th = {
         style={{ animationDelay: `${i * 100}ms` }}
         className={`solar-card solar-reveal min-h-[145px] rounded-2xl border p-4 sm:p-5 backdrop-blur-md ${
           dark
-            ? 'border-white/20 bg-[#06251c]/75'
+            ? 'border-white/20 bg-black/75'
             : 'border-white/70 bg-white/90 shadow-lg'
         }`}
       >
@@ -769,34 +610,7 @@ const th = {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          TESTIMONIALS
       ══════════════════════════════════════════════════════════ */}
-      <section className={`py-24 sm:py-32 border-y transition-colors duration-300 ${dark ? 'bg-[#0d1824] border-white/[0.07]' : 'bg-[#E2E8F0]/40 border-slate-300/70'}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          <div className="text-center mb-14">
-            <span className={`text-xs font-bold uppercase tracking-widest mb-3 block ${th.textLabel}`}>
-              {t('From Our Users', 'ہمارے صارفین سے', 'Hamare Users Se')}
-            </span>
-            <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${th.text} ${urduLH}`}>
-              {t('Trusted by Solar Owners.', 'سولر مالکان کا بھروسہ۔', 'Solar Owners ka Bharosa.')}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, i) => (
-              <div key={i} className={`solar-care p-7 rounded-2xl border flex flex-col justify-between gap-5 transition-all duration-300 ${th.card}`}>
-                <p className={`text-sm italic ${th.textSub} ${urduP}`}>{testimonial.quote}</p>
-                <div className={`pt-4 border-t ${th.border}`}>
-                  <p className={`text-sm font-bold ${th.text}`}>{testimonial.name}</p>
-                  <p className={`text-xs mt-0.5 ${th.textMuted} ${urduLH}`}>{testimonial.role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ══════════════════════════════════════════════════════════
           FAQ
       ══════════════════════════════════════════════════════════ */}
@@ -834,48 +648,6 @@ const th = {
                 </div>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════
-          CTA BANNER
-      ══════════════════════════════════════════════════════════ */}
-      <section className={`pb-24 sm:pb-32 px-4 sm:px-6 ${dark ? '' : 'bg-slate-50 border-t border-slate-100'}`}>
-        <div className="max-w-4xl mx-auto">
-          <div className={`relative rounded-3xl p-10 sm:p-16 overflow-hidden text-center shadow-emerald-lg ${th.ctaBg}`}>
-            {/* Glows inside banner */}
-            <div className="absolute -top-24 -right-24 w-72 h-72 bg-emerald-400/15 rounded-full blur-[100px] pointer-events-none" aria-hidden />
-            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-solar/8 rounded-full blur-[120px] pointer-events-none" aria-hidden />
-
-            <div className="relative">
-              <h2 className={`text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4 ${urduLH}`}>
-                {t('Ready to monitor your solar?', 'اپنا سولر مانیٹر کرنے کے لیے تیار ہیں؟', 'Apna solar monitor karne ke liye tayyar hain?')}
-              </h2>
-              <p className={`text-base text-white/55 mb-8 max-w-md mx-auto ${urduP}`}>
-                {t(
-                  'Join 12,000+ owners. Free to start.',
-                  '12,000 سے زیادہ مالکان کے ساتھ شامل ہوں — مفت شروعات۔',
-                  '12,000+ owners ke saath shamil hon — free shuru.'
-                )}
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <button
-                  onClick={onSignUp}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-sm text-emerald-900 bg-white hover:bg-emerald-50 transition-all duration-200 shadow-lg cursor-pointer hover:-translate-y-0.5"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  {t('Sign Up Free', 'مفت سائن اپ', 'Free Sign Up')}
-                </button>
-                <button
-                  onClick={onLogin}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-sm text-white/80 bg-white/10 border border-white/15 hover:bg-white/15 transition-all duration-200 cursor-pointer"
-                >
-                  <LogIn className="w-4 h-4" />
-                  {t('Log In', 'لاگ ان', 'Log In')}
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </section>

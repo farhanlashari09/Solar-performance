@@ -6,6 +6,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DB_FILE = path.join(__dirname, 'data', 'solarcare_db.json');
 
+export const ADMIN_EMAIL = 'admin@solarcare.com';
+export const isAdminEmail = email => typeof email === 'string' && email.trim().toLowerCase() === ADMIN_EMAIL;
+
 // Ensure data folder exists
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) {
@@ -130,7 +133,6 @@ class Database {
     if (this.findUserByEmail(cleanEmail)) {
       throw new Error('An account already exists with this email address.');
     }
-    const isAdminEmail = cleanEmail === 'admin@solarcare.com' || cleanEmail.startsWith('admin@');
     const newUser = {
       id: `usr-${Date.now()}`,
       name: userData.name || cleanEmail.split('@')[0],
@@ -139,7 +141,7 @@ class Database {
       isVerified: true,
       preferredLanguage: userData.preferredLanguage || 'en',
       createdAt: new Date().toISOString(),
-      role: userData.role || (isAdminEmail ? 'admin' : 'customer'),
+      role: isAdminEmail(cleanEmail) ? 'admin' : 'customer',
     };
     this.data.users.push(newUser);
     // CRITICAL: Do NOT auto-create fake dummy solar systems for new users.

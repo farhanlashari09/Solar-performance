@@ -89,10 +89,30 @@ select:user-valid:not(:placeholder-shown) {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
+@keyframes solar-enter {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes solar-reveal {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes solar-pulse {
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
 .animate-float { animation: float-slow 5s ease-in-out infinite; }
 .animate-glow  { animation: glow-pulse 3s ease-in-out infinite; }
 .animate-spin-slow { animation: spin-slow 12s linear infinite; }
+.solar-enter { animation: solar-enter 700ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.solar-reveal { animation: solar-reveal 600ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.solar-reveal-delay { animation: solar-reveal 700ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.solar-pulse { animation: solar-pulse 2s ease-in-out infinite; }
+.animate-fade-in { animation: fade-in 200ms ease-out both; }
 .shimmer-text {
   background: linear-gradient(90deg, #34d399, #10b981, #6ee7b7, #10b981, #34d399);
   background-size: 200% auto;
@@ -109,4 +129,13 @@ select:user-valid:not(:placeholder-shown) {
 .btn-primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 32px rgba(5, 150, 105, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
