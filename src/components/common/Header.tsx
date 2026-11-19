@@ -20,16 +20,12 @@ interface HeaderProps {
   onOpenMobileMenu: () => void;
   onNavigate: (route: string) => void;
   onOpenOnboarding: () => void;
-  portalMode: 'client' | 'admin';
-  onTogglePortalMode: (mode: 'client' | 'admin') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onOpenMobileMenu,
   onNavigate,
   onOpenOnboarding,
-  portalMode,
-  onTogglePortalMode,
 }) => {
   const { language, setLanguage, t, isRtl } = useLanguage();
   const { systems, activeSystem, setActiveSystemId, unreadAlertCount } = useSolar();
@@ -157,35 +153,8 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Right: Portal Switcher, Database Live Badge, Language Selector, Alerts, Profile */}
+          {/* Right: Database Live Badge, Language Selector, Alerts, Profile */}
           <div className="flex items-center gap-2.5">
-            {/* Executive Portal Switcher: Client View ⇄ Admin Portal */}
-            <div className="flex items-center rounded-xl bg-slate-100 p-0.5 border border-slate-200">
-              <button
-                type="button"
-                onClick={() => onTogglePortalMode('client')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                  portalMode === 'client'
-                    ? 'bg-white text-emerald-800 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                title="View customer / homeowner solar cockpit"
-              >
-                <span>👤 Client View</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onTogglePortalMode('admin')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                  portalMode === 'admin'
-                    ? 'bg-slate-900 text-amber-300 shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                title="Open Admin Control Center to manage technicians & database"
-              >
-                <span>🛡️ Admin Portal</span>
-              </button>
-            </div>
             {/* Database Live Badge */}
             <button
               onClick={() => onNavigate('profile')}

@@ -21,7 +21,7 @@ import { AdminPortal } from './components/admin/AdminPortal';
 import { Technician } from './types';
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated, setAuthScreen } = useAuth();
+  const { currentUser, isAuthenticated, setAuthScreen } = useAuth();
   const { isRtl } = useLanguage();
   const { setSelectedTechnicianForBooking } = useMaintenance();
   const { isNewUser } = useSolar();
@@ -32,7 +32,7 @@ const AppContent: React.FC = () => {
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [selectedTechForService, setSelectedTechForService] = useState<Technician | null>(null);
   const [showAuthFlow, setShowAuthFlow] = useState(false);
-  const [portalMode, setPortalMode] = useState<'client' | 'admin'>('client');
+  const isAdmin = currentUser?.email.trim().toLowerCase() === 'admin@solarcare.com';
 
   // If user is unauthenticated, show the awesome Landing Page first,
   // or the AuthFlow if they click Log In / Sign Up
@@ -51,6 +51,16 @@ const AppContent: React.FC = () => {
           setShowAuthFlow(true);
         }}
       />
+    );
+  }
+
+  if (isAdmin) {
+    return (
+      <main className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+        <div className="mx-auto max-w-7xl">
+          <AdminPortal />
+        </div>
+      </main>
     );
   }
 
@@ -77,54 +87,34 @@ const AppContent: React.FC = () => {
       {/* Header */}
       <Header
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-        onNavigate={(route) => {
-          if (route === 'admin') {
-            setPortalMode('admin');
-          } else {
-            setPortalMode('client');
-            setCurrentRoute(route);
-          }
-        }}
+        onNavigate={(route) => setCurrentRoute(route)}
         onOpenOnboarding={() => setIsOnboardingOpen(true)}
-        portalMode={portalMode}
-        onTogglePortalMode={(mode) => setPortalMode(mode)}
       />
 
       <div className="flex-1 flex max-w-7xl w-full mx-auto">
         {/* Sidebar */}
         <Sidebar
-          currentRoute={portalMode === 'admin' ? 'admin' : currentRoute}
+          currentRoute={currentRoute}
           onNavigate={(route) => {
-            if (route === 'admin') {
-              setPortalMode('admin');
-            } else if (route === 'assistant') {
+            if (route === 'assistant') {
               setIsAssistantOpen(true);
             } else {
-              setPortalMode('client');
               setCurrentRoute(route);
             }
           }}
           isMobileOpen={isMobileMenuOpen}
           onCloseMobile={() => setIsMobileMenuOpen(false)}
-          portalMode={portalMode}
-          onTogglePortalMode={(mode) => setPortalMode(mode)}
         />
 
         {/* Main Content View Area */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-          {/* If in Admin Portal Mode, render Admin Control Center */}
-          {portalMode === 'admin' ? (
-            <AdminPortal onBackToClientView={() => setPortalMode('client')} />
-          ) : (
-            <>
-              {/* Views Router for Customer / Client Side */}
-              {currentRoute === 'dashboard' && (
-                <DashboardView
-                  onNavigate={(route) => setCurrentRoute(route)}
-                  onOpenAssistant={() => setIsAssistantOpen(true)}
-                  onOpenNewServiceRequest={handleOpenNewServiceRequest}
-                />
-              )}
+          {currentRoute === 'dashboard' && (
+            <DashboardView
+              onNavigate={(route) => setCurrentRoute(route)}
+              onOpenAssistant={() => setIsAssistantOpen(true)}
+              onOpenNewServiceRequest={handleOpenNewServiceRequest}
+            />
+          )}
 
           {currentRoute === 'performance' && (
             <PerformanceView
@@ -162,8 +152,6 @@ const AppContent: React.FC = () => {
             <ProfileSettingsView
               onOpenOnboarding={() => setIsOnboardingOpen(true)}
             />
-          )}
-            </>
           )}
         </main>
       </div>

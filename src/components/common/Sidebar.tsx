@@ -16,7 +16,6 @@ import {
   LogOut,
   RefreshCw,
   X,
-  ShieldCheck,
   ChevronRight,
 } from 'lucide-react';
 
@@ -25,8 +24,6 @@ interface SidebarProps {
   onNavigate: (route: string) => void;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
-  portalMode: 'client' | 'admin';
-  onTogglePortalMode: (mode: 'client' | 'admin') => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -34,8 +31,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNavigate,
   isMobileOpen,
   onCloseMobile,
-  portalMode,
-  onTogglePortalMode,
 }) => {
   const { t, isRtl } = useLanguage();
   const { unreadAlertCount, resetDemoData } = useSolar();
@@ -88,43 +83,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
 
-      {/* Portal Mode Switcher */}
-      <div className="px-3 pt-3 pb-2 border-b border-slate-800/80">
-        <div className="flex items-center rounded-xl bg-slate-800/90 p-1 border border-slate-700/80">
-          <button
-            type="button"
-            onClick={() => onTogglePortalMode('client')}
-            className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all text-center cursor-pointer ${
-              portalMode === 'client'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            👤 Client View
-          </button>
-          <button
-            type="button"
-            onClick={() => onTogglePortalMode('admin')}
-            className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all text-center cursor-pointer ${
-              portalMode === 'admin'
-                ? 'bg-amber-500 text-slate-950 shadow-xs'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            🛡️ Admin Portal
-          </button>
-        </div>
-      </div>
-
       {/* Navigation List */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
         <div className="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-          <span>{portalMode === 'admin' ? 'Admin Sections' : 'Client Navigation'}</span>
-          {portalMode === 'admin' && (
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold">
-              PRO
-            </span>
-          )}
+          <span>Client Navigation</span>
         </div>
 
         {navItems.map((item) => {

@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { db } from './db.js';
+import { db, isAdminEmail } from './db.js';
 import { generateSolarAIResponse } from './aiBrain.js';
 import { sendOtpEmail, isValidEmail } from './mailer.js';
 
@@ -180,7 +180,7 @@ app.post('/api/auth/register', (req, res) => {
         isVerified: newUser.isVerified,
         preferredLanguage: newUser.preferredLanguage || 'en',
         createdAt: newUser.createdAt,
-        role: newUser.role || (cleanEmail === 'admin@solarcare.com' || cleanEmail.startsWith('admin@') ? 'admin' : 'customer')
+        role: isAdminEmail(cleanEmail) ? 'admin' : 'customer'
       }
     });
   } catch (err) {
@@ -223,7 +223,7 @@ app.post('/api/auth/login', (req, res) => {
   }
 
   // 3. Successful login
-  const isAdmin = user.role === 'admin' || cleanEmail === 'admin@solarcare.com' || cleanEmail.startsWith('admin@');
+  const isAdmin = isAdminEmail(cleanEmail);
   res.json({
     success: true,
     message: 'Login successful.',

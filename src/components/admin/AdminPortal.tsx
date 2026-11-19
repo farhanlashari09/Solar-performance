@@ -23,7 +23,6 @@ import {
   RefreshCw,
   Server,
   Cpu,
-  ArrowRight,
   X,
   Sliders,
   DollarSign,
@@ -32,14 +31,11 @@ import {
   Check,
   FileCode,
   Zap,
-  Sun
+  Sun,
+  LogOut
 } from 'lucide-react';
 
-interface AdminPortalProps {
-  onBackToClientView: () => void;
-}
-
-export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToClientView }) => {
+export const AdminPortal: React.FC = () => {
   const { language, isRtl } = useLanguage();
   const {
     technicians,
@@ -53,7 +49,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToClientView }) 
   } = useMaintenance();
 
   const { systems } = useSolar();
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
 
   // Active Admin Sub-tab
   const [activeTab, setActiveTab] = useState<'technicians' | 'database' | 'tickets' | 'fleet'>('technicians');
@@ -251,18 +247,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onBackToClientView }) 
               </p>
             </div>
           </div>
-
-          {/* Quick Switch back to client portal */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onBackToClientView}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-200 bg-white/10 hover:bg-white/20 border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <ArrowRight className="w-3.5 h-3.5 rotate-180" />
-              <span>Back to Client View</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={logout}
+            className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-white/20"
+          >
+            <LogOut className="h-4 w-4" />
+            Log out
+          </button>
         </div>
 
         {/* Status ticker */}
