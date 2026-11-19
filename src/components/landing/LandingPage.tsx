@@ -20,6 +20,7 @@ import {
   Activity,
   BarChart2,
   Clock,
+  Mail,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -55,51 +56,53 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
 
   // ── Theme tokens ───────────────────────────────────────────────────────────
 const th = {
-  bg:          dark ? 'bg-[#050505]' : 'bg-white',
-  bgCard:      dark ? 'bg-[#111111]' : 'bg-white',
-  bgCardHover: dark ? 'hover:bg-[#1a1a1a]' : 'hover:bg-slate-50',
-  bgSubtle:    dark ? 'bg-[#0b0b0b]' : 'bg-[#f5f5f5]',
-  bgInput:     dark ? 'bg-[#111111]' : 'bg-white',
+  bg:          dark ? 'bg-[#10201c]' : 'bg-[#f7faf8]',
+  bgCard:      dark ? 'bg-[#182923]' : 'bg-white',
+  bgCardHover: dark ? 'hover:bg-[#20372f]' : 'hover:bg-[#eef7f1]',
+  bgSubtle:    dark ? 'bg-[#14241f]' : 'bg-[#edf4ef]',
+  bgInput:     dark ? 'bg-[#182923]' : 'bg-white',
 
-  border:      dark ? 'border-white/10' : 'border-black/10',
+  border:      dark ? 'border-white/10' : 'border-[#dce8df]',
   borderFocus: dark ? 'border-emerald-400/60' : 'border-emerald-600',
 
-  text:        dark ? 'text-white' : 'text-[#111111]',
-  textSub:     dark ? 'text-white/70' : 'text-[#444444]',
-  textMuted:   dark ? 'text-white/45' : 'text-[#666666]',
+  text:        dark ? 'text-[#f4f8f5]' : 'text-[#17251f]',
+  textSub:     dark ? 'text-[#d1ddd6]' : 'text-[#45554c]',
+  textMuted:   dark ? 'text-[#b8c9bf]' : 'text-[#627168]',
   textLabel:   dark ? 'text-emerald-300' : 'text-emerald-800',
 
   nav:         dark
-    ? 'bg-[#050505]/95 border-white/10'
-    : 'bg-white/95 border-black/10 shadow-sm',
+    ? 'bg-[#10201c]/95 border-white/10'
+    : 'bg-white/95 border-[#dce8df] shadow-sm',
   navLink:     dark
-    ? 'text-white/70 hover:text-white'
+    ? 'text-white/85 hover:text-white'
     : 'text-[#444444] hover:text-emerald-800',
 
   card:        dark
-    ? 'bg-[#111111] border-white/10 hover:border-emerald-400/40'
-    : 'bg-white border-black/10 shadow-sm hover:border-emerald-300 hover:shadow-lg',
+    ? 'bg-[#182923] border-white/10 hover:border-emerald-400/40'
+    : 'bg-white border-[#dce8df] shadow-sm hover:border-emerald-300 hover:shadow-lg',
 
-  faqClosed:   dark ? 'bg-[#111111] border-white/10' : 'bg-white border-black/10 shadow-sm',
+  faqClosed:   dark ? 'bg-[#182923] border-white/10' : 'bg-white border-[#dce8df] shadow-sm',
   faqOpen:     dark ? 'bg-emerald-400/10 border-emerald-300/40' : 'bg-emerald-50 border-emerald-300 shadow-sm',
-  faqQ:        dark ? 'text-white/85 hover:text-white' : 'text-[#111111] hover:text-emerald-800',
+  faqQ:        dark ? 'text-[#f4f8f5] hover:text-white' : 'text-[#17251f] hover:text-emerald-800',
   faqQOpen:    dark ? 'text-emerald-200' : 'text-emerald-800',
-  faqA:        dark ? 'text-white/65' : 'text-[#444444]',
+  faqA:        dark ? 'text-[#d1ddd6]' : 'text-[#45554c]',
 
-  footerBg:    'bg-[#050505] border-white/10 text-white',
+  footerBg:    dark
+    ? 'bg-[#0c1915] border-white/10 text-[#f4f8f5]'
+    : 'bg-[#edf4ef] border-[#dce8df] text-[#17251f]',
 
-  metricLabel: dark ? 'text-white/65' : 'text-[#555555]',
+  metricLabel: dark ? 'text-white/80' : 'text-[#555555]',
   metricVal:   dark ? 'text-white' : 'text-[#111111]',
-  metricSub:   dark ? 'text-white/65' : 'text-[#555555]',
+  metricSub:   dark ? 'text-white/80' : 'text-[#555555]',
 
   toggleBg:    dark
-    ? 'bg-[#111111] border-white/10 text-white/85'
-    : 'bg-white border-black/10 text-[#111111] shadow-sm',
+    ? 'bg-[#182923] border-white/10 text-[#f4f8f5]'
+    : 'bg-white border-[#dce8df] text-[#17251f] shadow-sm',
 
-  stepNum:     dark ? 'text-white/[0.05]' : 'text-emerald-100',
+  stepNum:     dark ? 'text-white/15' : 'text-emerald-100',
   stepCard:    dark
-    ? 'bg-[#111111] border-white/10 hover:border-emerald-400/40'
-    : 'bg-white border-black/10 shadow-sm hover:border-emerald-300',
+    ? 'bg-[#182923] border-white/10 hover:border-emerald-400/40'
+    : 'bg-white border-[#dce8df] shadow-sm hover:border-emerald-300',
 };
 
   // ── Reused RTL-aware class ─────────────────────────────────────────────────
@@ -110,6 +113,8 @@ const th = {
   const features = [
     {
       icon: <Zap className="w-5 h-5" />,
+      image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&q=80',
+      imageAlt: t('Solar panels monitored for faults', 'خرابیوں کے لیے مانیٹر کیے گئے سولر پینل', 'Faults ke liye monitor kiye gaye solar panels'),
       title: t('AI Diagnostics',       'AI تشخیص',          'AI Diagnostics'),
       desc:  t('Pinpoints faults — shading, drift, panel damage — before they cut your yield.',
                'سائے، ڈرفٹ یا پینل نقصان کی فوری نشاندہی۔',
@@ -117,6 +122,8 @@ const th = {
     },
     {
       icon: <Activity className="w-5 h-5" />,
+      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
+      imageAlt: t('Live solar performance dashboard', 'سولر کارکردگی کا لائیو ڈیش بورڈ', 'Solar performance ka live dashboard'),
       title: t('Live Telemetry',       'لائیو ٹیلی میٹری',  'Live Telemetry'),
       desc:  t('String-level power and voltage, refreshed every 30 seconds.',
                'ہر 30 سیکنڈ میں سٹرنگ لیول وولٹیج اور پاور ریڈنگ۔',
@@ -124,6 +131,8 @@ const th = {
     },
     {
       icon: <ShieldCheck className="w-5 h-5" />,
+      image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=800&q=80',
+      imageAlt: t('Energy billing and net-metering review', 'توانائی کے بل اور نیٹ میٹرنگ کا جائزہ', 'Energy billing aur net-metering ka jaiza'),
       title: t('Net-Metering Audit',   'نیٹ میٹرنگ آڈٹ',   'Net-Metering Audit'),
       desc:  t('Cross-checks exported units against WAPDA / LESCO billing automatically.',
                'بجلی کے بل کا خودکار آڈٹ۔',
@@ -131,6 +140,8 @@ const th = {
     },
     {
       icon: <Wrench className="w-5 h-5" />,
+      image: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?auto=format&fit=crop&w=800&q=80',
+      imageAlt: t('Electrician inspecting a solar system', 'سولر سسٹم کا معائنہ کرتے ہوئے الیکٹریشن', 'Solar system ka muaina karte hue electrician'),
       title: t('Certified Technicians','تصدیق شدہ ٹیکنیشنز', 'Certified Technicians'),
       desc:  t('Book a vetted solar engineer in your city — upfront pricing, no hidden fees.',
                'اپنے شہر کے تصدیق شدہ انجینئر کی بکنگ — شفاف قیمت۔',
@@ -211,6 +222,18 @@ const th = {
           {/* Right: controls */}
           <div className="flex items-center gap-2">
 
+            <a
+              href="#contact"
+              className={`hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 ${
+                dark
+                  ? 'text-emerald-200 border border-emerald-300/20 hover:bg-emerald-300/10 hover:text-white'
+                  : 'text-emerald-800 border border-emerald-700/20 hover:bg-emerald-50 hover:text-emerald-900'
+              }`}
+            >
+              <Mail className="w-4 h-4" />
+              {t('Contact', 'رابطہ', 'Contact')}
+            </a>
+
             {/* Dark / Light Toggle */}
             <button
               onClick={() => setDark(d => !d)}
@@ -241,7 +264,7 @@ const th = {
                       className={`w-full text-left px-4 py-2 text-xs flex items-center justify-between cursor-pointer transition-colors ${
                         language === opt.code
                           ? dark ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'bg-emerald-50 text-emerald-700 font-semibold'
-                          : dark ? 'text-white/60 hover:bg-white/5' : 'text-slate-500 hover:bg-slate-50'
+                          : dark ? 'text-white/75 hover:bg-white/5' : 'text-slate-500 hover:bg-slate-50'
                       }`}
                     >
                       {opt.label}
@@ -292,6 +315,7 @@ const th = {
                 { href: '#features',     label: t('Features',    'خصوصیات',  'Features')    },
                 { href: '#how-it-works', label: t('How It Works','طریقہ کار', 'How It Works') },
                 { href: '#faq',          label: t('FAQ',         'سوالات',   'FAQ')          },
+                { href: '#contact',      label: t('Contact',     'رابطہ',    'Contact')      },
               ].map(item => (
                 <a key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className={th.navLink}>
                   {item.label}
@@ -306,7 +330,7 @@ const th = {
                   className={`flex-1 py-1.5 text-xs font-semibold rounded-lg cursor-pointer transition-colors ${
                     language === opt.code
                       ? 'bg-emerald-500/20 text-emerald-400'
-                      : dark ? 'text-white/40 hover:bg-white/5' : 'text-slate-400 hover:bg-slate-50'
+                      : dark ? 'text-white/75 hover:bg-white/5' : 'text-slate-500 hover:bg-slate-50'
                   }`}
                 >
                   {opt.short}
@@ -343,7 +367,7 @@ const th = {
         />
         <div
           aria-hidden="true"
-          className={`absolute inset-0 ${dark ? 'bg-black/35' : 'bg-white/45'}`}
+          className={`absolute inset-0 ${dark ? 'bg-black/40' : 'bg-white/45'}`}
         />
 
        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center solar-enter">
@@ -359,17 +383,17 @@ const th = {
           </div>
 
           {/* Headline */}
-          <h1 className={`text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-5 ${urduLH} ${th.text}`}
+          <h1 className={`hero-text-shadow text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-5 ${urduLH} ${th.text}`}
             style={{ lineHeight: isRtl ? '1.7' : '1.1' }}>
             {t('Your Solar System,', 'آپ کا سولر سسٹم،', 'Aapka Solar System,')}
             <br />
-            <span className="shimmer-text">
+            <span className={dark ? 'shimmer-text' : 'shimmer-text-light'}>
               {t('Always at Peak.', 'ہمیشہ بہترین کارکردگی پر۔', 'Hamesha Best Performance Par.')}
             </span>
           </h1>
 
           {/* Subline — 1 sentence */}
-          <p className={`solar-reveal-delay mx-auto max-w-xl text-base sm:text-lg mb-10 font-normal ${th.textSub} ${urduP}`}>
+          <p className={`hero-text-shadow solar-reveal-delay mx-auto max-w-xl text-base sm:text-lg mb-10 font-medium ${dark ? 'text-white' : 'text-slate-900'} ${urduP}`}>
             {t(
               'Real-time AI fault detection, certified technician booking, and net-metering audit — in one platform.',
               'ریئل ٹائم AI تشخیص، تصدیق شدہ ٹیکنیشن بکنگ، اور نیٹ میٹرنگ آڈٹ — ایک پلیٹ فارم میں۔',
@@ -390,7 +414,7 @@ const th = {
               onClick={onLogin}
               className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm border transition-all duration-200 cursor-pointer hover:-translate-y-0.5 ${
                 dark
-                  ? 'text-white/70 bg-white/[0.05] border-white/10 hover:bg-white/[0.09] hover:text-white'
+                  ? 'text-white/90 bg-white/[0.05] border-white/10 hover:bg-white/[0.09] hover:text-white'
                   : 'text-slate-700 bg-white border-slate-200 hover:border-emerald-300 hover:text-emerald-700'
               }`}
             >
@@ -421,15 +445,32 @@ const th = {
               <div
                 key={i}
                 style={{ animationDelay: `${i * 100}ms` }}
-                className={`solar-card solar-reveal group p-6 rounded-2xl border transition-all duration-300 cursor-default ${th.card}`}
+                className={`solar-card solar-reveal landing-feature-card ${dark ? 'landing-feature-card-dark' : 'landing-feature-card-light'} group overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 cursor-default ${th.card}`}
               >
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-105 ${
-                  dark ? 'bg-emerald-500/15 border border-emerald-500/25 text-emerald-400' : 'bg-emerald-100 text-emerald-700'
-                }`}>
-                  {f.icon}
+                <div className="feature-image-wrap relative h-36 overflow-hidden">
+                  <img
+                    src={f.image}
+                    alt={f.imageAlt}
+                    loading="lazy"
+                    className="feature-image h-full w-full object-cover"
+                  />
+                  <div className={`absolute inset-0 transition-colors duration-300 ${
+                    dark
+                      ? 'bg-[#10201c]/15 group-hover:bg-emerald-950/25'
+                      : 'bg-white/10 group-hover:bg-emerald-400/15'
+                  }`} />
+                  <div className={`absolute bottom-3 left-4 flex h-10 w-10 items-center justify-center rounded-xl border shadow-lg ${
+                    dark
+                      ? 'border-emerald-200/20 bg-[#183a2e]/90 text-emerald-200'
+                      : 'border-white/80 bg-white/95 text-emerald-700'
+                  }`}>
+                    {f.icon}
+                  </div>
                 </div>
-                <h3 className={`text-base font-bold mb-2 ${th.text}`}>{f.title}</h3>
-                <p className={`text-sm ${th.textSub} ${urduP}`}>{f.desc}</p>
+                <div className="p-6">
+                  <h3 className={`text-base font-bold mb-2 ${th.text}`}>{f.title}</h3>
+                  <p className={`text-sm ${th.textSub} ${urduP}`}>{f.desc}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -439,7 +480,7 @@ const th = {
       {/* ══════════════════════════════════════════════════════════
           HOW IT WORKS
       ══════════════════════════════════════════════════════════ */}
-      <section id="how-it-works" className={`py-24 sm:py-32 border-y transition-colors duration-300 scroll-mt-16 ${dark ? 'bg-[#0b0b0b] border-white/[0.07]' : 'bg-[#f5f5f5] border-black/10'}`}>
+      <section id="how-it-works" className={`py-24 sm:py-32 border-y transition-colors duration-300 scroll-mt-16 ${dark ? 'bg-[#14241f] border-white/10' : 'bg-[#edf4ef] border-[#dce8df]'}`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
           <div className="text-center mb-14">
@@ -478,7 +519,7 @@ const th = {
                          'Live data, AI alerts aur booking — sab ek dashboard mein.'),
               },
             ].map((step, i) => (
-              <div key={i} style={{ animationDelay: `${i * 100}ms` }} className={`solar-card solar-reveal relative p-8 rounded-2xl border transition-all duration-300 group ${th.stepCard}`}>
+              <div key={i} style={{ animationDelay: `${i * 100}ms` }} className={`solar-card solar-reveal relative p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 group ${th.stepCard}`}>
                 <div className={`absolute top-5 right-6 text-6xl font-black select-none transition-colors ${th.stepNum}`}>
                   {step.step}
                 </div>
@@ -583,7 +624,7 @@ const th = {
       <div
         key={i}
         style={{ animationDelay: `${i * 100}ms` }}
-        className={`solar-card solar-reveal min-h-[145px] rounded-2xl border p-4 sm:p-5 backdrop-blur-md ${
+        className={`solar-card solar-reveal min-h-[145px] rounded-2xl border p-4 sm:p-5 backdrop-blur-md transition-transform duration-300 hover:-translate-y-1 ${
           dark
             ? 'border-white/20 bg-black/75'
             : 'border-white/70 bg-white/90 shadow-lg'
@@ -609,8 +650,6 @@ const th = {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════
-      ══════════════════════════════════════════════════════════ */}
       {/* ══════════════════════════════════════════════════════════
           FAQ
       ══════════════════════════════════════════════════════════ */}
@@ -655,7 +694,7 @@ const th = {
       {/* ══════════════════════════════════════════════════════════
           FOOTER
       ══════════════════════════════════════════════════════════ */}
-      <footer className={`border-t transition-colors duration-300 ${th.footerBg}`}>
+      <footer id="contact" className={`scroll-mt-16 border-t transition-colors duration-300 ${th.footerBg}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-5">
 
@@ -663,23 +702,32 @@ const th = {
               <div className="w-8 h-8 rounded-xl bg-emerald-600/40 border border-emerald-500/30 flex items-center justify-center">
                 <Sun className="w-4 h-4 text-solar" />
               </div>
-              <span className="font-extrabold text-base text-white tracking-normal">
-                Solar <span className="text-emerald-400">Care</span>
+              <span className={`font-extrabold text-base tracking-normal ${th.text}`}>
+                Solar <span className="text-emerald-500">Care</span>
               </span>
             </div>
 
-            <div className="flex items-center gap-6 text-xs text-white/35 font-medium">
-              <span className="flex items-center gap-1.5 text-emerald-400">
+            <div className={`flex items-center gap-6 text-xs font-medium ${dark ? 'text-[#b8c9bf]' : 'text-[#53645b]'}`}>
+              <span className={`flex items-center gap-1.5 ${dark ? 'text-emerald-300' : 'text-emerald-800'}`}>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-glow" />
                 {t('All Systems Operational', 'تمام سسٹمز فعال', 'All Systems Operational')}
               </span>
-              <button onClick={onLogin}  className="hover:text-white/70 cursor-pointer transition-colors">{t('Log In',  'لاگ ان',  'Log In')}</button>
-              <button onClick={onSignUp} className="hover:text-white/70 cursor-pointer transition-colors">{t('Sign Up', 'سائن اپ', 'Sign Up')}</button>
+              <button onClick={onLogin} className={`cursor-pointer transition-colors ${dark ? 'hover:text-white' : 'hover:text-emerald-800'}`}>{t('Log In',  'لاگ ان',  'Log In')}</button>
+              <button onClick={onSignUp} className={`cursor-pointer transition-colors ${dark ? 'hover:text-white' : 'hover:text-emerald-800'}`}>{t('Sign Up', 'سائن اپ', 'Sign Up')}</button>
             </div>
           </div>
 
-          <div className={`mt-8 pt-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-white/20`}>
+          <div className={`mt-8 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] ${dark ? 'border-white/10 text-[#b8c9bf]' : 'border-[#d3e2d7] text-[#627168]'}`}>
             <p>© {new Date().getFullYear()} SolarCare Technologies. All rights reserved.</p>
+            <a
+              href="mailto:farhanlashari61675@gmail.com"
+              className={`inline-flex items-center gap-2 text-xs sm:text-sm font-semibold transition-colors ${
+                dark ? 'text-emerald-300 hover:text-emerald-200' : 'text-emerald-800 hover:text-emerald-700'
+              }`}
+            >
+              <Mail className="h-3.5 w-3.5" />
+              farhanlashari61675@gmail.com
+            </a>
             <p>{t('Engineered for clean energy.', 'صاف توانائی کے لیے۔', 'Clean energy ke liye.')}</p>
           </div>
         </div>
