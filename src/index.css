@@ -56,15 +56,34 @@ select:user-valid:not(:placeholder-shown) {
 
 /* ── Shared card styles ── */
 .solar-card {
-  background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 1rem;
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
+.solar-card:not([class*="bg-"]) {
+  background: #ffffff;
+}
 .solar-card:hover {
   box-shadow: 0 8px 24px rgba(5, 150, 105, 0.08);
   border-color: #d1fae5;
+}
+
+.landing-feature-card-dark:hover {
+  background-color: #20372f;
+  border-color: #6ee7b7;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+}
+.landing-feature-card-light:hover {
+  background-color: #eff8f2;
+  border-color: #8dbb9b;
+  box-shadow: 0 12px 28px rgba(24, 91, 52, 0.12);
+}
+.landing-feature-card .feature-image {
+  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.landing-feature-card:hover .feature-image {
+  transform: scale(1.05);
 }
 
 /* ── Gradient backgrounds used across the app ── */
@@ -113,8 +132,17 @@ select:user-valid:not(:placeholder-shown) {
 .solar-reveal-delay { animation: solar-reveal 700ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 .solar-pulse { animation: solar-pulse 2s ease-in-out infinite; }
 .animate-fade-in { animation: fade-in 200ms ease-out both; }
+.hero-text-shadow { text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75); }
 .shimmer-text {
-  background: linear-gradient(90deg, #34d399, #10b981, #6ee7b7, #10b981, #34d399);
+  background: linear-gradient(90deg, #ecfdf5, #6ee7b7, #a7f3d0, #6ee7b7, #ecfdf5);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+.shimmer-text-light {
+  background: linear-gradient(90deg, #065f46, #047857, #059669, #047857, #065f46);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
