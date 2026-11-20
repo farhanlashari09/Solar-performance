@@ -40,6 +40,45 @@ export const defaultQuestionsByLang = {
 };
 
 export const chatbotKnowledgeBase: ChatKnowledgeResponse[] = [
+  // Solar sizing and wiring
+  {
+    keywords: ['size', 'sizing', 'kitna', 'how many panels', 'wire', 'wiring', 'cable', 'mc4', 'earthing', 'grounding', 'spd'],
+    reply: {
+      en: `For a safe solar system design, match the array, inverter, cable, and protection together:
+
+• Panel-to-inverter voltage must remain inside the inverter MPPT limits, including cold-weather Voc.
+• Use the inverter current rating to calculate DC string size and cable cross-section.
+• Outdoor DC cables should use suitable UV-resistant solar cable; common roof sizes are 4 mm² or 6 mm² based on length and current.
+• Use DC isolators, fuses or breakers, MC4 connectors, surge protection, and a low-resistance earth connection.
+• Do not mix old and new panels or panels with different ratings in one string.
+
+Share the inverter model, panel wattage/Voc/Vmp/Isc, and cable run length for a practical string and cable check.`,
+      ur: `محفوظ سولر ڈیزائن میں پینل، انورٹر، تار اور حفاظتی آلات کو ایک ساتھ منتخب کرنا ضروری ہے۔ انورٹر کی MPPT حد، سرد موسم کا Voc، تار کا کراس سیکشن، ڈی سی آئسولیٹر، MC4 کنیکٹر، سرج پروٹیکشن اور ارثنگ چیک کریں۔`,
+      'ur-roman': `Safe solar design ke liye inverter MPPT range, cold-weather Voc, DC cable size, isolator, MC4 connectors, surge protection aur earthing check karna zaroori hai.`
+    },
+    suggestions: {
+      en: ['What cable size should I use for my solar system?', 'What is a safe earth resistance?'],
+      ur: ['سولر سسٹم کے لیے کون سی تار مناسب ہے؟', 'ارثنگ کی بہتر صورت کیا ہے؟'],
+      'ur-roman': ['Solar system ke liye cable size kya ho?', 'Earthing kaise theek rakhein?']
+    }
+  },
+  {
+    keywords: ['battery', 'backup', 'lifepo4', 'lithium', 'tubular', 'autonomy', 'dod'],
+    reply: {
+      en: `Battery backup should be sized from the nighttime load, not only the inverter rating.
+
+Estimate Wh = appliance watts × hours of use. Select 24V or 48V storage, then apply the recommended Depth of Discharge: about 90% for LiFePO4 and about 50% for tubular lead-acid. Confirm the battery/inverter communication and current limits.
+
+A 1.5-ton inverter AC can use 800-2000W, so it needs a much larger battery bank than lights and fans.`,
+      ur: `بیٹری کا سائز رات کے استعمال، آلوٹگ، وولٹیج اور استعمالی گھنٹوں سے طے کریں۔ لیتھیم میں زیادہ قابل استعمال گنجائش ہے جبکہ ٹیوبلر بیٹری کو محفوظ حد تک استعمال کرنا چاہیے۔`,
+      'ur-roman': `Battery backup sizing ke liye nightly load watts, usage hours, battery voltage aur depth-of-discharge use hoti hai. Lithium aur tubular ki limits alag hoti hain.`
+    },
+    suggestions: {
+      en: ['How many kWh battery is needed for overnight backup?', 'Lithium or tubular battery?'],
+      ur: ['رات بھر بیک اپ کے لیے کتنی بیٹری چاہیے؟', 'لیتھیم یا ٹیوبلر بیٹری؟'],
+      'ur-roman': ['Raat ke backup ke liye battery kitni ho?', 'Lithium ya tubular battery?']
+    }
+  },
   // 1. Low production
   {
     keywords: ['low', 'kam', 'drop', 'production', 'bijli', 'generate', 'yield', 'bana', 'out'],

@@ -33,7 +33,6 @@ const AppContent: React.FC = () => {
   const [selectedTechForService, setSelectedTechForService] = useState<Technician | null>(null);
   const [showAuthFlow, setShowAuthFlow] = useState(false);
   const isAdmin = currentUser?.email.trim().toLowerCase() === 'admin@solarcare.com';
-
   // If user is unauthenticated, show the awesome Landing Page first,
   // or the AuthFlow if they click Log In / Sign Up
   if (!isAuthenticated) {
@@ -54,19 +53,9 @@ const AppContent: React.FC = () => {
     );
   }
 
-  if (isAdmin) {
-    return (
-      <main className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
-        <div className="mx-auto max-w-7xl">
-          <AdminPortal />
-        </div>
-      </main>
-    );
-  }
-
   // If newly registered user has not added their solar system yet,
   // do NOT show any dummy data! Ensure they configure their solar system first.
-  if (isNewUser) {
+  if (isNewUser && !isAdmin) {
     return <SolarSetupScreen />;
   }
 
@@ -108,6 +97,8 @@ const AppContent: React.FC = () => {
 
         {/* Main Content View Area */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          {currentRoute === 'admin' && <AdminPortal />}
+
           {currentRoute === 'dashboard' && (
             <DashboardView
               onNavigate={(route) => setCurrentRoute(route)}
