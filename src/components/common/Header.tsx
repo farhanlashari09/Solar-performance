@@ -30,6 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
   const { language, setLanguage, t, isRtl } = useLanguage();
   const { systems, activeSystem, setActiveSystemId, unreadAlertCount } = useSolar();
   const { currentUser } = useAuth();
+  const isAdmin = currentUser?.email.trim().toLowerCase() === 'admin@solarcare.com';
 
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isSystemMenuOpen, setIsSystemMenuOpen] = useState(false);
@@ -155,15 +156,16 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right: Database Live Badge, Language Selector, Alerts, Profile */}
           <div className="flex items-center gap-2.5">
-            {/* Database Live Badge */}
-            <button
-              onClick={() => onNavigate('profile')}
-              title="Persistent Database Active (server/data/solarcare_db.json on port 5000). Click to manage database."
-              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>DB Live</span>
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => onNavigate('admin')}
+                title="Open admin database and platform controls"
+                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>DB Live</span>
+              </button>
+            )}
 
             {/* Language Selector */}
             <div className="relative">

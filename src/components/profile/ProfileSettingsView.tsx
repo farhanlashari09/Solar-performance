@@ -3,21 +3,14 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useSolar } from '../../context/SolarContext';
 import { Language } from '../../types';
-import { databaseApi } from '../../services/api';
 import {
   User,
-  Mail,
-  Globe,
   Sun,
   Lock,
-  RefreshCw,
   LogOut,
   CheckCircle2,
-  AlertCircle,
   Save,
   KeyRound,
-  ShieldCheck,
-  Database,
 } from 'lucide-react';
 
 interface ProfileSettingsViewProps {
@@ -295,72 +288,6 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
             </div>
           </form>
         )}
-      </div>
-
-      {/* Database Management Card */}
-      <div className="solar-card p-6 bg-white border border-slate-200">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
-              <Database className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900">Database Manager & Records</h3>
-              <p className="text-xs text-slate-500">
-                Connected to persistent database (`server/data/solarcare_db.json` on port 5000)
-              </p>
-            </div>
-          </div>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Database Live
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4">
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Registered Users</span>
-            <span className="text-xl font-extrabold text-slate-900">2 Accounts</span>
-          </div>
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Solar Assets</span>
-            <span className="text-xl font-extrabold text-emerald-700">{systems.length} Systems</span>
-          </div>
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Database File</span>
-            <span className="text-xs font-mono font-bold text-slate-700 block mt-1">solarcare_db.json</span>
-          </div>
-        </div>
-
-        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1 mb-4">
-          <span className="font-bold text-slate-700 block">Active Accounts in Database:</span>
-          <div className="font-mono text-slate-600 text-[11px] space-y-0.5">
-            <div>• farhan@example.com (Farhan Tariq)</div>
-            <div>• admin@solarcare.com (Admin SolarCare)</div>
-            {currentUser?.email && !['farhan@example.com', 'admin@solarcare.com'].includes(currentUser.email) && (
-              <div>• {currentUser.email} ({currentUser.name}) [Current Session]</div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2.5">
-          <button
-            type="button"
-            onClick={async () => {
-              if (confirm('Reset database to clean default seed data?')) {
-                const res = await databaseApi.reset();
-                if (res.success) {
-                  setSuccessNotice('Database reset to default seed records.');
-                  setTimeout(() => setSuccessNotice(''), 3000);
-                }
-              }
-            }}
-            className="py-2 px-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors flex items-center gap-2"
-          >
-            <RefreshCw className="w-3.5 h-3.5 text-slate-600" />
-            <span>Reset Database to Clean Defaults</span>
-          </button>
-        </div>
       </div>
 
       {/* Logout */}

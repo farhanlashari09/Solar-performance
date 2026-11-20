@@ -17,6 +17,7 @@ import {
   RefreshCw,
   X,
   ChevronRight,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -35,11 +36,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { t, isRtl } = useLanguage();
   const { unreadAlertCount, resetDemoData } = useSolar();
   const { serviceRequests } = useMaintenance();
-  const { logout } = useAuth();
+  const { logout, currentUser } = useAuth();
+  const isAdmin = currentUser?.email.trim().toLowerCase() === 'admin@solarcare.com';
 
   const activeRequestsCount = serviceRequests.filter(r => r.status !== 'Completed').length;
 
   const navItems = [
+    ...(isAdmin
+      ? [{ id: 'admin', label: 'Admin Control', icon: ShieldCheck }]
+      : []),
     { id: 'dashboard', label: t.nav.dashboard, icon: LayoutDashboard },
     { id: 'performance', label: t.nav.performance, icon: Activity },
     { id: 'systems', label: t.nav.systems, icon: SunMedium },
@@ -86,7 +91,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Navigation List */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
         <div className="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-          <span>Client Navigation</span>
+          <span>{isAdmin ? 'Platform Navigation' : 'Client Navigation'}</span>
         </div>
 
         {navItems.map((item) => {

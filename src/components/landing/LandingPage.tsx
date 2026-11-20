@@ -170,9 +170,9 @@ const th = {
       q: t('How accurate is AI fault detection?',
            'AI تشخیص کتنی درست ہے؟',
            'AI fault detection kitni accurate hai?'),
-      a: t('Our model compares local irradiance data against measured DC input, achieving 99.4% accuracy.',
-           'ہمارا ماڈل مقامی تابکاری ڈیٹا اور DC ان پٹ کا موازنہ کرتا ہے — 99.4٪ درستگی۔',
-           'Hamara model local irradiance aur DC input ka mawazna karta hai — 99.4% accuracy.'),
+      a: t('The diagnostic engine compares irradiance, DC input, and historical output before suggesting a likely cause.',
+           'تشخیص کا نظام نتیجه دینے سے پہلے تابکاری، ڈی سی ان پٹ اور گزشتہ پیداوار کا موازنہ کرتا ہے۔',
+           'Diagnostic engine irradiance, DC input aur pichli output ka mawazna kar ke possible wajah batata hai.'),
     },
     {
       q: t('How do I book a technician?',
@@ -405,7 +405,11 @@ const th = {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
               onClick={onSignUp}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm text-white bg-emerald-600 hover:bg-emerald-500 shadow-emerald-lg transition-all duration-200 cursor-pointer hover:-translate-y-0.5"
+              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer hover:-translate-y-0.5 shadow-emerald-lg ${
+                dark
+                  ? 'text-[#10201c] bg-[#b8f7d1] hover:bg-white'
+                  : 'text-white bg-emerald-700 hover:bg-emerald-900'
+              }`}
             >
               {t('Get Started Free', 'مفت شروع کریں', 'Get Started Free')}
               <ArrowRight className="w-4 h-4" />
