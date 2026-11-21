@@ -5,21 +5,17 @@ import {
   Activity,
   ArrowRight,
   ArrowUpRight,
-  Bell,
   Check,
   ChevronDown,
   CloudSun,
   Globe,
   Grid2X2,
   LayoutDashboard,
-  Leaf,
   Menu,
   Moon,
-  Search,
   Settings,
   ShieldCheck,
   Sun,
-  Users,
   Wrench,
   X,
   Zap,
@@ -46,7 +42,6 @@ const chartRanges = {
     caption: 'Today',
     target: '48 kWh',
     progress: 92,
-    avoided: '18.4',
   },
   week: {
     values: [20, 42, 34, 55, 48, 77, 62, 52, 69, 58, 84, 70, 63, 76, 52, 67, 55, 88, 74],
@@ -55,7 +50,6 @@ const chartRanges = {
     caption: 'This week',
     target: '320 kWh',
     progress: 90,
-    avoided: '119.3',
   },
   month: {
     values: [18, 30, 26, 47, 42, 65, 50, 60, 75, 58, 81, 72, 68, 85, 74, 90, 71, 83, 78],
@@ -64,7 +58,6 @@ const chartRanges = {
     caption: 'This month',
     target: '1,320 kWh',
     progress: 95,
-    avoided: '519.9',
   },
 } as const;
 
@@ -204,22 +197,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                   </div>
                 )}
               </div>
-              <a href="#support" aria-label="Search help" title="Search solar help" className={`flex h-9 w-9 items-center justify-center rounded-full transition ${palette.hover} ${palette.sub}`}>
-                <Search className="h-4 w-4" />
-              </a>
-              <a href="#support" aria-label="Notifications and support" title="Open support" className={`relative flex h-9 w-9 items-center justify-center rounded-full transition ${palette.hover} ${palette.sub}`}>
-                <Bell className="h-4 w-4" />
-                <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-[#e7a54f]" />
-              </a>
-              <button
-                type="button"
-                onClick={onLogin}
-                aria-label="Log in"
-                title="Log in to SolarCare"
-                className={`ml-1 flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ${dark ? 'bg-[#4b594c] text-[#e1ebbe]' : 'bg-[#d7ddd4] text-[#324339]'} transition hover:scale-105`}
-              >
-                <Users className="h-4 w-4" />
-              </button>
               {themeToggle}
               <button type="button" onClick={onLogin} className="ml-1 hidden rounded-full border border-current/10 px-4 py-2 text-xs font-semibold transition hover:border-current/25 lg:inline-flex">
                 {t('Log in', 'لاگ ان', 'Log in')}
@@ -503,16 +480,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                   </article>
                 </div>
 
-                <div className="grid gap-2.5 sm:gap-3 lg:grid-cols-[1.65fr_0.85fr]">
-                  <article id="panels" className="dashboard-glass-card min-w-0 rounded-2xl border border-white/20 bg-[#30322e]/75 p-3.5 text-white shadow-xl backdrop-blur-xl sm:p-4">
+                <article id="panels" className="dashboard-glass-card min-w-0 rounded-2xl border border-white/20 bg-[#30322e]/75 p-3.5 text-white shadow-xl backdrop-blur-xl sm:p-4">
                     <div className="flex items-center justify-between gap-2">
                       <div>
                         <h3 className="text-xs font-semibold">{t('Panel inventory', 'پینل انوینٹری', 'Panel inventory')}</h3>
                         <p className="mt-1 text-[9px] text-white/55">{t('Sample telemetry readings', 'نمونہ ٹیلی میٹری ریڈنگز', 'Sample telemetry readings')}</p>
                       </div>
-                      <a href="#inverters" aria-label="Read panel and inverter help" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/15 transition hover:bg-white/25">
-                        <Search className="h-3 w-3" />
-                      </a>
                     </div>
                     <div className="mt-3 overflow-x-auto">
                       <table className="w-full min-w-[380px] text-left text-[9px]">
@@ -548,25 +521,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                         </tbody>
                       </table>
                     </div>
-                  </article>
-
-                  <article className="dashboard-glass-card rounded-2xl border border-white/20 bg-[#30322e]/75 p-3.5 text-white shadow-xl backdrop-blur-xl sm:p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <h3 className="text-xs font-semibold">{t('Environmental impact', 'ماحولیاتی اثر', 'Environmental impact')}</h3>
-                        <p className="mt-1 text-[9px] text-white/55">{t('Estimated clean energy', 'صاف توانائی کا اندازہ', 'Estimated clean energy')}</p>
-                      </div>
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-emerald-100"><Leaf className="h-3.5 w-3.5" /></span>
-                    </div>
-                    <p className="mt-5 text-2xl font-semibold tracking-tight">{activeChart.avoided} <span className="text-xs font-normal text-white/65">kg CO₂</span></p>
-                    <p className="mt-1 text-[9px] text-white/60">{t('estimated emissions avoided', 'اندازاً اخراج میں کمی', 'estimated emissions avoided')}</p>
-                    <div className="my-3 border-t border-white/15" />
-                    <div className="flex justify-between gap-2 text-[9px]">
-                      <span className="text-white/60">{t('Clean energy', 'صاف توانائی', 'Clean energy')}</span>
-                      <span className="font-semibold">{activeChart.total}</span>
-                    </div>
-                  </article>
-                </div>
+                </article>
               </div>
             </section>
           </div>
@@ -591,12 +546,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
             </div>
             <div className="grid gap-3 md:grid-cols-3">
               {[
-                { icon: Activity, title: t('Performance monitoring', 'کارکردگی کی نگرانی', 'Performance monitoring'), text: t('Review production, trends, and system health in one clear view.', 'پیداوار، رجحانات اور سسٹم کی صحت ایک واضح منظر میں دیکھیں۔', 'Production, trends aur system health aik jagah dekhein.') },
-                { icon: ShieldCheck, title: t('Guided diagnostics', 'رہنمائی کے ساتھ تشخیص', 'Guided diagnostics'), text: t('Understand common alerts and explore safe next steps for your system.', 'عام الرٹس سمجھیں اور محفوظ اگلے اقدامات دیکھیں۔', 'Aam alerts samjhein aur mehfooz aglay qadam dekhein.') },
-                { icon: Wrench, title: t('Technician support', 'ٹیکنیشن معاونت', 'Technician support'), text: t('Find solar professionals for inspection, maintenance, and repair.', 'معائنے، دیکھ بھال اور مرمت کے لیے سولر ماہرین تلاش کریں۔', 'Inspection, maintenance aur repair ke liye solar experts dhoondein.') },
-              ].map(({ icon: Icon, title, text }) => (
+                { icon: Activity, image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=900&q=80', alt: t('Solar panels monitored for energy production', 'توانائی کی پیداوار کے لیے زیر نگرانی سولر پینلز', 'Energy production ke liye monitor hotay solar panels'), title: t('Performance monitoring', 'کارکردگی کی نگرانی', 'Performance monitoring'), text: t('Review production, trends, and system health in one clear view.', 'پیداوار، رجحانات اور سسٹم کی صحت ایک واضح منظر میں دیکھیں۔', 'Production, trends aur system health aik jagah dekhein.') },
+                { icon: ShieldCheck, image: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=900&q=80', alt: t('Technician inspecting electrical equipment', 'الیکٹریکل آلات کا معائنہ کرتا ٹیکنیشن', 'Electrical equipment inspect karta technician'), title: t('Guided diagnostics', 'رہنمائی کے ساتھ تشخیص', 'Guided diagnostics'), text: t('Understand common alerts and explore safe next steps for your system.', 'عام الرٹس سمجھیں اور محفوظ اگلے اقدامات دیکھیں۔', 'Aam alerts samjhein aur mehfooz aglay qadam dekhein.') },
+                { icon: Wrench, image: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=900&q=80', alt: t('Support team discussing a customer request', 'صارف کی درخواست پر گفتگو کرتی معاونت ٹیم', 'Customer ki request par baat karti support team'), title: t('Technician support', 'ٹیکنیشن معاونت', 'Technician support'), text: t('Find solar professionals for inspection, maintenance, and repair.', 'معائنے، دیکھ بھال اور مرمت کے لیے سولر ماہرین تلاش کریں۔', 'Inspection, maintenance aur repair ke liye solar experts dhoondein.') },
+              ].map(({ icon: Icon, image, alt, title, text }) => (
                 <article key={title} className={`dashboard-feature-card rounded-2xl border p-5 sm:p-6 ${palette.panel}`}>
-                  <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${dark ? 'bg-emerald-400/10 text-emerald-300' : 'bg-emerald-50 text-emerald-800'}`}><Icon className="h-5 w-5" /></span>
+                  <div className="relative h-40 overflow-hidden rounded-xl sm:h-48">
+                    <img src={image} alt={alt} loading="lazy" className="dashboard-feature-image h-full w-full object-cover" />
+                    <span className={`absolute bottom-3 left-3 flex h-10 w-10 items-center justify-center rounded-xl shadow-lg backdrop-blur ${dark ? 'bg-[#232925]/85 text-emerald-300' : 'bg-white/90 text-emerald-800'}`}><Icon className="h-5 w-5" /></span>
+                  </div>
                   <h3 className={`mt-5 text-base font-semibold ${palette.text}`}>{title}</h3>
                   <p className={`mt-2 text-sm leading-6 ${palette.sub}`}>{text}</p>
                   <button type="button" onClick={onSignUp} className={`mt-5 inline-flex items-center gap-2 text-xs font-semibold ${dark ? 'text-emerald-300' : 'text-emerald-800'}`}>

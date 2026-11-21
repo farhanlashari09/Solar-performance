@@ -135,6 +135,12 @@ select:user-valid:not(:placeholder-shown) {
 .dashboard-feature-card {
   box-shadow: 0 1px 3px rgba(20, 35, 25, 0.04);
 }
+.dashboard-feature-image {
+  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dashboard-feature-card:hover .dashboard-feature-image {
+  transform: scale(1.06);
+}
 .dashboard-kicker {
   font-size: 0.65rem;
   font-weight: 700;
