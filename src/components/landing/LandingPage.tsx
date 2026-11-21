@@ -2,741 +2,477 @@ import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { Language } from '../../types';
 import {
-  Sun,
-  Moon,
-  Zap,
-  ShieldCheck,
-  TrendingUp,
-  Wrench,
+  Activity,
+  ArrowDown,
   ArrowRight,
-  CheckCircle2,
+  ArrowUpRight,
+  BatteryCharging,
+  Check,
   ChevronDown,
-  ChevronUp,
   Globe,
   LogIn,
-  UserPlus,
   Menu,
+  Moon,
+  ShieldCheck,
+  Sun,
   X,
-  Activity,
-  BarChart2,
-  Clock,
-  Mail,
+  Zap,
 } from 'lucide-react';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+const CURRENT_YEAR = new Date().getFullYear();
+
 interface LandingPageProps {
   onLogin: () => void;
   onSignUp: () => void;
 }
 
-// ─── Lang options ─────────────────────────────────────────────────────────────
 const LANG_OPTIONS: { code: Language; label: string; short: string }[] = [
-  { code: 'en',       label: 'English',    short: 'EN' },
+  { code: 'en', label: 'English', short: 'EN' },
   { code: 'ur-roman', label: 'Roman Urdu', short: 'UR' },
-  { code: 'ur',       label: 'اردو',       short: 'اردو' },
+  { code: 'ur', label: 'اردو', short: 'اردو' },
 ];
 
-// ─── LandingPage ─────────────────────────────────────────────────────────────
 export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) => {
   const { language, setLanguage, isRtl } = useLanguage();
-
-  const [dark,       setDark]       = useState(true);   // default: dark mode
+  const [dark, setDark] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [langOpen,   setLangOpen]   = useState(false);
-  const [openFaq,    setOpenFaq]    = useState<number | null>(0);
+  const [langOpen, setLangOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  // ── Translation helper ─────────────────────────────────────────────────────
   const t = (en: string, ur: string, roman: string) => {
-    if (language === 'ur')       return ur;
+    if (language === 'ur') return ur;
     if (language === 'ur-roman') return roman;
     return en;
   };
+  const currentLanguage = LANG_OPTIONS.find((option) => option.code === language) || LANG_OPTIONS[0];
 
-  const curLang = LANG_OPTIONS.find(l => l.code === language) || LANG_OPTIONS[0];
+  const theme = {
+    page: dark ? 'bg-[#f1f0e8] text-[#213127]' : 'bg-[#f8f8f3] text-[#213127]',
+    section: dark ? 'bg-[#f1f0e8] text-[#213127]' : 'bg-white text-[#213127]',
+  };
 
-  // ── Theme tokens ───────────────────────────────────────────────────────────
-const th = {
-  bg:          dark ? 'bg-[#10201c]' : 'bg-[#f7faf8]',
-  bgCard:      dark ? 'bg-[#182923]' : 'bg-white',
-  bgCardHover: dark ? 'hover:bg-[#20372f]' : 'hover:bg-[#eef7f1]',
-  bgSubtle:    dark ? 'bg-[#14241f]' : 'bg-[#edf4ef]',
-  bgInput:     dark ? 'bg-[#182923]' : 'bg-white',
-
-  border:      dark ? 'border-white/10' : 'border-[#dce8df]',
-  borderFocus: dark ? 'border-emerald-400/60' : 'border-emerald-600',
-
-  text:        dark ? 'text-[#f4f8f5]' : 'text-[#17251f]',
-  textSub:     dark ? 'text-[#d1ddd6]' : 'text-[#45554c]',
-  textMuted:   dark ? 'text-[#b8c9bf]' : 'text-[#627168]',
-  textLabel:   dark ? 'text-emerald-300' : 'text-emerald-800',
-
-  nav:         dark
-    ? 'bg-[#10201c]/95 border-white/10'
-    : 'bg-white/95 border-[#dce8df] shadow-sm',
-  navLink:     dark
-    ? 'text-white/85 hover:text-white'
-    : 'text-[#444444] hover:text-emerald-800',
-
-  card:        dark
-    ? 'bg-[#182923] border-white/10 hover:border-emerald-400/40'
-    : 'bg-white border-[#dce8df] shadow-sm hover:border-emerald-300 hover:shadow-lg',
-
-  faqClosed:   dark ? 'bg-[#182923] border-white/10' : 'bg-white border-[#dce8df] shadow-sm',
-  faqOpen:     dark ? 'bg-emerald-400/10 border-emerald-300/40' : 'bg-emerald-50 border-emerald-300 shadow-sm',
-  faqQ:        dark ? 'text-[#f4f8f5] hover:text-white' : 'text-[#17251f] hover:text-emerald-800',
-  faqQOpen:    dark ? 'text-emerald-200' : 'text-emerald-800',
-  faqA:        dark ? 'text-[#d1ddd6]' : 'text-[#45554c]',
-
-  footerBg:    dark
-    ? 'bg-[#0c1915] border-white/10 text-[#f4f8f5]'
-    : 'bg-[#edf4ef] border-[#dce8df] text-[#17251f]',
-
-  metricLabel: dark ? 'text-white/80' : 'text-[#555555]',
-  metricVal:   dark ? 'text-white' : 'text-[#111111]',
-  metricSub:   dark ? 'text-white/80' : 'text-[#555555]',
-
-  toggleBg:    dark
-    ? 'bg-[#182923] border-white/10 text-[#f4f8f5]'
-    : 'bg-white border-[#dce8df] text-[#17251f] shadow-sm',
-
-  stepNum:     dark ? 'text-white/15' : 'text-emerald-100',
-  stepCard:    dark
-    ? 'bg-[#182923] border-white/10 hover:border-emerald-400/40'
-    : 'bg-white border-[#dce8df] shadow-sm hover:border-emerald-300',
-};
-
-  // ── Reused RTL-aware class ─────────────────────────────────────────────────
-  const urduLH = isRtl ? 'leading-[2.4]' : '';
-  const urduP  = isRtl ? 'leading-[2.4]' : 'leading-relaxed';
-
-  // ── Data ──────────────────────────────────────────────────────────────────
   const features = [
     {
-      icon: <Zap className="w-5 h-5" />,
-      image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&q=80',
-      imageAlt: t('Solar panels monitored for faults', 'خرابیوں کے لیے مانیٹر کیے گئے سولر پینل', 'Faults ke liye monitor kiye gaye solar panels'),
-      title: t('AI Diagnostics',       'AI تشخیص',          'AI Diagnostics'),
-      desc:  t('Pinpoints faults — shading, drift, panel damage — before they cut your yield.',
-               'سائے، ڈرفٹ یا پینل نقصان کی فوری نشاندہی۔',
-               'Shading, drift aur panel nuqsan ki fehri nishaan-dehi.'),
+      label: t('01 / Insight', '۰۱ / بصیرت', '01 / Insight'),
+      title: t('Know what your system is doing.', 'اپنے سسٹم کی کارکردگی جانیں۔', 'Apne system ki performance jaanain.'),
+      body: t(
+        'Clear production and health signals help you spot changes early.',
+        'پیداوار اور صحت کی واضح معلومات تبدیلی جلد پہچاننے میں مدد دیتی ہیں۔',
+        'Production aur health ki wazeh maloomat tabdeeli jaldi pakarne mein madad deti hain.'
+      ),
+      icon: <Activity className="h-5 w-5" />,
+      image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1100&q=85',
+      alt: t('Solar panels in sunlight', 'دھوپ میں سولر پینل', 'Dhoop mein solar panels'),
     },
     {
-      icon: <Activity className="w-5 h-5" />,
-      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
-      imageAlt: t('Live solar performance dashboard', 'سولر کارکردگی کا لائیو ڈیش بورڈ', 'Solar performance ka live dashboard'),
-      title: t('Live Telemetry',       'لائیو ٹیلی میٹری',  'Live Telemetry'),
-      desc:  t('String-level power and voltage, refreshed every 30 seconds.',
-               'ہر 30 سیکنڈ میں سٹرنگ لیول وولٹیج اور پاور ریڈنگ۔',
-               'Har 30 seconds mein string-level voltage aur power reading.'),
+      label: t('02 / Protection', '۰۲ / تحفظ', '02 / Protection'),
+      title: t('Catch issues before they grow.', 'مسئلہ بڑھنے سے پہلے پہچانیں۔', 'Masla barhne se pehle pehchanain.'),
+      body: t(
+        'Practical alerts and guided diagnostics turn system data into a next step.',
+        'مفید الرٹس اور تشخیص، سسٹم کے ڈیٹا کو اگلے قدم میں بدلتے ہیں۔',
+        'Alerts aur diagnostics system data ko aglay qadam mein badalte hain.'
+      ),
+      icon: <ShieldCheck className="h-5 w-5" />,
+      image: 'https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=1100&q=85',
+      alt: t('Solar installation viewed from above', 'اوپر سے سولر سسٹم کا منظر', 'Solar installation ka aerial view'),
     },
     {
-      icon: <ShieldCheck className="w-5 h-5" />,
-      image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=800&q=80',
-      imageAlt: t('Energy billing and net-metering review', 'توانائی کے بل اور نیٹ میٹرنگ کا جائزہ', 'Energy billing aur net-metering ka jaiza'),
-      title: t('Net-Metering Audit',   'نیٹ میٹرنگ آڈٹ',   'Net-Metering Audit'),
-      desc:  t('Cross-checks exported units against WAPDA / LESCO billing automatically.',
-               'بجلی کے بل کا خودکار آڈٹ۔',
-               'Bill ka khudkaar audit.'),
-    },
-    {
-      icon: <Wrench className="w-5 h-5" />,
-      image: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?auto=format&fit=crop&w=800&q=80',
-      imageAlt: t('Electrician inspecting a solar system', 'سولر سسٹم کا معائنہ کرتے ہوئے الیکٹریشن', 'Solar system ka muaina karte hue electrician'),
-      title: t('Certified Technicians','تصدیق شدہ ٹیکنیشنز', 'Certified Technicians'),
-      desc:  t('Book a vetted solar engineer in your city — upfront pricing, no hidden fees.',
-               'اپنے شہر کے تصدیق شدہ انجینئر کی بکنگ — شفاف قیمت۔',
-               'Apne shehar ke verified engineer ki booking — shuruaat se clear rate.'),
+      label: t('03 / Support', '۰۳ / معاونت', '03 / Support'),
+      title: t('Get the right help, simply.', 'درست مدد آسانی سے حاصل کریں۔', 'Sahi madad asani se hasil karein.'),
+      body: t(
+        'Find qualified technicians and get solar-specific guidance in your language.',
+        'ماہر ٹیکنیشن تلاش کریں اور اپنی زبان میں سولر رہنمائی حاصل کریں۔',
+        'Maher technician dhoondein aur apni zaban mein solar rehnumai hasil karein.'
+      ),
+      icon: <BatteryCharging className="h-5 w-5" />,
+      image: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?auto=format&fit=crop&w=1100&q=85',
+      alt: t('Technician working on an energy system', 'توانائی کے نظام پر کام کرتا ٹیکنیشن', 'Energy system par kaam karta technician'),
     },
   ];
 
   const faqs = [
     {
-      q: t('Which inverters are supported?',
-           'کون سے انورٹر سپورٹڈ ہیں؟',
-           'Kon se inverters supported hain?'),
-      a: t('Growatt, Huawei, Sungrow, Fronius, Sofar, Inverex, and Knox — via existing WiFi datalogger, no extra hardware.',
-           'گروواٹ، ہواوے، سن گرو، فرونیوس، سوفر، انورٹیکس اور نوکس — موجودہ وائی فائی ڈیٹا لاگر کے ذریعے، کوئی اضافی ہارڈ ویئر نہیں۔',
-           'Growatt, Huawei, Sungrow, Fronius, Sofar, Inverex, aur Knox — WiFi datalogger se, koi extra hardware nahi.'),
+      question: t('Which solar inverters can I monitor?', 'کون سے سولر انورٹر مانیٹر کیے جا سکتے ہیں؟', 'Kin solar inverters ko monitor kar sakta hoon?'),
+      answer: t(
+        'SolarCare supports common inverter brands and connection types. Your available data depends on your inverter and its monitoring connection.',
+        'SolarCare عام انورٹر برانڈز اور کنکشن کی اقسام کو سپورٹ کرتا ہے۔ دستیاب ڈیٹا آپ کے انورٹر اور کنکشن پر منحصر ہے۔',
+        'SolarCare aam inverter brands aur connection types ko support karta hai. Data aap ke inverter aur connection par depend karta hai.'
+      ),
     },
     {
-      q: t('Is there a free plan?',
-           'کیا مفت پلان دستیاب ہے؟',
-           'Kya free plan available hai?'),
-      a: t('Yes. Single-system residential owners get live telemetry and fault alerts at no cost.',
-           'جی ہاں۔ ایک سسٹم والے صارفین کو لائیو ٹیلی میٹری اور الرٹس مفت ملتے ہیں۔',
-           'Ji haan. Single system ke maalik ko live telemetry aur alerts bilkul free milte hain.'),
+      question: t('Can I get help with an inverter warning?', 'کیا انورٹر وارننگ پر مدد مل سکتی ہے؟', 'Inverter warning par madad mil sakti hai?'),
+      answer: t(
+        'Yes. Share the inverter brand and exact warning shown on its display. For electrical faults, do not open equipment or touch wiring—contact a qualified technician.',
+        'جی ہاں۔ انورٹر کا برانڈ اور اسکرین پر دکھائی دینے والی وارننگ بتائیں۔ برقی خرابی کی صورت میں سامان نہ کھولیں اور تاروں کو نہ چھوئیں—ماہر ٹیکنیشن سے رابطہ کریں۔',
+        'Ji haan. Inverter brand aur screen par dikhne wali warning share karein. Electrical fault mein equipment na kholein—qualified technician se rabta karein.'
+      ),
     },
     {
-      q: t('How accurate is AI fault detection?',
-           'AI تشخیص کتنی درست ہے؟',
-           'AI fault detection kitni accurate hai?'),
-      a: t('The diagnostic engine compares irradiance, DC input, and historical output before suggesting a likely cause.',
-           'تشخیص کا نظام نتیجه دینے سے پہلے تابکاری، ڈی سی ان پٹ اور گزشتہ پیداوار کا موازنہ کرتا ہے۔',
-           'Diagnostic engine irradiance, DC input aur pichli output ka mawazna kar ke possible wajah batata hai.'),
-    },
-    {
-      q: t('How do I book a technician?',
-           'ٹیکنیشن کیسے بک کریں؟',
-           'Technician kaise book karein?'),
-      a: t('Log in → Technicians tab → pick a rated engineer near you → one-tap booking with upfront rate.',
-           'لاگ ان → ٹیکنیشنز ٹیب → قریبی انجینئر → ایک ٹیپ بکنگ۔',
-           'Log in → Technicians tab → nearby engineer → ek tap booking.'),
+      question: t('Is my solar data updated in real time?', 'کیا سولر ڈیٹا فوری اپ ڈیٹ ہوتا ہے؟', 'Kya solar data foran update hota hai?'),
+      answer: t(
+        'Updates depend on the connection configured for your system. The dashboard shows the latest readings available to SolarCare.',
+        'اپ ڈیٹس آپ کے سسٹم کے کنکشن پر منحصر ہیں۔ ڈیش بورڈ SolarCare کو دستیاب تازہ ترین ریڈنگز دکھاتا ہے۔',
+        'Updates aap ke system connection par depend karti hain. Dashboard latest available readings dikhata hai.'
+      ),
     },
   ];
 
-  // ═════════════════════════════════════════════════════════════════════════
-  //  RENDER
-  // ═════════════════════════════════════════════════════════════════════════
+  const navigation = [
+    { href: '#platform', label: t('Platform', 'پلیٹ فارم', 'Platform') },
+    { href: '#approach', label: t('How it works', 'طریقہ کار', 'Tareeqa-e-kaar') },
+    { href: '#support', label: t('Support', 'معاونت', 'Support') },
+  ];
+
   return (
-    <div className={`min-h-screen font-sans transition-colors duration-300 ${th.bg} ${th.text} selection:bg-emerald-500/30 ${isRtl ? 'font-urdu' : ''}`}>
+    <div className={`min-h-screen ${theme.page} ${isRtl ? 'font-urdu' : ''}`}>
+      <header className="relative z-30 px-3 pt-3 sm:px-5 sm:pt-5">
+        <div className={`landing-frame relative min-h-[min(760px,calc(100svh-24px))] overflow-hidden rounded-[24px] sm:rounded-[32px] ${dark ? 'landing-frame-dark' : 'landing-frame-light'}`}>
+          <img
+            src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2400&q=90"
+            alt=""
+            aria-hidden="true"
+            fetchPriority="high"
+            className="landing-hero-image absolute inset-0 h-full w-full object-cover object-center"
+          />
+          <div className={`landing-hero-shade absolute inset-0 ${dark ? 'landing-hero-shade-dark' : 'landing-hero-shade-light'}`} />
 
-      {/* ══════════════════════════════════════════════════════════
-          NAVBAR
-      ══════════════════════════════════════════════════════════ */}
-      <header className={`sticky top-0 z-50 backdrop-blur-md border-b transition-colors duration-300 ${th.nav}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          <nav className="relative z-20 flex items-center justify-between gap-4 px-5 py-5 sm:px-9 sm:py-7 lg:px-12">
+            <a href="#" className="flex items-center gap-2.5 text-white" aria-label="SolarCare home">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/35 bg-white/10 backdrop-blur-md">
+                <Sun className="h-4 w-4 text-[#d9e8a7]" />
+              </span>
+              <span className="text-sm font-semibold tracking-[0.12em]">SOLARCARE</span>
+            </a>
 
-          {/* Logo */}
-          <a href="#" className="flex items-center gap-3 shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-500 flex items-center justify-center shadow-emerald-sm">
-              <Sun className="w-5 h-5 text-solar animate-spin-slow" />
+            <div className="hidden items-center gap-8 rounded-full border border-white/20 bg-black/10 px-6 py-3 text-xs text-white/90 backdrop-blur-md md:flex">
+              {navigation.map((item) => (
+                <a key={item.href} href={item.href} className="landing-nav-link">{item.label}</a>
+              ))}
             </div>
-            <span className={`font-extrabold text-xl tracking-normal ${th.text}`}>
-              Solar <span className="text-emerald-500 font-extrabold">Care</span>
-            </span>
-          </a>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
-            {[
-              { href: '#features',     label: t('Features',    'خصوصیات',  'Features')    },
-              { href: '#how-it-works', label: t('How It Works','طریقہ کار', 'How It Works') },
-              { href: '#faq',          label: t('FAQ',         'سوالات',   'FAQ')          },
-            ].map(item => (
-              <a key={item.href} href={item.href} className={`transition-colors duration-150 ${th.navLink}`}>
-                {item.label}
-              </a>
-            ))}
+            <div className="hidden items-center gap-2 sm:flex">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setLangOpen((open) => !open)}
+                  aria-label="Choose language"
+                  className="flex items-center gap-1.5 rounded-full border border-white/25 bg-black/10 px-3 py-2 text-xs text-white backdrop-blur-md transition hover:bg-white/15"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  {currentLanguage.short}
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                {langOpen && (
+                  <div className="absolute right-0 mt-2 w-40 overflow-hidden rounded-2xl border border-white/15 bg-[#1d2b20]/95 p-1.5 text-white shadow-2xl backdrop-blur-xl">
+                    {LANG_OPTIONS.map((option) => (
+                      <button
+                        key={option.code}
+                        type="button"
+                        onClick={() => { setLanguage(option.code); setLangOpen(false); }}
+                        className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-xs transition hover:bg-white/10"
+                      >
+                        {option.label}
+                        {language === option.code && <Check className="h-3.5 w-3.5 text-[#cce09e]" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setDark((value) => !value)}
+                aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-black/10 text-white backdrop-blur-md transition hover:bg-white/15"
+              >
+                {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
+              <button type="button" onClick={onLogin} className="landing-glass-button hidden lg:inline-flex">
+                <LogIn className="h-3.5 w-3.5" />
+                {t('Log in', 'لاگ ان', 'Log in')}
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setMobileOpen((open) => !open)}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-black/10 text-white backdrop-blur-md sm:hidden"
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            >
+              {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
           </nav>
 
-          {/* Right: controls */}
-          <div className="flex items-center gap-2">
-
-            <a
-              href="#contact"
-              className={`hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 ${
-                dark
-                  ? 'text-emerald-200 border border-emerald-300/20 hover:bg-emerald-300/10 hover:text-white'
-                  : 'text-emerald-800 border border-emerald-700/20 hover:bg-emerald-50 hover:text-emerald-900'
-              }`}
-            >
-              <Mail className="w-4 h-4" />
-              {t('Contact', 'رابطہ', 'Contact')}
-            </a>
-
-            {/* Dark / Light Toggle */}
-            <button
-              onClick={() => setDark(d => !d)}
-              title={dark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-200 cursor-pointer ${th.toggleBg}`}
-            >
-              {dark
-                ? <><Sun  className="w-3.5 h-3.5 text-solar" /><span className="hidden sm:inline">{t('Light', 'لائٹ', 'Light')}</span></>
-                : <><Moon className="w-3.5 h-3.5 text-emerald-600" /><span className="hidden sm:inline">{t('Dark', 'ڈارک', 'Dark')}</span></>
-              }
-            </button>
-
-            {/* Language Selector */}
-            <div className="relative">
-              <button
-                onClick={() => setLangOpen(o => !o)}
-                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${th.toggleBg}`}
-              >
-                <Globe className="w-3.5 h-3.5" />
-                {curLang.short}
-              </button>
-              {langOpen && (
-                <div className={`absolute right-0 mt-2 w-36 rounded-xl shadow-xl border py-1 z-50 ${th.bgCard} ${th.border}`}>
-                  {LANG_OPTIONS.map(opt => (
-                    <button
-                      key={opt.code}
-                      onClick={() => { setLanguage(opt.code); setLangOpen(false); }}
-                      className={`w-full text-left px-4 py-2 text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                        language === opt.code
-                          ? dark ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'bg-emerald-50 text-emerald-700 font-semibold'
-                          : dark ? 'text-white/75 hover:bg-white/5' : 'text-slate-500 hover:bg-slate-50'
-                      }`}
-                    >
-                      {opt.label}
-                      {language === opt.code && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* LOG IN */}
-            <button
-              onClick={onLogin}
-              className={`hidden sm:flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-xl border transition-all duration-200 cursor-pointer ${
-                dark
-                  ? 'text-white/80 border-white/10 hover:bg-white/[0.07] hover:text-white hover:border-white/20'
-                  : 'text-slate-700 border-slate-200 hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50'
-              }`}
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              {t('Log In', 'لاگ ان', 'Log In')}
-            </button>
-
-            {/* SIGN UP */}
-            <button
-              onClick={onSignUp}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-emerald-sm transition-all duration-200 cursor-pointer"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              {t('Sign Up', 'سائن اپ', 'Sign Up')}
-            </button>
-
-            {/* Mobile hamburger */}
-            <button
-              onClick={() => setMobileOpen(o => !o)}
-              className={`md:hidden p-2 rounded-xl transition-colors cursor-pointer ${th.toggleBg}`}
-            >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile drawer */}
-        {mobileOpen && (
-          <div className={`md:hidden border-t px-4 py-5 space-y-4 transition-colors duration-300 ${th.bgCard} ${th.border}`}>
-            <nav className={`flex flex-col gap-3 text-sm font-medium border-b pb-4 ${th.border}`}>
-              {[
-                { href: '#features',     label: t('Features',    'خصوصیات',  'Features')    },
-                { href: '#how-it-works', label: t('How It Works','طریقہ کار', 'How It Works') },
-                { href: '#faq',          label: t('FAQ',         'سوالات',   'FAQ')          },
-                { href: '#contact',      label: t('Contact',     'رابطہ',    'Contact')      },
-              ].map(item => (
-                <a key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className={th.navLink}>
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-            <div className="flex gap-1 pb-1">
-              {LANG_OPTIONS.map(opt => (
-                <button
-                  key={opt.code}
-                  onClick={() => setLanguage(opt.code)}
-                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg cursor-pointer transition-colors ${
-                    language === opt.code
-                      ? 'bg-emerald-500/20 text-emerald-400'
-                      : dark ? 'text-white/75 hover:bg-white/5' : 'text-slate-500 hover:bg-slate-50'
-                  }`}
-                >
-                  {opt.short}
-                </button>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => { setMobileOpen(false); onLogin(); }}
-                className={`py-2.5 rounded-xl border text-sm font-semibold cursor-pointer transition-colors ${
-                  dark ? 'border-white/10 text-white/80 hover:bg-white/5' : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                }`}>
-                {t('Log In', 'لاگ ان', 'Log In')}
-              </button>
-              <button onClick={() => { setMobileOpen(false); onSignUp(); }}
-                className="py-2.5 rounded-xl bg-emerald-600 text-sm font-semibold text-white cursor-pointer hover:bg-emerald-500 transition-colors">
-                {t('Sign Up', 'سائن اپ', 'Sign Up')}
-              </button>
-            </div>
-          </div>
-        )}
-      </header>
-
-      {/* ══════════════════════════════════════════════════════════
-          HERO
-      ══════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden pt-24 pb-28 sm:pt-32 sm:pb-36">
-
-        <img
-          src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2000&q=85"
-          alt=""
-          aria-hidden="true"
-          fetchPriority="high"
-          className="absolute inset-0 h-full w-full object-cover object-center"
-        />
-        <div
-          aria-hidden="true"
-          className={`absolute inset-0 ${dark ? 'bg-black/40' : 'bg-white/45'}`}
-        />
-
-       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center solar-enter">
-
-          {/* Badge */}
-          <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-8 border ${
-            dark
-              ? 'bg-white/[0.05] border-white/[0.10] text-emerald-300'
-              : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-          }`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 solar-pulse" />
-            {t('Solar Monitoring & After-Sales Platform', 'سولر مانیٹرنگ اور آفٹر سیلز پلیٹ فارم', 'Solar Monitoring & After-Sales Platform')}
-          </div>
-
-          {/* Headline */}
-          <h1 className={`hero-text-shadow text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-5 ${urduLH} ${th.text}`}
-            style={{ lineHeight: isRtl ? '1.7' : '1.1' }}>
-            {t('Your Solar System,', 'آپ کا سولر سسٹم،', 'Aapka Solar System,')}
-            <br />
-            <span className={dark ? 'shimmer-text' : 'shimmer-text-light'}>
-              {t('Always at Peak.', 'ہمیشہ بہترین کارکردگی پر۔', 'Hamesha Best Performance Par.')}
-            </span>
-          </h1>
-
-          {/* Subline — 1 sentence */}
-          <p className={`hero-text-shadow solar-reveal-delay mx-auto max-w-xl text-base sm:text-lg mb-10 font-medium ${dark ? 'text-white' : 'text-slate-900'} ${urduP}`}>
-            {t(
-              'Real-time AI fault detection, certified technician booking, and net-metering audit — in one platform.',
-              'ریئل ٹائم AI تشخیص، تصدیق شدہ ٹیکنیشن بکنگ، اور نیٹ میٹرنگ آڈٹ — ایک پلیٹ فارم میں۔',
-              'Real-time AI fault detection, certified technician booking, aur net-metering audit — ek platform mein.'
-            )}
-          </p>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              onClick={onSignUp}
-              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer hover:-translate-y-0.5 shadow-emerald-lg ${
-                dark
-                  ? 'text-[#10201c] bg-[#b8f7d1] hover:bg-white'
-                  : 'text-white bg-emerald-700 hover:bg-emerald-900'
-              }`}
-            >
-              {t('Get Started Free', 'مفت شروع کریں', 'Get Started Free')}
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={onLogin}
-              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm border transition-all duration-200 cursor-pointer hover:-translate-y-0.5 ${
-                dark
-                  ? 'text-white/90 bg-white/[0.05] border-white/10 hover:bg-white/[0.09] hover:text-white'
-                  : 'text-slate-700 bg-white border-slate-200 hover:border-emerald-300 hover:text-emerald-700'
-              }`}
-            >
-              {t('Log In to Account', 'اکاؤنٹ میں لاگ ان', 'Account mein Log In')}
-            </button>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════
-          FEATURES
-      ══════════════════════════════════════════════════════════ */}
-      <section id="features" className="py-24 sm:py-32 scroll-mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          <div className="text-center mb-14">
-            <span className={`text-xs font-bold uppercase tracking-widest mb-3 block ${th.textLabel}`}>
-              {t('Core Capabilities', 'بنیادی صلاحیتیں', 'Core Capabilities')}
-            </span>
-            <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${th.text} ${urduLH}`}>
-              {t('Built for Solar Performance.', 'سولر کارکردگی کے لیے بنایا گیا۔', 'Solar Performance ke liye banaya gaya.')}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {features.map((f, i) => (
-              <div
-                key={i}
-                style={{ animationDelay: `${i * 100}ms` }}
-                className={`solar-card solar-reveal landing-feature-card ${dark ? 'landing-feature-card-dark' : 'landing-feature-card-light'} group overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 cursor-default ${th.card}`}
-              >
-                <div className="feature-image-wrap relative h-36 overflow-hidden">
-                  <img
-                    src={f.image}
-                    alt={f.imageAlt}
-                    loading="lazy"
-                    className="feature-image h-full w-full object-cover"
-                  />
-                  <div className={`absolute inset-0 transition-colors duration-300 ${
-                    dark
-                      ? 'bg-[#10201c]/15 group-hover:bg-emerald-950/25'
-                      : 'bg-white/10 group-hover:bg-emerald-400/15'
-                  }`} />
-                  <div className={`absolute bottom-3 left-4 flex h-10 w-10 items-center justify-center rounded-xl border shadow-lg ${
-                    dark
-                      ? 'border-emerald-200/20 bg-[#183a2e]/90 text-emerald-200'
-                      : 'border-white/80 bg-white/95 text-emerald-700'
-                  }`}>
-                    {f.icon}
+          {mobileOpen && (
+            <div className="absolute inset-x-4 top-[76px] z-30 rounded-2xl border border-white/20 bg-[#1d2b20]/95 p-4 text-white shadow-2xl backdrop-blur-xl sm:hidden">
+              <nav className="grid gap-1">
+                {navigation.map((item) => (
+                  <a key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-2.5 text-sm hover:bg-white/10">
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
+                <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/15 pt-3">
+                  <div className="flex flex-wrap gap-1">
+                    {LANG_OPTIONS.map((option) => (
+                      <button
+                        key={option.code}
+                        type="button"
+                        onClick={() => setLanguage(option.code)}
+                        aria-pressed={language === option.code}
+                        className={`rounded-full px-2.5 py-1.5 text-[10px] transition ${
+                          language === option.code ? 'bg-white/20 text-white' : 'text-white/65 hover:bg-white/10 hover:text-white'
+                        }`}
+                      >
+                        {option.short}
+                      </button>
+                    ))}
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setDark((value) => !value)}
+                    aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/20 text-white"
+                  >
+                    {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+                  </button>
                 </div>
-                <div className="p-6">
-                  <h3 className={`text-base font-bold mb-2 ${th.text}`}>{f.title}</h3>
-                  <p className={`text-sm ${th.textSub} ${urduP}`}>{f.desc}</p>
-                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => { setMobileOpen(false); onLogin(); }} className="landing-glass-button justify-center">
+                  {t('Log in', 'لاگ ان', 'Log in')}
+                </button>
+                <button type="button" onClick={() => { setMobileOpen(false); onSignUp(); }} className="landing-light-button justify-center">
+                  {t('Get started', 'شروع کریں', 'Shuru karein')}
+                </button>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </div>
+          )}
 
-      {/* ══════════════════════════════════════════════════════════
-          HOW IT WORKS
-      ══════════════════════════════════════════════════════════ */}
-      <section id="how-it-works" className={`py-24 sm:py-32 border-y transition-colors duration-300 scroll-mt-16 ${dark ? 'bg-[#14241f] border-white/10' : 'bg-[#edf4ef] border-[#dce8df]'}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          <div className="text-center mb-14">
-            <span className={`text-xs font-bold uppercase tracking-widest mb-3 block ${th.textLabel}`}>
-              {t('Getting Started', 'شروعات', 'Getting Started')}
-            </span>
-            <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${th.text} ${urduLH}`}>
-              {t('Three Steps. Zero Hardware.', 'تین مراحل۔ کوئی ہارڈ ویئر نہیں۔', 'Teen Marahil. Koi Hardware Nahi.')}
-            </h2>
+          <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center overflow-hidden">
+            <span className="landing-ghost-word select-none">SOLAR</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                step: '01',
-                icon: <UserPlus className="w-5 h-5" />,
-                title: t('Create Account',         'اکاؤنٹ بنائیں',       'Account Banayen'),
-                desc:  t('Sign up with your email in under 60 seconds.',
-                         '60 سیکنڈ میں ای میل سے سائن اپ کریں۔',
-                         '60 seconds mein email se sign up karein.'),
-              },
-              {
-                step: '02',
-                icon: <BarChart2 className="w-5 h-5" />,
-                title: t('Connect Your Inverter',  'انورٹر کنیکٹ کریں',   'Inverter Connect Karein'),
-                desc:  t('Enter your inverter WiFi credentials — we do the rest.',
-                         'وائی فائی اسناد درج کریں — باقی ہم کریں گے۔',
-                         'WiFi credentials darj karein — baqi hum karein ge.'),
-              },
-              {
-                step: '03',
-                icon: <TrendingUp className="w-5 h-5" />,
-                title: t('Monitor & Act',           'مانیٹر اور عمل کریں', 'Monitor aur Amal Karein'),
-                desc:  t('Live data, AI alerts, and technician booking — from one dashboard.',
-                         'لائیو ڈیٹا، AI الرٹس اور بکنگ — سب ایک ڈیش بورڈ میں۔',
-                         'Live data, AI alerts aur booking — sab ek dashboard mein.'),
-              },
-            ].map((step, i) => (
-              <div key={i} style={{ animationDelay: `${i * 100}ms` }} className={`solar-card solar-reveal relative p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 group ${th.stepCard}`}>
-                <div className={`absolute top-5 right-6 text-6xl font-black select-none transition-colors ${th.stepNum}`}>
-                  {step.step}
-                </div>
-                <div className="w-11 h-11 rounded-xl bg-emerald-600 flex items-center justify-center text-white mb-5">
-                  {step.icon}
-                </div>
-                <h3 className={`text-lg font-bold mb-2 ${th.text}`}>{step.title}</h3>
-                <p className={`text-sm ${th.textSub} ${urduP}`}>{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════
-          LIVE METRICS PREVIEW
-      ══════════════════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-
-            {/* Left — copy */}
-            <div>
-              <span className={`text-xs font-bold uppercase tracking-widest mb-3 block ${th.textLabel}`}>
-                {t('Live Dashboard', 'لائیو ڈیش بورڈ', 'Live Dashboard')}
-              </span>
-              <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight mb-4 ${th.text} ${urduLH}`}>
-                {t('See every watt. Catch every fault.', 'ہر واٹ دیکھیں۔ ہر خرابی پکڑیں۔', 'Har watt dekhein. Har kharabi pakrein.')}
-              </h2>
-              <p className={`text-base mb-8 ${th.textSub} ${urduP}`}>
+          <div className="relative z-10 flex min-h-[min(660px,calc(100svh-100px))] flex-col justify-end px-6 pb-8 pt-20 sm:px-10 sm:pb-10 lg:min-h-[650px] lg:flex-row lg:items-end lg:justify-between lg:px-14 lg:pb-14">
+            <div className="landing-hero-copy max-w-[650px]">
+              <p className="landing-eyebrow mb-4 text-white/80">
+                <span className="landing-live-dot" />
+                {t('A clearer view of your energy', 'آپ کی توانائی کی واضح تصویر', 'Aap ki energy ki wazeh tasveer')}
+              </p>
+              <h1 className="landing-display-title max-w-3xl text-white">
+                {t('Make every ray', 'ہر کرن سے', 'Har kiran se')}
+                <br />
+                <span>{t('work harder.', 'زیادہ فائدہ اٹھائیں۔', 'zyada faida uthayen.')}</span>
+              </h1>
+              <p className="mt-5 max-w-lg text-sm leading-7 text-white/80 sm:text-base">
                 {t(
-                  'Your dashboard refreshes every 30 seconds with string-level voltage, inverter temperature, and yield vs. forecast.',
-                  'ہر 30 سیکنڈ میں ڈیش بورڈ اپ ڈیٹ ہوتا ہے — وولٹیج، درجہ حرارت اور پیداوار کا موازنہ۔',
-                  'Har 30 seconds mein dashboard update hota hai — voltage, temperature aur yield comparison.'
+                  'Understand your solar performance, get expert guidance, and keep your system running at its best.',
+                  'اپنے سولر سسٹم کی کارکردگی سمجھیں، ماہر رہنمائی حاصل کریں، اور اسے بہترین حالت میں رکھیں۔',
+                  'Solar system ki performance samjhein, expert rehnumai lein, aur use behtareen halat mein rakhein.'
                 )}
               </p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  t('String-level power & voltage',    'سٹرنگ لیول پاور اور وولٹیج',   'String-level power & voltage'),
-                  t('Inverter temperature monitoring', 'انورٹر درجہ حرارت مانیٹرنگ', 'Inverter temperature monitoring'),
-                  t('Daily & monthly yield tracking',  'روزانہ اور ماہانہ پیداوار',   'Daily & monthly yield tracking'),
-                  t('Push alerts on anomalies',        'فوری پش الرٹس',               'Fauri push alerts'),
-                ].map((item, i) => (
-                  <li key={i} className={`flex items-start gap-3 text-sm ${th.textSub} ${urduLH}`}>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                    {item}
-                  </li>
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <button type="button" onClick={onSignUp} className="landing-light-button">
+                  {t('Get started', 'شروع کریں', 'Shuru karein')}
+                  <ArrowUpRight className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={onLogin} className="landing-glass-button">
+                  <LogIn className="h-3.5 w-3.5" />
+                  {t('Log in to your account', 'اپنے اکاؤنٹ میں لاگ ان', 'Apne account mein log in')}
+                </button>
+              </div>
+            </div>
+
+            <div className="landing-energy-card mt-10 w-full max-w-[330px] self-end rounded-[22px] border border-white/25 bg-[#182319]/45 p-5 text-white shadow-2xl backdrop-blur-xl sm:p-6 lg:mb-1 lg:ml-8 lg:mt-0">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="landing-eyebrow text-white/65">{t('Your energy, live', 'آپ کی توانائی، لائیو', 'Aap ki energy, live')}</p>
+                  <p className="mt-3 text-3xl font-medium tracking-tight">8.42 <span className="text-base text-white/70">kW</span></p>
+                </div>
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[#d9e8a7]">
+                  <Zap className="h-4 w-4" />
+                </span>
+              </div>
+              <div className="mt-5 flex items-end gap-1.5" aria-label="Illustrative daily production trend">
+                {[30, 42, 34, 58, 46, 72, 53, 84, 64, 100, 74, 91, 61, 76, 46, 69, 39, 55, 33, 48, 28, 40, 20, 32].map((height, index) => (
+                  <span
+                    key={index}
+                    className={`landing-chart-bar ${index > 18 ? 'opacity-40' : ''}`}
+                    style={{ height: `${height}%`, animationDelay: `${index * 35}ms` }}
+                  />
                 ))}
-              </ul>
-              <button
-                onClick={onSignUp}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white bg-emerald-600 hover:bg-emerald-500 shadow-emerald-md transition-all duration-200 cursor-pointer hover:-translate-y-0.5"
-              >
-                {t('Start Monitoring', 'مانیٹرنگ شروع کریں', 'Monitoring Shuru Karein')}
-                <ArrowRight className="w-4 h-4" />
+              </div>
+              <div className="mt-3 flex items-center justify-between border-t border-white/15 pt-3 text-xs">
+                <span className="text-white/65">{t("Today's production", 'آج کی پیداوار', 'Aaj ki production')}</span>
+                <span className="font-medium text-[#d9e8a7]">44.1 kWh <span className="text-white/60">↗</span></span>
+              </div>
+              <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.16em] text-white/45">
+                {t('Illustrative system preview', 'نمونہ سسٹم پیش منظر', 'Misaali system preview')}
+              </p>
+            </div>
+          </div>
+
+          <a href="#platform" className="absolute bottom-5 left-1/2 z-10 hidden -translate-x-1/2 items-center gap-2 font-mono text-[9px] uppercase tracking-[0.2em] text-white/70 transition hover:text-white lg:flex">
+            {t('Scroll to explore', 'مزید دیکھیں', 'Mazeed dekhein')}
+            <ArrowDown className="h-3 w-3" />
+          </a>
+        </div>
+      </header>
+
+      <main>
+        <section className={`border-b border-[#dfe3d8] px-5 py-7 sm:px-10 lg:px-16 ${theme.section}`}>
+          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 md:grid-cols-4 md:gap-10">
+            {[
+              { value: '01', label: t('One clear dashboard', 'ایک واضح ڈیش بورڈ', 'Aik wazeh dashboard') },
+              { value: '24/7', label: t('System visibility', 'سسٹم کی نگرانی', 'System ki nigraani') },
+              { value: 'AI', label: t('Guided diagnostics', 'AI تشخیص', 'AI tashkhees') },
+              { value: 'LOCAL', label: t('Expert support', 'ماہر معاونت', 'Expert support') },
+            ].map((item) => (
+              <div key={item.value} className="flex items-center gap-3">
+                <span className="font-mono text-sm text-[#527449]">{item.value}</span>
+                <span className="text-xs text-[#68766b] sm:text-sm">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="platform" className={`px-5 py-20 sm:px-10 sm:py-28 lg:px-16 ${theme.section}`}>
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-12 grid gap-5 md:grid-cols-[1fr_0.7fr] md:items-end">
+              <div>
+                <p className="landing-eyebrow text-[#68835c]">{t('A better way to manage solar', 'سولر مینجمنٹ کا بہتر طریقہ', 'Solar management ka behtar tareeqa')}</p>
+                <h2 className="landing-section-title mt-4 max-w-2xl">
+                  {t('Energy insight, without the noise.', 'توانائی کی سمجھ، غیر ضروری پیچیدگی کے بغیر۔', 'Energy insight, baghair uljhan ke.')}
+                </h2>
+              </div>
+              <p className="max-w-md text-sm leading-7 text-[#68766b] md:justify-self-end">
+                {t(
+                  'The tools you need to understand performance, care for your system, and find trusted support.',
+                  'کارکردگی سمجھنے، سسٹم کی دیکھ بھال اور قابل اعتماد مدد کے لیے ضروری ٹولز۔',
+                  'Performance samajhne, system ki dekh bhaal aur bharosemand madad ke tools.'
+                )}
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {features.map((feature, index) => (
+                <article key={feature.label} className="landing-editorial-card group overflow-hidden rounded-[22px] border border-[#dfe3d8] bg-white">
+                  <div className="relative h-56 overflow-hidden">
+                    <img src={feature.image} alt={feature.alt} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1c2a1c]/55 to-transparent" />
+                    <span className="absolute left-5 top-5 flex h-10 w-10 items-center justify-center rounded-full border border-white/35 bg-white/15 text-white backdrop-blur-md">
+                      {feature.icon}
+                    </span>
+                    <span className="absolute bottom-5 left-5 font-mono text-[10px] uppercase tracking-[0.16em] text-white/80">{feature.label}</span>
+                    {index === 0 && <span className="absolute bottom-5 right-5 h-2 w-2 rounded-full bg-[#d9e8a7] shadow-[0_0_16px_4px_rgba(217,232,167,0.55)]" />}
+                  </div>
+                  <div className="p-6 sm:p-7">
+                    <h3 className="font-display text-xl leading-snug text-[#26362d]">{feature.title}</h3>
+                    <p className="mt-3 text-sm leading-6 text-[#68766b]">{feature.body}</p>
+                    <a href="#support" className="mt-5 inline-flex items-center gap-2 text-xs font-semibold text-[#527449] transition hover:gap-3">
+                      {t('Explore the platform', 'پلیٹ فارم دیکھیں', 'Platform dekhein')}
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="approach" className="relative overflow-hidden bg-[#26392b] px-5 py-20 text-white sm:px-10 sm:py-28 lg:px-16">
+          <div className="pointer-events-none absolute -right-36 -top-40 h-[440px] w-[440px] rounded-full border border-white/10" />
+          <div className="pointer-events-none absolute -right-20 -top-24 h-[320px] w-[320px] rounded-full border border-white/10" />
+          <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+            <div>
+              <p className="landing-eyebrow text-[#c9d7a3]">{t('Simple by design', 'سادہ اور آسان', 'Saada aur asaan')}</p>
+              <h2 className="landing-section-title mt-4 max-w-lg text-white">
+                {t('From sunlight to insight.', 'دھوپ سے بہتر سمجھ تک۔', 'Dhoop se behtar samajh tak.')}
+              </h2>
+              <p className="mt-5 max-w-md text-sm leading-7 text-white/65">
+                {t(
+                  'Bring your system into focus, understand what matters, and take your next step with confidence.',
+                  'اپنے سسٹم کو سمجھیں، اہم باتوں پر توجہ دیں اور اعتماد سے اگلا قدم اٹھائیں۔',
+                  'System ko samjhein, zaroori baton par tawajjo dein aur yaqeen se agla qadam uthayen.'
+                )}
+              </p>
+              <button type="button" onClick={onSignUp} className="landing-light-button mt-7">
+                {t('Start with your system', 'اپنے سسٹم سے شروع کریں', 'Apne system se shuru karein')}
+                <ArrowUpRight className="h-4 w-4" />
               </button>
             </div>
-
-            {/* Right — metric cards */}
-            {/* Right — image-backed metric cards */}
-<div className="relative isolate overflow-hidden rounded-3xl min-h-[360px] p-4 sm:p-6">
-  <img
-    src="https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=1400&q=85"
-    alt="Solar panels under a bright sky"
-    loading="lazy"
-    className="absolute inset-0 h-full w-full object-cover object-center"
-  />
-
-  {/* Light tint preserves image detail while keeping the cards readable. */}
-  <div
-    aria-hidden="true"
-    className="absolute inset-0 bg-black/20"
-  />
-
-  <div className="relative z-10 grid h-full grid-cols-2 gap-4">
-    {[
-      {
-        icon: <Zap className="w-5 h-5 text-orange-500" />,
-        label: t('Current Output', 'موجودہ آؤٹ پٹ', 'Current Output'),
-        value: '8.42 kW',
-        sub: '94% rated capacity',
-      },
-      {
-        icon: <ShieldCheck className="w-5 h-5 text-emerald-500" />,
-        label: t('Inverter Health', 'انورٹر کی صحت', 'Inverter Health'),
-        value: '98.8%',
-        sub: 'Temp: 41 °C',
-      },
-      {
-        icon: <Activity className="w-5 h-5 text-emerald-500" />,
-        label: t("Today's Yield", 'آج کی پیداوار', 'Aaj ki Yield'),
-        value: '44.1 kWh',
-        sub: '+12% vs avg',
-      },
-      {
-        icon: <Clock className={`w-5 h-5 ${th.textMuted}`} />,
-        label: t('Last Sync', 'آخری سنک', 'Aakhri Sync'),
-        value: '< 30 s',
-        sub: 'All strings live',
-      },
-    ].map((card, i) => (
-      <div
-        key={i}
-        style={{ animationDelay: `${i * 100}ms` }}
-        className={`solar-card solar-reveal min-h-[145px] rounded-2xl border p-4 sm:p-5 backdrop-blur-md transition-transform duration-300 hover:-translate-y-1 ${
-          dark
-            ? 'border-white/20 bg-black/75'
-            : 'border-white/70 bg-white/90 shadow-lg'
-        }`}
-      >
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <span className={`text-xs font-medium ${th.metricLabel} ${urduLH}`}>
-            {card.label}
-          </span>
-          {card.icon}
-        </div>
-        <p className={`text-xl sm:text-2xl font-extrabold ${th.metricVal}`}>
-          {card.value}
-        </p>
-        <p className={`mt-2 text-xs font-medium ${th.metricSub}`}>
-          {card.sub}
-        </p>
-      </div>
-    ))}
-  </div>
-</div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════
-          FAQ
-      ══════════════════════════════════════════════════════════ */}
-      <section id="faq" className="py-24 sm:py-32 scroll-mt-16">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
-
-          <div className="text-center mb-12">
-            <span className={`text-xs font-bold uppercase tracking-widest mb-3 block ${th.textLabel}`}>
-              {t('Common Questions', 'عام سوالات', 'Common Questions')}
-            </span>
-            <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${th.text} ${urduLH}`}>
-              {t('Got Questions?', 'سوالات ہیں؟', 'Sawalaat Hain?')}
-            </h2>
-          </div>
-
-          <div className="space-y-3">
-            {faqs.map((faq, i) => {
-              const isOpen = openFaq === i;
-              return (
-                <div key={i} className={`rounded-2xl border overflow-hidden transition-colors duration-200 ${isOpen ? th.faqOpen : th.faqClosed}`}>
-                  <button
-                    onClick={() => setOpenFaq(isOpen ? null : i)}
-                    className={`w-full flex items-center justify-between gap-4 px-6 py-5 text-left cursor-pointer text-sm font-semibold transition-colors ${isOpen ? th.faqQOpen : th.faqQ} ${urduLH}`}
-                  >
-                    <span>{faq.q}</span>
-                    <span className={`shrink-0 w-5 h-5 flex items-center justify-center rounded-full ${dark ? 'bg-white/[0.06]' : 'bg-slate-100'}`}>
-                      {isOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    </span>
-                  </button>
-                  {isOpen && (
-                    <div className={`px-6 pb-5 text-sm animate-fade-in ${th.faqA} ${urduP}`}>
-                      {faq.a}
-                    </div>
-                  )}
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                { n: '01', title: t('Connect', 'کنیکٹ کریں', 'Connect karein'), text: t('Add your solar system details.', 'اپنے سولر سسٹم کی تفصیل شامل کریں۔', 'Solar system ki tafseel shamil karein.') },
+                { n: '02', title: t('Understand', 'سمجھیں', 'Samjhein'), text: t('See readings, trends, and alerts.', 'ریڈنگز، رجحانات اور الرٹس دیکھیں۔', 'Readings, trends aur alerts dekhein.') },
+                { n: '03', title: t('Take action', 'اقدام کریں', 'Qadam uthayen'), text: t('Get guidance or find a technician.', 'رہنمائی لیں یا ٹیکنیشن تلاش کریں۔', 'Rehnumai lein ya technician dhoondein.') },
+              ].map((step) => (
+                <div key={step.n} className="rounded-[20px] border border-white/15 bg-white/[0.06] p-5 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:bg-white/[0.1]">
+                  <span className="font-mono text-[10px] tracking-[0.18em] text-[#c9d7a3]">{step.n} / 03</span>
+                  <h3 className="font-display mt-9 text-xl">{step.title}</h3>
+                  <p className="mt-2 text-xs leading-6 text-white/60">{step.text}</p>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════
-          FOOTER
-      ══════════════════════════════════════════════════════════ */}
-      <footer id="contact" className={`scroll-mt-16 border-t transition-colors duration-300 ${th.footerBg}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-5">
-
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-emerald-600/40 border border-emerald-500/30 flex items-center justify-center">
-                <Sun className="w-4 h-4 text-solar" />
-              </div>
-              <span className={`font-extrabold text-base tracking-normal ${th.text}`}>
-                Solar <span className="text-emerald-500">Care</span>
-              </span>
-            </div>
-
-            <div className={`flex items-center gap-6 text-xs font-medium ${dark ? 'text-[#b8c9bf]' : 'text-[#53645b]'}`}>
-              <span className={`flex items-center gap-1.5 ${dark ? 'text-emerald-300' : 'text-emerald-800'}`}>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-glow" />
-                {t('All Systems Operational', 'تمام سسٹمز فعال', 'All Systems Operational')}
-              </span>
-              <button onClick={onLogin} className={`cursor-pointer transition-colors ${dark ? 'hover:text-white' : 'hover:text-emerald-800'}`}>{t('Log In',  'لاگ ان',  'Log In')}</button>
-              <button onClick={onSignUp} className={`cursor-pointer transition-colors ${dark ? 'hover:text-white' : 'hover:text-emerald-800'}`}>{t('Sign Up', 'سائن اپ', 'Sign Up')}</button>
+              ))}
             </div>
           </div>
+        </section>
 
-          <div className={`mt-8 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] ${dark ? 'border-white/10 text-[#b8c9bf]' : 'border-[#d3e2d7] text-[#627168]'}`}>
-            <p>© {new Date().getFullYear()} SolarCare Technologies. All rights reserved.</p>
-            <a
-              href="mailto:farhanlashari61675@gmail.com"
-              className={`inline-flex items-center gap-2 text-xs sm:text-sm font-semibold transition-colors ${
-                dark ? 'text-emerald-300 hover:text-emerald-200' : 'text-emerald-800 hover:text-emerald-700'
-              }`}
-            >
-              <Mail className="h-3.5 w-3.5" />
-              farhanlashari61675@gmail.com
-            </a>
-            <p>{t('Engineered for clean energy.', 'صاف توانائی کے لیے۔', 'Clean energy ke liye.')}</p>
+        <section id="support" className={`px-5 py-20 sm:px-10 sm:py-28 lg:px-16 ${theme.section}`}>
+          <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr]">
+            <div>
+              <p className="landing-eyebrow text-[#68835c]">{t('Questions, answered', 'آپ کے سوالات کے جواب', 'Aap ke sawalat ke jawab')}</p>
+              <h2 className="landing-section-title mt-4">{t('Good energy starts with clarity.', 'بہتر توانائی کی شروعات واضح سمجھ سے۔', 'Behtar energy ki shuruat wazeh samajh se.')}</h2>
+              <p className="mt-4 max-w-md text-sm leading-7 text-[#68766b]">
+                {t(
+                  'Get practical, solar-specific help for panels, inverters, batteries, wiring, and system performance.',
+                  'پینلز، انورٹرز، بیٹری، وائرنگ اور کارکردگی کے لیے سولر سے متعلق عملی رہنمائی۔',
+                  'Panels, inverter, battery, wiring aur system performance ke liye solar rehnumai.'
+                )}
+              </p>
+              <a href="mailto:farhanlashari61675@gmail.com" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#527449] hover:text-[#26362d]">
+                {t('Talk to our team', 'ہماری ٹیم سے رابطہ کریں', 'Hamari team se rabta karein')}
+                <ArrowUpRight className="h-4 w-4" />
+              </a>
+            </div>
+            <div className="space-y-2">
+              {faqs.map((faq, index) => {
+                const isOpen = openFaq === index;
+                return (
+                  <article key={faq.question} className="border-b border-[#dfe3d8]">
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaq(isOpen ? null : index)}
+                      aria-expanded={isOpen}
+                      className="flex w-full items-center justify-between gap-4 py-5 text-left"
+                    >
+                      <span className="font-display text-base text-[#26362d] sm:text-lg">{faq.question}</span>
+                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#dfe3d8] text-[#527449] transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+                        <ChevronDown className="h-4 w-4" />
+                      </span>
+                    </button>
+                    {isOpen && <p className="max-w-2xl pb-5 text-sm leading-7 text-[#68766b]">{faq.answer}</p>}
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer id="contact" className="bg-[#1d2b20] px-5 py-8 text-white sm:px-10 lg:px-16">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <a href="#" className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/10">
+              <Sun className="h-4 w-4 text-[#d9e8a7]" />
+            </span>
+            <span className="text-xs font-semibold tracking-[0.12em]">SOLARCARE</span>
+          </a>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-white/65">
+            <button type="button" onClick={onLogin} className="transition hover:text-white">{t('Log in', 'لاگ ان', 'Log in')}</button>
+            <button type="button" onClick={onSignUp} className="transition hover:text-white">{t('Create account', 'اکاؤنٹ بنائیں', 'Account banayen')}</button>
+            <a href="mailto:farhanlashari61675@gmail.com" className="transition hover:text-white">farhanlashari61675@gmail.com</a>
+            <span className="font-mono text-[10px] text-white/40">© {CURRENT_YEAR} SOLARCARE</span>
           </div>
         </div>
       </footer>
-
     </div>
   );
 };
