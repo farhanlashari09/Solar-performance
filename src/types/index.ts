@@ -11,7 +11,15 @@ export interface User {
   role?: 'admin' | 'customer';
 }
 
-export type ConnectionStatus = 'demo' | 'connected' | 'unavailable';
+export type ConnectionStatus = 'connected' | 'unavailable';
+
+export interface SolarTelemetry {
+  source: 'Huawei FusionSolar';
+  lastUpdatedAt: string;
+  activePowerKw?: number;
+  dailyEnergyKwh?: number;
+  totalEnergyKwh?: number;
+}
 
 export interface SolarSystem {
   id: string;
@@ -23,6 +31,11 @@ export interface SolarSystem {
   installationDate: string;
   connectionMethod: string;
   connectionStatus: ConnectionStatus;
+  monitoringStatus?: 'unlinked' | 'unconfigured' | 'connected' | 'error';
+  monitoringError?: string;
+  providerStationCode?: string;
+  telemetry?: SolarTelemetry;
+  owner?: { id: string; name: string; email: string } | null;
   panelCount: number;
   panelType: string;
   batteryCapacityKwh?: number;

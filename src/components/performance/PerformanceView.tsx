@@ -1,23 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSolar } from '../../context/SolarContext';
 import { StatusBadge } from '../common/StatusBadge';
-import {
-  Activity,
-  Calendar,
-  AlertCircle,
-  CheckCircle2,
-  HelpCircle,
-  TrendingDown,
-  TrendingUp,
-  Info,
-  Sun,
-  CloudSun,
-  ShieldAlert,
-  ArrowRight,
-  Database,
-  ExternalLink,
-} from 'lucide-react';
+import { Activity, ArrowRight, Database, MapPin, ShieldAlert, Sun, Zap } from 'lucide-react';
 
 interface PerformanceViewProps {
   onNavigateToMaintenance: () => void;
@@ -28,265 +13,108 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({
   onNavigateToMaintenance,
   onNavigateToTechnicians,
 }) => {
-  const { t, isRtl } = useLanguage();
-  const { activeSystem, weeklyReadings, diagnosticResult, weather } = useSolar();
-
-  const [activeFilter, setActiveFilter] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
-  const [selectedRecordDate, setSelectedRecordDate] = useState<string | null>(null);
-
-  const today = weeklyReadings[weeklyReadings.length - 1];
+  const { t } = useLanguage();
+  const { activeSystem, diagnosticResult } = useSolar();
+  const telemetry = activeSystem.telemetry;
+  const lastUpdated = telemetry?.lastUpdatedAt && Number.isFinite(Date.parse(telemetry.lastUpdatedAt))
+    ? new Date(telemetry.lastUpdatedAt).toLocaleString()
+    : 'No live readings received';
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              {t.performance.title}
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
-              {activeSystem.name} ({activeSystem.capacityKw} kW)
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 mt-1">
-            {t.performance.subtitle}
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">{t.performance.title}</h1>
+          <p className="mt-1 text-xs text-slate-500">{activeSystem.name} · {activeSystem.capacityKw} kW</p>
         </div>
+        <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
+          <MapPin className="h-3.5 w-3.5" />
+          {activeSystem.location || 'Location not set'}
+        </span>
+      </header>
 
-        {/* Filter Tabs */}
-        <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
-          <button
-            onClick={() => setActiveFilter('daily')}
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
-              activeFilter === 'daily'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Daily Telemetry
-          </button>
-          <button
-            onClick={() => setActiveFilter('weekly')}
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
-              activeFilter === 'weekly'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            7-Day History
-          </button>
-          <button
-            onClick={() => setActiveFilter('monthly')}
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${
-              activeFilter === 'monthly'
-                ? 'bg-white text-emerald-800 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Monthly Aggregates
-          </button>
-        </div>
-      </div>
-
-      {/* Transparent Rule-Based Diagnostic Engine Verdict Card */}
-      <div className={`solar-card p-6 border-l-4 ${
-        diagnosticResult.status === 'Normal'
-          ? 'border-l-emerald-500 bg-gradient-to-r from-emerald-50/40 via-white to-white'
-          : diagnosticResult.status === 'Needs Attention'
-          ? 'border-l-amber-500 bg-gradient-to-r from-amber-50/40 via-white to-white'
-          : diagnosticResult.status === 'Possible System Issue'
-          ? 'border-l-rose-500 bg-gradient-to-r from-rose-50/40 via-white to-white'
-          : 'border-l-slate-400 bg-gradient-to-r from-slate-50 via-white to-white'
-      }`}>
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                {t.performance.diagnosticCardTitle}
-              </span>
-              <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-mono font-medium">
-                Rule-Based Engine v2.4
-              </span>
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {[
+          { label: 'Current output', value: telemetry?.activePowerKw, unit: 'kW', icon: Zap },
+          { label: 'Today’s energy', value: telemetry?.dailyEnergyKwh, unit: 'kWh', icon: Sun },
+          { label: 'Lifetime energy', value: telemetry?.totalEnergyKwh, unit: 'kWh', icon: Activity },
+        ].map(({ label, value, unit, icon: Icon }) => (
+          <article key={label} className="solar-card rounded-2xl bg-white p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500">{label}</span>
+              <Icon className="h-4 w-4 text-[#477b61]" strokeWidth={1.8} />
             </div>
-            <div className="flex items-center gap-3">
-              <h2 className="text-xl font-extrabold text-slate-900">
-                {diagnosticResult.summary}
-              </h2>
+            <p className="mt-3 text-2xl font-bold text-slate-900">
+              {typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}
+              <span className="ml-2 text-sm font-medium text-slate-500">{unit}</span>
+            </p>
+          </article>
+        ))}
+      </section>
+
+      <section className="solar-card rounded-2xl bg-white p-6">
+        <div className="flex flex-col justify-between gap-4 border-b border-slate-100 pb-5 lg:flex-row lg:items-center">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{t.performance.diagnosticCardTitle}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              <h2 className="text-lg font-bold text-slate-900">{diagnosticResult.summary}</h2>
               <StatusBadge status={diagnosticResult.status} />
             </div>
           </div>
-
-          {/* Metric Badges */}
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
-              <span className="text-[11px] font-semibold text-slate-400 block">{t.performance.metricEfficiency}</span>
-              <span className="text-lg font-extrabold text-slate-900">
-                {diagnosticResult.performancePct !== null ? `${diagnosticResult.performancePct}%` : 'N/A'}
-              </span>
-            </div>
-
-            <div className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
-              <span className="text-[11px] font-semibold text-slate-400 block">{t.performance.metricDeviation}</span>
-              <span className={`text-lg font-extrabold ${diagnosticResult.deviationPct && diagnosticResult.deviationPct < 0 ? 'text-amber-700' : 'text-emerald-700'}`}>
-                {diagnosticResult.deviationPct !== null ? `${diagnosticResult.deviationPct > 0 ? '+' : ''}${diagnosticResult.deviationPct}%` : 'N/A'}
-              </span>
-            </div>
-
-            <div className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
-              <span className="text-[11px] font-semibold text-slate-400 block">Confidence Level</span>
-              <span className="text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-800">
-                {diagnosticResult.confidence}
-              </span>
-            </div>
+          <div className="rounded-xl bg-[#f7f8f5] px-4 py-3 text-xs text-slate-500">
+            <p>Data source: {telemetry?.source || 'Not connected'}</p>
+            <p className="mt-1">Last updated: {lastUpdated}</p>
           </div>
         </div>
-
-        <div className="py-3 flex items-center gap-2 text-xs text-slate-500 border-b border-slate-100">
-          <Database className="w-3.5 h-3.5 text-emerald-600" />
-          <span>{diagnosticResult.dataSourceNote}</span>
-        </div>
-
-        {/* Deep Explanations & Next Steps */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-5">
-          {/* Possible Explanations */}
+        <div className="grid gap-6 py-5 md:grid-cols-2">
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3 flex items-center gap-1.5">
-              <HelpCircle className="w-4 h-4 text-emerald-600" />
-              <span>{t.performance.possibleExplanations}</span>
-            </h4>
-            <ul className="space-y-2 text-xs text-slate-600 leading-relaxed">
-              {diagnosticResult.reasons.map((r, i) => (
-                <li key={i} className="flex items-start gap-2 bg-slate-50/80 p-2.5 rounded-lg border border-slate-100">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-1.5 shrink-0"></span>
-                  <span>{r}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Recommended Next Steps */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3 flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>{t.performance.recommendedNextSteps}</span>
-            </h4>
-            <ul className="space-y-2 text-xs text-slate-600 leading-relaxed">
-              {diagnosticResult.recommendations.map((step, i) => (
-                <li key={i} className="flex items-start gap-2 bg-emerald-50/40 p-2.5 rounded-lg border border-emerald-100">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-700 mt-1.5 shrink-0"></span>
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ul>
-
-            {/* Contextual Action Button */}
-            {diagnosticResult.status === 'Needs Attention' && (
-              <button
-                onClick={onNavigateToMaintenance}
-                className="mt-3.5 w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 shadow-xs"
-              >
-                <span>Schedule Gentle Panel Cleaning Service</span>
-                <ArrowRight className={`w-3.5 h-3.5 ${isRtl ? 'rotate-180' : ''}`} />
-              </button>
-            )}
-            {diagnosticResult.status === 'Possible System Issue' && (
-              <button
-                onClick={onNavigateToTechnicians}
-                className="mt-3.5 w-full py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 shadow-xs"
-              >
-                <span>Find Qualified {activeSystem.inverterBrand} Technician</span>
-                <ArrowRight className={`w-3.5 h-3.5 ${isRtl ? 'rotate-180' : ''}`} />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Historical Telemetry Log Table */}
-      <div className="solar-card p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div>
-            <h3 className="text-base font-bold text-slate-900">
-              {t.performance.historicalRecordsTitle}
+            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-700">
+              <ShieldAlert className="h-4 w-4 text-[#b58a2b]" strokeWidth={1.8} />
+              What is available
             </h3>
-            <p className="text-xs text-slate-500">Daily output and system performance.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {telemetry
+                ? 'A current FusionSolar snapshot is available. Dated hourly and daily history has not been received, so performance ratios and fault diagnoses are withheld.'
+                : activeSystem.monitoringError || 'No verified measurements are available. Setup values are not used to simulate production.'}
+            </p>
           </div>
-          <span className="text-xs font-medium text-slate-400">
-            Showing 7 entries for {activeSystem.name}
-          </span>
+          <div>
+            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-700">
+              <Database className="h-4 w-4 text-[#477b61]" strokeWidth={1.8} />
+              Provider details
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {activeSystem.providerStationCode
+                ? `FusionSolar station ${activeSystem.providerStationCode} · ${activeSystem.monitoringStatus || 'awaiting readings'}`
+                : 'No provider station is linked. Ask an administrator to link the correct station.'}
+            </p>
+          </div>
         </div>
-
-        <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-gradient-to-r from-slate-900 to-emerald-950 text-white">
-              <tr>
-                <th className="py-3 px-3.5">{t.performance.tableDate}</th>
-                <th className="py-3 px-3.5">{t.performance.tableActual}</th>
-                <th className="py-3 px-3.5">{t.performance.tableExpected}</th>
-                <th className="py-3 px-3.5">{t.performance.tableDeviation}</th>
-                <th className="py-3 px-3.5">{t.performance.tableWeather}</th>
-                <th className="py-3 px-3.5">{t.performance.tableStatus}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {weeklyReadings.map((day) => {
-                const variance = day.expectedKwh > 0 ? ((day.actualKwh - day.expectedKwh) / day.expectedKwh) * 100 : 0;
-                const isSelected = selectedRecordDate === day.date;
-
-                return (
-                  <tr
-                    key={day.date}
-                    onClick={() => setSelectedRecordDate(day.date)}
-                    className={`hover:bg-slate-50/80 transition-colors cursor-pointer ${isSelected ? 'bg-emerald-50/50' : ''}`}
-                  >
-                    <td className="py-3 px-3.5 font-semibold text-slate-800 flex items-center gap-2">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                      {day.date}
-                    </td>
-                    <td className="py-3 px-3.5 font-bold text-slate-900">
-                      {day.isMissingData ? (
-                        <span className="text-slate-400 italic">Data Missing</span>
-                      ) : (
-                        `${day.actualKwh} kWh`
-                      )}
-                    </td>
-                    <td className="py-3 px-3.5 text-slate-600">
-                      {day.expectedKwh} kWh
-                    </td>
-                    <td className="py-3 px-3.5">
-                      {day.isMissingData ? (
-                        <span className="text-slate-400">—</span>
-                      ) : (
-                        <span className={`font-bold ${variance < -15 ? 'text-amber-700' : variance < -25 ? 'text-rose-700' : 'text-emerald-700'}`}>
-                          {variance > 0 ? '+' : ''}{variance.toFixed(1)}%
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3 px-3.5 text-slate-600">
-                      {day.weatherCondition} • {day.peakSunHours} PSH
-                    </td>
-                    <td className="py-3 px-3.5">
-                      <StatusBadge
-                        status={
-                          day.status === 'normal'
-                            ? 'Normal'
-                            : day.status === 'attention'
-                            ? 'Needs Attention'
-                            : day.status === 'issue'
-                            ? 'Possible System Issue'
-                            : 'Insufficient Data'
-                        }
-                        size="sm"
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div className="flex flex-wrap gap-3 border-t border-slate-100 pt-4">
+          <button
+            type="button"
+            onClick={onNavigateToMaintenance}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#eff5ef] px-4 py-2.5 text-xs font-semibold text-[#2e634d] transition hover:bg-[#e4eee4]"
+          >
+            Request maintenance <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={onNavigateToTechnicians}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+          >
+            Find a technician <ArrowRight className="h-3.5 w-3.5" />
+          </button>
         </div>
-      </div>
+      </section>
+
+      <section className="solar-card rounded-2xl border-dashed bg-[#f8faf8] p-8 text-center">
+        <Activity className="mx-auto h-8 w-8 text-[#4c8066]" strokeWidth={1.7} />
+        <h2 className="mt-3 text-sm font-semibold text-slate-700">Historical production is not available</h2>
+        <p className="mx-auto mt-1 max-w-xl text-xs leading-5 text-slate-500">
+          This view will show dated records when the connected provider supplies them. No demo timeline or capacity-based estimate is shown here.
+        </p>
+      </section>
     </div>
   );
 };

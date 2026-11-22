@@ -22,7 +22,7 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
 }) => {
   const { language, setLanguage, t } = useLanguage();
   const { currentUser, updateUserProfile, logout } = useAuth();
-  const { systems, resetDemoData } = useSolar();
+  const { systems } = useSolar();
 
   const [name, setName] = useState(currentUser?.name || '');
   const [successNotice, setSuccessNotice] = useState('');
@@ -190,13 +190,19 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
                   {s.capacityKw} kW
                 </span>
                 <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                  s.connectionStatus === 'demo'
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : s.connectionStatus === 'connected'
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'bg-slate-200 text-slate-700'
+                  s.connectionStatus === 'connected'
+                    ? 'bg-[#e9f4ed] text-[#2e7158]'
+                    : 'bg-slate-100 text-slate-600'
                 }`}>
-                  {s.connectionStatus === 'demo' ? 'Demo Active' : s.connectionStatus === 'connected' ? 'Connected' : 'Unavailable'}
+                  {s.connectionStatus === 'connected'
+                    ? 'Live readings'
+                    : s.monitoringStatus === 'unconfigured'
+                      ? 'Provider not configured'
+                      : s.monitoringStatus === 'error'
+                        ? 'Connection error'
+                        : s.providerStationCode
+                          ? 'Awaiting readings'
+                          : 'Not connected'}
                 </span>
               </div>
             </div>

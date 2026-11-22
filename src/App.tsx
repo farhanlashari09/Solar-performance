@@ -21,7 +21,7 @@ import { AdminPortal } from './components/admin/AdminPortal';
 import { Technician } from './types';
 
 const AppContent: React.FC = () => {
-  const { currentUser, isAuthenticated, setAuthScreen } = useAuth();
+  const { currentUser, isAuthenticated, isSessionLoading, setAuthScreen } = useAuth();
   const { isRtl } = useLanguage();
   const { setSelectedTechnicianForBooking } = useMaintenance();
   const { isNewUser } = useSolar();
@@ -32,7 +32,8 @@ const AppContent: React.FC = () => {
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [selectedTechForService, setSelectedTechForService] = useState<Technician | null>(null);
   const [showAuthFlow, setShowAuthFlow] = useState(false);
-  const isAdmin = currentUser?.email.trim().toLowerCase() === 'admin@solarcare.com';
+  const isAdmin = currentUser?.role === 'admin';
+  if (isSessionLoading) return <div className="min-h-screen bg-[#f2f3f1]" />;
   // If user is unauthenticated, show the awesome Landing Page first,
   // or the AuthFlow if they click Log In / Sign Up
   if (!isAuthenticated) {
@@ -72,7 +73,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen bg-slate-50 flex flex-col ${isRtl ? 'font-urdu' : ''}`}>
+    <div className={`min-h-screen bg-[#f2f3f1] flex flex-col ${isRtl ? 'font-urdu' : ''}`}>
       {/* Header */}
       <Header
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
@@ -97,7 +98,7 @@ const AppContent: React.FC = () => {
 
         {/* Main Content View Area */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-          {currentRoute === 'admin' && <AdminPortal />}
+          {currentRoute === 'admin' && isAdmin && <AdminPortal />}
 
           {currentRoute === 'dashboard' && (
             <DashboardView

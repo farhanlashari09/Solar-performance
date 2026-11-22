@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useMaintenance } from '../../context/MaintenanceContext';
-import { useSolar } from '../../context/SolarContext';
 import { useAuth } from '../../context/AuthContext';
 import { Technician, ServiceStatus } from '../../types';
+import { SolarSystem } from '../../types';
+import { adminSystemsApi, solarSystemsApi } from '../../services/api';
 import {
   ShieldCheck,
   Database,
@@ -35,6 +36,15 @@ import {
   LogOut
 } from 'lucide-react';
 
+interface MonitoringProviderStatus {
+  id: string;
+  name: string;
+  status: 'configured' | 'needs-credentials' | 'configuration-error' | 'not-verified';
+  supportsLiveTelemetry: boolean;
+  message: string;
+  documentationUrl: string;
+}
+
 export const AdminPortal: React.FC = () => {
   const { language, isRtl } = useLanguage();
   const {
@@ -48,7 +58,6 @@ export const AdminPortal: React.FC = () => {
     assignTechnicianToRequest,
   } = useMaintenance();
 
-  const { systems } = useSolar();
   const { currentUser, logout } = useAuth();
 
   // Active Admin Sub-tab
@@ -84,6 +93,12 @@ export const AdminPortal: React.FC = () => {
   const [dbSearch, setDbSearch] = useState('');
   const [isRefreshingDb, setIsRefreshingDb] = useState(false);
   const [lastDbSync, setLastDbSync] = useState(new Date().toLocaleTimeString());
+  const [fleetSystems, setFleetSystems] = useState<SolarSystem[]>([]);
+  const [stationCodeInputs, setStationCodeInputs] = useState<Record<string, string>>({});
+  const [isLoadingFleet, setIsLoadingFleet] = useState(false);
+  const [fleetError, setFleetError] = useState('');
+  const [providerConfigured, setProviderConfigured] = useState(false);
+  const [providerIntegrations, setProviderIntegrations] = useState<MonitoringProviderStatus[]>([]);
 
   // Ticket Assignment State
   const [assigningTicketId, setAssigningTicketId] = useState<string | null>(null);
@@ -91,6 +106,68 @@ export const AdminPortal: React.FC = () => {
 
   // Toast / Banner
   const [notification, setNotification] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setIsLoadingFleet(true);
+    adminSystemsApi.getAllSystems().then((response) => {
+      if (!active) return;
+      if (!response.success || !Array.isArray(response.systems)) {
+        setFleetError(response.message || 'Could not load the fleet from the admin API.');
+        return;
+      }
+      setFleetError('');
+      setFleetSystems(response.systems);
+      setProviderConfigured(Boolean(response.providerConfigured));
+      setProviderIntegrations(response.providerIntegrations || []);
+      setStationCodeInputs((previous) => ({
+        ...previous,
+        ...Object.fromEntries(response.systems.map((system: SolarSystem) => [system.id, system.providerStationCode || ''])),
+      }));
+      setLastDbSync(new Date().toLocaleTimeString());
+    }).finally(() => {
+      if (active) setIsLoadingFleet(false);
+    });
+    return () => { active = false; };
+  }, [activeTab]);
+
+  const refreshFleet = async () => {
+    setIsLoadingFleet(true);
+    const response = await adminSystemsApi.getAllSystems();
+    if (response.success && Array.isArray(response.systems)) {
+      setFleetSystems(response.systems);
+      setProviderConfigured(Boolean(response.providerConfigured));
+      setProviderIntegrations(response.providerIntegrations || []);
+      setFleetError('');
+      setLastDbSync(new Date().toLocaleTimeString());
+    } else {
+      setFleetError(response.message || 'Could not load the fleet from the admin API.');
+    }
+    setIsLoadingFleet(false);
+  };
+
+  const saveStationCode = async (system: SolarSystem) => {
+    const response = await adminSystemsApi.linkFusionSolarStation(system.id, stationCodeInputs[system.id] || '');
+    if (!response.success) {
+      showNotification(response.message || 'Could not link the FusionSolar station.');
+      return;
+    }
+    setFleetSystems((previous) => previous.map((entry) => entry.id === system.id ? response.system : entry));
+    showNotification(`FusionSolar station linked for ${system.name}. Live readings are still pending.`);
+  };
+
+  const refreshSystemTelemetry = async (system: SolarSystem) => {
+    const response = await solarSystemsApi.refreshMonitoring(system.id, true);
+    if (response.success && response.system) {
+      setFleetSystems((previous) => previous.map((entry) => entry.id === system.id ? response.system : entry));
+      showNotification(`Live readings updated for ${system.name}.`);
+    } else {
+      setFleetSystems((previous) => previous.map((entry) => entry.id === system.id
+        ? { ...entry, monitoringStatus: response.monitoringStatus || entry.monitoringStatus, monitoringError: response.message }
+        : entry));
+      showNotification(response.message || `Could not refresh ${system.name}.`);
+    }
+  };
 
   const showNotification = (msg: string) => {
     setNotification(msg);
@@ -210,7 +287,7 @@ export const AdminPortal: React.FC = () => {
       collections: {
         technicians,
         serviceRequests,
-        solarSystems: systems,
+        solarSystems: fleetSystems,
         activeUser: currentUser,
       },
     };
@@ -243,7 +320,7 @@ export const AdminPortal: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-slate-300 mt-0.5">
-                Manage technicians, monitor live database collections, and dispatch client service requests.
+                Review the client fleet, manage FusionSolar links, and dispatch service requests.
               </p>
             </div>
           </div>
@@ -260,14 +337,12 @@ export const AdminPortal: React.FC = () => {
         {/* Status ticker */}
         <div className="mt-5 pt-4 border-t border-slate-700/60 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-300">
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Live Database Connected
+            <span className="flex items-center gap-1.5 text-emerald-300 font-semibold">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Authenticated administrator
             </span>
             <span className="text-slate-500">|</span>
-            <span className="text-slate-300">Engine: JSON Engine (Express 5 &amp; MERN API)</span>
-            <span className="text-slate-500">|</span>
-            <span className="text-slate-300">Latency: 11ms</span>
+            <span className="text-slate-300">FusionSolar: {providerConfigured ? 'configured on server' : 'server credentials required'}</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -275,11 +350,7 @@ export const AdminPortal: React.FC = () => {
               type="button"
               onClick={() => {
                 setIsRefreshingDb(true);
-                setTimeout(() => {
-                  setLastDbSync(new Date().toLocaleTimeString());
-                  setIsRefreshingDb(false);
-                  showNotification('Database records refreshed successfully.');
-                }, 500);
+                void refreshFleet().finally(() => setIsRefreshingDb(false));
               }}
               className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium border border-slate-700 cursor-pointer"
             >
@@ -337,25 +408,25 @@ export const AdminPortal: React.FC = () => {
 
         <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-            <span>Monitored Solar Fleet</span>
+            <span>Registered solar systems</span>
             <Sun className="w-4 h-4 text-solar-DEFAULT" />
           </div>
           <p className="mt-2 text-2xl font-black text-slate-900">
-            {systems.length} <span className="text-xs font-normal text-slate-500">Arrays</span>
+            {fleetSystems.length} <span className="text-xs font-normal text-slate-500">Systems</span>
           </p>
           <p className="mt-1 text-[11px] text-slate-500">
-            {systems.reduce((acc, s) => acc + (s.capacityKw || 0), 0)} kW Total Capacity
+            {fleetSystems.reduce((acc, system) => acc + (system.capacityKw || 0), 0)} kW Total Capacity
           </p>
         </div>
 
         <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-            <span>Database Health</span>
+            <span>FusionSolar provider</span>
             <Database className="w-4 h-4 text-indigo-600" />
           </div>
-          <p className="mt-2 text-2xl font-black text-slate-900">99.98%</p>
+          <p className="mt-2 text-lg font-black text-slate-900">{providerConfigured ? 'Configured' : 'Not configured'}</p>
           <p className="mt-1 text-[11px] text-indigo-700 font-semibold">
-            Zero Unhandled Exceptions
+            {fleetSystems.filter((system) => system.connectionStatus === 'connected').length} systems reporting live
           </p>
         </div>
       </div>
@@ -411,7 +482,7 @@ export const AdminPortal: React.FC = () => {
           }`}
         >
           <Sun className="w-4 h-4" />
-          <span>Client Solar Fleet ({systems.length})</span>
+          <span>Client Solar Fleet ({fleetSystems.length})</span>
         </button>
       </div>
 
@@ -639,7 +710,7 @@ export const AdminPortal: React.FC = () => {
                   dbCollectionTab === 'users' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:bg-slate-800'
                 }`}
               >
-                Users Collection (2)
+                Current Admin Account
               </button>
               <button
                 type="button"
@@ -648,7 +719,7 @@ export const AdminPortal: React.FC = () => {
                   dbCollectionTab === 'systems' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:bg-slate-800'
                 }`}
               >
-                Solar Systems Collection ({systems.length})
+                Solar Systems Collection ({fleetSystems.length})
               </button>
               <button
                 type="button"
@@ -687,26 +758,15 @@ export const AdminPortal: React.FC = () => {
               {dbCollectionTab === 'users' && (
                 <pre>
                   {JSON.stringify(
-                    [
-                      {
-                        _id: 'usr-001',
-                        name: 'Farhan khan',
-                        email: 'farhan@example.com',
-                        role: 'admin',
-                        isVerified: true,
-                        registeredSolarArrays: systems.length,
-                        createdAt: '2026-01-15T10:00:00Z',
-                      },
-                      {
-                        _id: 'usr-002',
-                        name: 'Client Demo Account',
-                        email: 'client@example.com',
-                        role: 'customer',
-                        isVerified: true,
-                        registeredSolarArrays: 1,
-                        createdAt: '2026-02-01T08:30:00Z',
-                      },
-                    ],
+                    currentUser
+                      ? [{
+                          id: currentUser.id,
+                          name: currentUser.name,
+                          email: currentUser.email,
+                          role: currentUser.role,
+                          registeredSolarSystems: fleetSystems.filter((system) => system.owner?.id === currentUser.id).length,
+                        }]
+                      : [],
                     null,
                     2
                   )}
@@ -714,7 +774,7 @@ export const AdminPortal: React.FC = () => {
               )}
 
               {dbCollectionTab === 'systems' && (
-                <pre>{JSON.stringify(systems, null, 2)}</pre>
+                <pre>{JSON.stringify(fleetSystems, null, 2)}</pre>
               )}
 
               {dbCollectionTab === 'requests' && (
@@ -835,33 +895,126 @@ export const AdminPortal: React.FC = () => {
       {/* ============================================================== */}
       {activeTab === 'fleet' && (
         <div className="space-y-4">
+          <section className="rounded-xl border border-slate-200 bg-white p-4">
+            <h3 className="text-sm font-bold text-slate-900">Monitoring provider API access</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Only providers with a verified API adapter can return live readings. No unofficial endpoints or generated readings are used.
+            </p>
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              {providerIntegrations.map((provider) => (
+                <article key={provider.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-slate-800">{provider.name}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                      provider.supportsLiveTelemetry
+                        ? provider.status === 'configured' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      {provider.status === 'configured'
+                        ? 'Configured'
+                        : provider.status === 'needs-credentials'
+                          ? 'Needs credentials'
+                          : provider.status === 'configuration-error'
+                            ? 'Configuration issue'
+                          : 'Not verified'}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-[11px] leading-relaxed text-slate-600">{provider.message}</p>
+                  <a
+                    className="mt-2 inline-flex text-[11px] font-semibold text-emerald-800 underline-offset-2 hover:underline"
+                    href={provider.documentationUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Official provider site
+                  </a>
+                </article>
+              ))}
+            </div>
+          </section>
+          <div className="flex flex-col justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900">All client systems</h2>
+              <p className="mt-1 text-xs text-slate-500">
+                Authenticated admin fleet · {providerConfigured ? 'FusionSolar configured' : 'FusionSolar credentials are not configured on the server'}
+              </p>
+            </div>
+            <button type="button" onClick={() => void refreshFleet()} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoadingFleet ? 'animate-spin' : ''}`} />
+              Refresh fleet
+            </button>
+          </div>
+          {fleetError && <p role="alert" className="rounded-lg bg-rose-50 p-3 text-xs text-rose-700">{fleetError}</p>}
+          {isLoadingFleet && fleetSystems.length === 0 && <p className="py-8 text-center text-sm text-slate-500">Loading systems from the admin API…</p>}
+          {!isLoadingFleet && !fleetError && fleetSystems.length === 0 && <p className="py-8 text-center text-sm text-slate-500">No solar systems have been registered.</p>}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {systems.map((sys) => (
-              <div key={sys.id} className="p-5 rounded-xl bg-white border border-slate-200 shadow-sm space-y-3">
+            {fleetSystems.map((sys) => (
+              <div key={sys.id} className="space-y-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900 text-sm">{sys.name}</span>
-                  <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-bold">
+                  <span className="rounded bg-[#eff5ef] px-2 py-0.5 text-xs font-bold text-[#2e7158]">
                     {sys.capacityKw} kW
                   </span>
                 </div>
                 <div className="text-xs text-slate-500 space-y-1">
+                  <p>{sys.owner?.name || 'Owner unavailable'} · {sys.owner?.email || 'No owner record'}</p>
                   <p className="flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{sys.location}</span>
+                    <span>{sys.location || 'Location not set'}</span>
                   </p>
                   <p className="flex items-center gap-1.5">
                     <Cpu className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{sys.inverterBrand} ({sys.inverterModel})</span>
+                    <span>{sys.inverterBrand || 'Inverter not specified'} {sys.inverterModel}</span>
                   </p>
                   <p className="flex items-center gap-1.5">
                     <Layers className="w-3.5 h-3.5 text-slate-400" />
-                    <span>{sys.panelCount} Panels • {sys.panelType}</span>
+                    <span>{sys.panelCount || 0} panels{sys.panelType ? ` · ${sys.panelType}` : ''}</span>
                   </p>
                 </div>
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold">
-                  <span className="text-emerald-700">● Telemetry Active</span>
-                  <span className="text-slate-400">Commissioned: {sys.installationDate}</span>
+                <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <span className="font-semibold text-slate-700">
+                      {sys.connectionStatus === 'connected'
+                        ? 'Live · Huawei FusionSolar'
+                        : sys.monitoringStatus === 'unconfigured'
+                          ? 'Provider not configured'
+                          : sys.monitoringStatus === 'error'
+                            ? 'Connection error'
+                            : sys.providerStationCode
+                              ? 'Linked · awaiting readings'
+                              : 'Not connected'}
+                    </span>
+                    <span className="text-slate-400">{sys.telemetry?.lastUpdatedAt ? new Date(sys.telemetry.lastUpdatedAt).toLocaleString() : 'No readings'}</span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-slate-500">
+                    <span>Now: {sys.telemetry?.activePowerKw ?? '—'} kW</span>
+                    <span>Today: {sys.telemetry?.dailyEnergyKwh ?? '—'} kWh</span>
+                  </div>
+                  {sys.monitoringError && <p className="mt-2 text-[11px] text-rose-700">{sys.monitoringError}</p>}
                 </div>
+                {sys.inverterBrand.toLowerCase() === 'huawei' && (
+                  <div className="space-y-2 border-t border-slate-100 pt-3">
+                    <label className="block text-[11px] font-semibold text-slate-600" htmlFor={`station-${sys.id}`}>FusionSolar station code</label>
+                    <div className="flex gap-2">
+                      <input
+                        id={`station-${sys.id}`}
+                        value={stationCodeInputs[sys.id] || ''}
+                        onChange={(event) => setStationCodeInputs((previous) => ({ ...previous, [sys.id]: event.target.value }))}
+                        placeholder="Station code"
+                        className="min-w-0 flex-1 rounded-lg border border-slate-200 px-2.5 py-2 text-xs focus:border-[#4d8067] focus:outline-none focus:ring-2 focus:ring-[#4d8067]/20"
+                      />
+                      <button type="button" onClick={() => void saveStationCode(sys)} className="rounded-lg bg-[#2f604b] px-3 py-2 text-xs font-semibold text-white hover:bg-[#234d3b]">Link</button>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={!sys.providerStationCode}
+                      onClick={() => void refreshSystemTelemetry(sys)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Refresh live readings
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
