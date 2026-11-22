@@ -84,7 +84,7 @@ const CAROUSEL_IMAGES = [
     alt: 'Aerial solar panel array surrounded by green land',
   },
   {
-    src: '/images/solar-panel-inspection.jpg',
+    src: 'https://images.pexels.com/photos/9875414/pexels-photo-9875414.jpeg?auto=compress&cs=tinysrgb&w=1800',
     alt: 'Installer checking a rooftop solar panel',
   },
   {
@@ -92,8 +92,8 @@ const CAROUSEL_IMAGES = [
     alt: 'Solar panels and inverters installed at a solar farm',
   },
   {
-    src: '/images/scenic-solar-array.jpg',
-    alt: 'Solar panels in a scenic mountain landscape',
+    src: '/images/solar-monitoring-dashboard.svg',
+    alt: 'Illustrative solar monitoring dashboard with energy charts and system status',
   },
 ] as const;
 
@@ -125,7 +125,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
   const [dark, setDark] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
-  const [activeNav, setActiveNav] = useState('#overview');
   const [chartRange, setChartRange] = useState<ChartRange>('day');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -208,8 +207,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
     sub: dark ? 'text-white/60' : 'text-[#707672]',
     faint: dark ? 'text-white/40' : 'text-[#989e99]',
     line: dark ? 'border-white/[0.09]' : 'border-black/[0.07]',
-    active: dark ? 'bg-[#39413b] text-white' : 'bg-black text-white shadow-sm',
-    hover: dark ? 'hover:bg-white/[0.08]' : 'hover:bg-black/[0.04]',
+    hover: dark ? 'hover:bg-white/[0.08]' : 'hover:bg-black hover:text-white',
+    navHover: dark ? 'hover:bg-white/[0.08]' : 'hover:bg-black hover:text-white',
     footer: dark ? 'border-white/[0.09] text-white/50' : 'border-black/[0.07] text-[#808681]',
   };
   const activeChart = chartRanges[chartRange];
@@ -276,11 +275,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                 <a
                   key={item.href}
                   href={item.href}
-                  onClick={() => setActiveNav(item.href)}
-                  aria-current={activeNav === item.href ? 'location' : undefined}
-                  className={`rounded-full px-4 py-2 text-[11px] font-medium transition ${
-                    activeNav === item.href ? palette.active : `${palette.sub} ${palette.hover}`
-                  }`}
+                  className={`rounded-full px-4 py-2 text-[11px] font-medium transition ${palette.sub} ${palette.navHover}`}
                 >
                   {t(item.label, item.label, item.label)}
                 </a>
@@ -344,11 +339,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                       <a
                         key={item.href}
                         href={item.href}
-                        onClick={() => { setActiveNav(item.href); setMobileOpen(false); }}
-                        aria-current={activeNav === item.href ? 'location' : undefined}
-                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium ${
-                          activeNav === item.href ? palette.active : `${palette.sub} ${palette.hover}`
-                        }`}
+                        onClick={() => setMobileOpen(false)}
+                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition ${palette.sub} ${palette.navHover}`}
                       >
                         <Icon className="h-4 w-4" />
                         {item.label}
@@ -396,11 +388,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                       href={item.href}
                       title={item.label}
                       aria-label={item.label}
-                      onClick={() => setActiveNav(item.href)}
-                      aria-current={activeNav === item.href ? 'location' : undefined}
-                      className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
-                        activeNav === item.href ? palette.active : `${palette.sub} ${palette.hover}`
-                      }`}
+                      className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${palette.sub} ${palette.navHover}`}
                     >
                       <Icon className="h-4 w-4" />
                     </a>
@@ -408,10 +396,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                 })}
               </nav>
               <div className="flex flex-col items-center gap-2">
-                <a href="#support" title="Support information" aria-label="Support information" onClick={() => setActiveNav('#support')} className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${activeNav === '#support' ? palette.active : `${palette.sub} ${palette.hover}`}`}>
+                <a href="#support" title="Support information" aria-label="Support information" className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${palette.sub} ${palette.navHover}`}>
                   <CircleHelp className="h-4 w-4" />
                 </a>
-                <a href="#contact" title="Contact SolarCare" aria-label="Contact SolarCare" onClick={() => setActiveNav('#contact')} className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${activeNav === '#contact' ? palette.active : `${palette.sub} ${palette.hover}`}`}>
+                <a href="#contact" title="Contact SolarCare" aria-label="Contact SolarCare" className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${palette.sub} ${palette.navHover}`}>
                   <Mail className="h-4 w-4" />
                 </a>
               </div>
@@ -489,7 +477,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                         type="button"
                         onClick={() => setChartRange(range)}
                         aria-pressed={chartRange === range}
-                        className={`rounded-md px-2 py-1.5 text-[9px] font-medium transition ${chartRange === range ? palette.active : palette.sub}`}
+                        className={`rounded-md px-2 py-1.5 text-[9px] font-medium transition ${chartRange === range ? (dark ? 'bg-[#39413b] text-white' : 'bg-[#e3e8e2] text-[#171b18]') : palette.sub} ${palette.navHover}`}
                       >
                         {range === 'day' ? t('Daily', 'روزانہ', 'Daily') : range === 'week' ? t('Weekly', 'ہفتہ وار', 'Weekly') : t('Monthly', 'ماہانہ', 'Monthly')}
                       </button>
@@ -572,13 +560,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                   </div>
                 </div>
                 <div className="flex gap-1.5">
-                  <a href="#weather" onClick={() => setActiveNav('#weather')} aria-label="View local weather" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-white/20">
+                  <a href="#weather" aria-label="View local weather" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-black hover:text-white">
                     <Activity className="h-3.5 w-3.5" />
                   </a>
-                  <a href="#support" onClick={() => setActiveNav('#support')} aria-label="View support information" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-white/20">
+                  <a href="#support" aria-label="View support information" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-black hover:text-white">
                     <CircleHelp className="h-3.5 w-3.5" />
                   </a>
-                  <button type="button" onClick={onSignUp} aria-label="Create an account to add a solar system" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-white/20">
+                  <button type="button" onClick={onSignUp} aria-label="Create an account to add a solar system" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-black hover:text-white">
                     <ArrowUpRight className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -631,7 +619,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                       'Local weather ke liye system location add karein. Production readings sirf real provider connection verify honay par nazar aati hain.'
                     )}
                   </p>
-                  <a href="#support" onClick={() => setActiveNav('#support')} className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#e5e9a1] transition hover:gap-2.5">
+                  <a href="#support" className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#e5e9a1] transition hover:gap-2.5">
                     {t('Visit support', 'مدد دیکھیں', 'Support dekhein')} <ArrowRight className="h-3 w-3" />
                   </a>
                 </article>

@@ -41,9 +41,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const activeRequestsCount = serviceRequests.filter(r => r.status !== 'Completed').length;
 
   const navItems = [
-    ...(isAdmin
-      ? [{ id: 'admin', label: 'Admin Control', icon: ShieldCheck }]
-      : []),
     { id: 'dashboard', label: t.nav.dashboard, icon: LayoutDashboard },
     { id: 'performance', label: t.nav.performance, icon: Activity },
     { id: 'systems', label: t.nav.systems, icon: SunMedium },
@@ -89,8 +86,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Navigation List */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        {isAdmin && (
+          <div className="mb-4">
+            <div className="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Admin Navigation
+            </div>
+            <button
+              onClick={() => handleNavClick('admin')}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                currentRoute === 'admin'
+                  ? 'bg-[#2e5f49] text-white shadow-sm shadow-black/20 font-semibold'
+                  : 'hover:bg-white/10 hover:text-white text-slate-200'
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <ShieldCheck className={`w-4 h-4 ${currentRoute === 'admin' ? 'text-white' : 'text-slate-400'}`} />
+                <span>Admin Control</span>
+              </span>
+              {currentRoute === 'admin' && <ChevronRight className={`w-3.5 h-3.5 ${isRtl ? 'rotate-180' : ''}`} />}
+            </button>
+            <div className="mx-3 mt-4 border-t border-white/10" />
+          </div>
+        )}
+
         <div className="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-          <span>{isAdmin ? 'Platform Navigation' : 'Client Navigation'}</span>
+          <span>Client Navigation</span>
         </div>
 
         {navItems.map((item) => {

@@ -994,6 +994,9 @@ export const AdminPortal: React.FC = () => {
                 </div>
                 {sys.inverterBrand.toLowerCase() === 'huawei' && (
                   <div className="space-y-2 border-t border-slate-100 pt-3">
+                    <p className="text-[11px] leading-4 text-slate-500">
+                      Admins can link this system to its Huawei FusionSolar station using the station code.
+                    </p>
                     <label className="block text-[11px] font-semibold text-slate-600" htmlFor={`station-${sys.id}`}>FusionSolar station code</label>
                     <div className="flex gap-2">
                       <input
