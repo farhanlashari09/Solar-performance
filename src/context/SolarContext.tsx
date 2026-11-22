@@ -5,15 +5,7 @@ import {
   DailyProduction,
   DiagnosticResult,
   AlertItem,
-  WeatherInfo,
 } from '../types';
-import { mockWeatherInfo } from '../data/mockSolarData';
-import {
-  generateDynamicHourly,
-  generateDynamicWeekly,
-  generateDynamicMonthly,
-  generateInitialAlerts,
-} from '../utils/solarCalculations';
 import { evaluateSystemPerformance } from '../utils/diagnosticEngine';
 import { useAuth } from './AuthContext';
 import { solarSystemsApi } from '../services/api';
@@ -23,19 +15,19 @@ interface SolarContextType {
   activeSystem: SolarSystem;
   isNewUser: boolean;
   setActiveSystemId: (id: string) => void;
-  addSolarSystem: (system: Omit<SolarSystem, 'id'>) => SolarSystem;
+  addSolarSystem: (system: Omit<SolarSystem, 'id'>) => Promise<SolarSystem>;
   updateSolarSystem: (id: string, updates: Partial<SolarSystem>) => void;
+  refreshMonitoring: (id?: string) => Promise<string | null>;
   hourlyReadings: HourlyReading[];
   weeklyReadings: DailyProduction[];
   monthlyReadings: { period: string; actualKwh: number; expectedKwh: number; performanceRatio: number }[];
   diagnosticResult: DiagnosticResult;
-  weather: WeatherInfo;
+  weather: null;
   alerts: AlertItem[];
   unreadAlertCount: number;
   markAlertAsRead: (id: string) => void;
   markAlertAsUnread: (id: string) => void;
   markAllAlertsAsRead: () => void;
-  resetDemoData: () => void;
 }
 
 const SolarContext = createContext<SolarContextType | undefined>(undefined);
@@ -43,40 +35,24 @@ const SolarContext = createContext<SolarContextType | undefined>(undefined);
 const EMPTY_SYSTEM: SolarSystem = {
   id: '__empty__',
   name: 'No Solar System Configured',
-  location: 'Not configured',
+  location: '',
   capacityKw: 0,
   inverterBrand: '',
   inverterModel: '',
   installationDate: '',
   connectionMethod: '',
-  connectionStatus: 'demo',
+  connectionStatus: 'unavailable',
+  monitoringStatus: 'unlinked',
   panelCount: 0,
   panelType: '',
 };
 
 export const SolarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
-  const userKey = currentUser ? `solarcare_systems_${currentUser.id}` : 'solarcare_systems_guest';
   const alertsKey = currentUser ? `solarcare_alerts_${currentUser.id}` : 'solarcare_alerts_guest';
-  const activeIdKey = currentUser ? `solarcare_active_id_${currentUser.id}` : 'solarcare_active_id_guest';
 
-  const [systems, setSystems] = useState<SolarSystem[]>(() => {
-    const saved = localStorage.getItem(userKey);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      } catch {
-        // ignore
-      }
-    }
-    return [];
-  });
-
-  const [activeSystemId, setActiveSystemIdState] = useState<string>(() => {
-    const saved = localStorage.getItem(activeIdKey);
-    return saved || '';
-  });
+  const [systems, setSystems] = useState<SolarSystem[]>([]);
+  const [activeSystemId, setActiveSystemIdState] = useState('');
 
   const [alerts, setAlerts] = useState<AlertItem[]>(() => {
     const saved = localStorage.getItem(alertsKey);
@@ -90,7 +66,6 @@ export const SolarProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return [];
   });
 
-  // Fetch user systems from backend server when user logs in or switches
   useEffect(() => {
     if (!currentUser) {
       setSystems([]);
@@ -99,41 +74,21 @@ export const SolarProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
 
-    const currentSaved = localStorage.getItem(userKey);
-    if (currentSaved) {
-      try {
-        const parsed = JSON.parse(currentSaved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setSystems(parsed);
-          setActiveSystemIdState(parsed[0].id);
-          return;
-        }
-      } catch {
-        // fallback to server
-      }
-    }
-
-    // Attempt to query server for this user's solar systems
-    solarSystemsApi.getSystemsForUser(currentUser.id).then((res) => {
-      if (res.success && Array.isArray(res.systems) && res.systems.length > 0) {
-        setSystems(res.systems);
-        setActiveSystemIdState(res.systems[0].id);
-      } else {
-        // Brand new user with 0 systems
-        setSystems([]);
-        setActiveSystemIdState('');
-      }
+    let active = true;
+    solarSystemsApi.getSystemsForUser().then((res) => {
+      if (!active) return;
+      const loaded = res.success && Array.isArray(res.systems) ? res.systems : [];
+      setSystems(loaded);
+      setActiveSystemIdState((previous) => loaded.some((system: SolarSystem) => system.id === previous)
+        ? previous
+        : (loaded[0]?.id || ''));
     });
+    return () => { active = false; };
   }, [currentUser?.id]);
 
-  // Sync to local storage
   useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem(userKey, JSON.stringify(systems));
-      localStorage.setItem(activeIdKey, activeSystemId);
-      localStorage.setItem(alertsKey, JSON.stringify(alerts));
-    }
-  }, [systems, activeSystemId, alerts, currentUser]);
+    if (currentUser) localStorage.setItem(alertsKey, JSON.stringify(alerts));
+  }, [alerts, currentUser, alertsKey]);
 
   const isNewUser = systems.length === 0;
 
@@ -145,50 +100,68 @@ export const SolarProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setActiveSystemIdState(id);
   };
 
-  const addSolarSystem = (newSysData: Omit<SolarSystem, 'id'>): SolarSystem => {
-    const newSystem: SolarSystem = {
-      ...newSysData,
-      id: `sys-${Date.now()}`,
-    };
-
-    const updated = [...systems, newSystem];
-    setSystems(updated);
-    setActiveSystemIdState(newSystem.id);
-
-    // Initial alert for this system
-    const newAlerts = generateInitialAlerts(newSystem.id, newSystem.name, newSystem.capacityKw);
-    setAlerts(prev => [...newAlerts, ...prev]);
-
-    // Send to backend server
-    if (currentUser) {
-      solarSystemsApi.addSystem({
-        userId: currentUser.id,
-        ...newSystem,
-      });
+  const addSolarSystem = async (newSysData: Omit<SolarSystem, 'id'>): Promise<SolarSystem> => {
+    if (!currentUser) throw new Error('Sign in before adding a solar system.');
+    const response = await solarSystemsApi.addSystem(newSysData);
+    if (!response.success || !response.system) {
+      throw new Error(response.message || 'Could not save the solar system.');
     }
 
+    const newSystem = response.system as SolarSystem;
+    setSystems((previous) => [...previous, newSystem]);
+    setActiveSystemIdState(newSystem.id);
     return newSystem;
   };
 
   const updateSolarSystem = (id: string, updates: Partial<SolarSystem>) => {
-    setSystems(prev => prev.map(s => (s.id === id ? { ...s, ...updates } : s)));
-    solarSystemsApi.updateSystem(id, updates);
+    solarSystemsApi.updateSystem(id, updates).then((response) => {
+      if (response.success && response.system) {
+        setSystems((previous) => previous.map((system) => system.id === id ? response.system : system));
+      }
+    });
   };
 
-  // DYNAMICALLY CALCULATE DATA BASED ON USER'S ACTUAL SYSTEM CAPACITY
-  // This guarantees that a 5kW, 10kW, 15kW, or 25kW system receives mathematically
-  // accurate curves instead of static dummy mock files.
-  const capacity = activeSystem.capacityKw > 0 ? activeSystem.capacityKw : 0;
-  const hourlyReadings = generateDynamicHourly(capacity);
-  const weeklyReadings = generateDynamicWeekly(capacity);
-  const monthlyReadings = generateDynamicMonthly(capacity);
+  const hourlyReadings: HourlyReading[] = [];
+  const weeklyReadings: DailyProduction[] = [];
+  const monthlyReadings: { period: string; actualKwh: number; expectedKwh: number; performanceRatio: number }[] = [];
 
-  // Diagnostic result from rule-based engine
-  const diagnosticResult = evaluateSystemPerformance(
-    activeSystem,
-    weeklyReadings,
-    mockWeatherInfo.irradianceWm2
-  );
+  const diagnosticResult = evaluateSystemPerformance(activeSystem, weeklyReadings);
+
+  const refreshMonitoring = async (id = activeSystem.id): Promise<string | null> => {
+    const response = await solarSystemsApi.refreshMonitoring(id);
+    if (response.success && response.system) {
+      setSystems((previous) => previous.map((system) => system.id === id ? response.system : system));
+      return null;
+    }
+    if (response.monitoringStatus) {
+      setSystems((previous) => previous.map((system) => system.id === id
+        ? { ...system, monitoringStatus: response.monitoringStatus, monitoringError: response.message }
+        : system));
+    }
+    return response.message || 'Could not refresh live readings.';
+  };
+
+  useEffect(() => {
+    if (!currentUser || !activeSystem.providerStationCode) return;
+    let active = true;
+    const refresh = async () => {
+      const response = await solarSystemsApi.refreshMonitoring(activeSystem.id);
+      if (!active) return;
+      if (response.success && response.system) {
+        setSystems((previous) => previous.map((system) => system.id === activeSystem.id ? response.system : system));
+      } else if (response.monitoringStatus) {
+        setSystems((previous) => previous.map((system) => system.id === activeSystem.id
+          ? { ...system, monitoringStatus: response.monitoringStatus, monitoringError: response.message }
+          : system));
+      }
+    };
+    void refresh();
+    const timer = window.setInterval(() => { void refresh(); }, 5 * 60 * 1000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [currentUser?.id, activeSystem.id, activeSystem.providerStationCode]);
 
   const markAlertAsRead = (id: string) => {
     setAlerts(prev => prev.map(a => (a.id === id ? { ...a, isRead: true } : a)));
@@ -204,17 +177,6 @@ export const SolarProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const unreadAlertCount = alerts.filter(a => !a.isRead).length;
 
-  const resetDemoData = () => {
-    if (currentUser) {
-      localStorage.removeItem(userKey);
-      localStorage.removeItem(activeIdKey);
-      localStorage.removeItem(alertsKey);
-    }
-    setSystems([]);
-    setActiveSystemIdState('');
-    setAlerts([]);
-  };
-
   return (
     <SolarContext.Provider
       value={{
@@ -224,17 +186,17 @@ export const SolarProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setActiveSystemId,
         addSolarSystem,
         updateSolarSystem,
+        refreshMonitoring,
         hourlyReadings,
         weeklyReadings,
         monthlyReadings,
         diagnosticResult,
-        weather: mockWeatherInfo,
+        weather: null,
         alerts,
         unreadAlertCount,
         markAlertAsRead,
         markAlertAsUnread,
         markAllAlertsAsRead,
-        resetDemoData,
       }}
     >
       {children}

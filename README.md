@@ -1,6 +1,6 @@
-# SolarCare — Smart Solar Performance & Telemetry Platform
+# SolarCare — Solar Monitoring & Service Platform
 
-A complete, production-ready, full-stack solar energy monitoring and after-sales maintenance web application designed for personal use and multi-user deployments.
+SolarCare manages solar-system details and displays provider readings only after a verified connection. It does not generate production measurements from system capacity.
 
 ---
 
@@ -67,20 +67,28 @@ System me **Nodemailer** integrated hai jo user ke Gmail account par **6-digit s
 
 ---
 
-## ☀️ New User Solar Setup (No Dummy Data!)
+## Solar system setup and monitoring
 
-Jab naya user sign up kar ke pehli dafa login karta hai:
-- Use **koi fake ya dummy dashboard data nahi dikhaya jata**.
-- Screen par dedicated **Solar Plant Setup View** aati hai jo user se us ke solar system ki asal maloomat leti hai:
-  - System Ka Naam (e.g. *Mera Ghar 10kW*)
-  - Shehar / Location (e.g. *Lahore, Punjab*)
-  - Inverter Capacity in kW (e.g. *5kW, 8kW, 10kW, 15kW, 20kW*)
-  - Inverter Brand (Huawei, Sungrow, Growatt, Inverex, Knox, Fronius, GoodWe, Solis, etc.)
-  - Solar Panel Count aur Panel Type (e.g. 585W N-Type TOPCon)
-  - Telemetry Connection Type (WiFi Datalogger, Cloud, RS485)
-  - Battery Storage (None, Lithium 48V, Tubular)
-  - Installation Date
-- Save karne ke baad, **Dashboard ki tamaam calculations (Daily production, Hourly curves, Monthly yield, Savings) us user ke enter kiye huway kW ke mutabiq dynamically calculate hoti hain!**
+System name, location, and capacity are required. Saving setup does not mark a system connected or create telemetry. Current production cards remain empty until a successful provider response; historical charts and diagnostics remain unavailable until dated provider history is supported.
+
+### Administrator access
+
+Set `SOLARCARE_ADMIN_EMAILS` in the backend environment to a comma-separated list of verified administrator account emails. The list is checked server-side; an empty value disables administrator-only fleet and provider-linking APIs. Do not use the shipped demo account as an administrator in a deployed environment.
+
+### Huawei FusionSolar setup
+
+1. Enable Northbound API access for the Huawei account and use its HTTPS regional API host.
+2. Set these **backend-only** environment variables before starting the Express server:
+   ```env
+   FUSIONSOLAR_BASE_URL=https://intl.fusionsolar.huawei.com
+   FUSIONSOLAR_USERNAME=your-northbound-api-user
+   FUSIONSOLAR_PASSWORD=your-northbound-api-password
+   ```
+   Use the region host and credentials issued for your account. Do not prefix these with `VITE_`, expose them to the browser, or commit actual values.
+3. In the authenticated Admin Control Center, enter each Huawei installation’s station code and choose **Link**. A provider selection during system setup is only a request for integration; it does not connect the system.
+4. Admins can refresh each linked station’s readings. Owners can see and refresh only their own systems. Status changes to connected only after FusionSolar returns supported measurements. Until configured and linked, the UI reports the exact disconnected/unconfigured state and shows no sample telemetry.
+
+The current integration requests station real-time KPIs (`active_power`, `day_cap`, and `total_cap`) from the FusionSolar Northbound API. It does not fetch dated production history. The station mapping is managed by an authenticated administrator, and all provider credentials remain on the backend. Access tokens are server-issued, expire after 12 hours, and are held in server memory; restarting the backend requires users to sign in again.
 
 ---
 
@@ -100,7 +108,10 @@ Solar performance/
 │   ├── index.js                # Express REST API endpoints & route handlers
 │   ├── mailer.js               # Nodemailer email dispatch service
 │   ├── db.js                   # JSON-based database engine
+│   ├── auth.js                 # Server-issued sessions and access control
+│   ├── fusionsolar.js          # Server-only Huawei Northbound API adapter
 │   ├── aiBrain.js              # Multilingual Solar AI chatbot brain
+│   ├── test/                   # Focused auth and provider tests
 │   └── data/
 │       └── solarcare_db.json   # Persistent database file
 │
@@ -120,13 +131,12 @@ Solar performance/
     │
     ├── context/
     │   ├── AuthContext.tsx                   # User session & auth state
-    │   ├── SolarContext.tsx                  # Dynamic solar system math & telemetry
+    │   ├── SolarContext.tsx                  # User-scoped systems and verified telemetry state
     │   ├── MaintenanceContext.tsx            # Service requests state
     │   └── LanguageContext.tsx               # English, Urdu, Roman Urdu switcher
     │
     ├── utils/
-    │   ├── solarCalculations.ts              # Mathematical models for solar curves
-    │   └── diagnosticEngine.ts               # Rule-based diagnostic evaluator
+    │   └── diagnosticEngine.ts               # Rule-based evaluator for verified readings
     │
     └── services/
         └── api.ts                            # REST API communication client

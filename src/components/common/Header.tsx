@@ -14,6 +14,7 @@ import {
   Check,
   PlusCircle,
   Zap,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -30,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
   const { language, setLanguage, t, isRtl } = useLanguage();
   const { systems, activeSystem, setActiveSystemId, unreadAlertCount } = useSolar();
   const { currentUser } = useAuth();
-  const isAdmin = currentUser?.email.trim().toLowerCase() === 'admin@solarcare.com';
+  const isAdmin = currentUser?.role === 'admin';
 
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isSystemMenuOpen, setIsSystemMenuOpen] = useState(false);
@@ -162,8 +163,8 @@ export const Header: React.FC<HeaderProps> = ({
                 title="Open admin database and platform controls"
                 className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-semibold hover:bg-emerald-100 transition-colors cursor-pointer"
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>DB Live</span>
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>Admin</span>
               </button>
             )}
 

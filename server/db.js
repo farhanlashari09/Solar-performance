@@ -6,8 +6,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DB_FILE = path.join(__dirname, 'data', 'solarcare_db.json');
 
-export const ADMIN_EMAIL = 'admin@solarcare.com';
-export const isAdminEmail = email => typeof email === 'string' && email.trim().toLowerCase() === ADMIN_EMAIL;
+export const isAdminEmail = (email) => {
+  if (typeof email !== 'string') return false;
+  const allowedEmails = (process.env.SOLARCARE_ADMIN_EMAILS || '')
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+  return allowedEmails.includes(email.trim().toLowerCase());
+};
 
 // Ensure data folder exists
 const dataDir = path.join(__dirname, 'data');
@@ -50,8 +56,9 @@ const initialSeed = {
       inverterBrand: 'Huawei',
       inverterModel: 'SUN2000-10KTL-M1',
       installationDate: '2023-04-15',
-      connectionMethod: 'Huawei FusionSolar Cloud API',
-      connectionStatus: 'connected',
+      connectionMethod: 'Not connected',
+      connectionStatus: 'unavailable',
+      monitoringStatus: 'unlinked',
       panelCount: 18,
       panelType: '585W Monofacial Tier-1 N-Type TOPCon',
     },
@@ -64,8 +71,9 @@ const initialSeed = {
       inverterBrand: 'Growatt',
       inverterModel: 'MAX 25KTL3-X',
       installationDate: '2022-11-20',
-      connectionMethod: 'Growatt ShineServer API',
-      connectionStatus: 'connected',
+      connectionMethod: 'Not connected',
+      connectionStatus: 'unavailable',
+      monitoringStatus: 'unlinked',
       panelCount: 46,
       panelType: '550W Bifacial Perc Panels',
     }
@@ -101,7 +109,34 @@ class Database {
     if (fs.existsSync(DB_FILE)) {
       try {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        return JSON.parse(raw);
+        const data = JSON.parse(raw);
+        let migrated = false;
+        data.solarSystems = (data.solarSystems || []).map((system) => {
+          const hasVerifiedTelemetry = system.telemetry?.source === 'Huawei FusionSolar'
+            && Number.isFinite(Date.parse(system.telemetry.lastUpdatedAt));
+          if (hasVerifiedTelemetry) return system;
+
+          const hasStation = typeof system.providerStationCode === 'string' && system.providerStationCode.length > 0;
+          const monitoringStatus = hasStation && ['error', 'unconfigured'].includes(system.monitoringStatus)
+            ? system.monitoringStatus
+            : 'unlinked';
+          const connectionMethod = hasStation ? 'Huawei FusionSolar' : 'Not connected';
+          if (system.connectionStatus !== 'unavailable'
+            || system.monitoringStatus !== monitoringStatus
+            || system.connectionMethod !== connectionMethod
+            || system.telemetry) {
+            migrated = true;
+          }
+          const { telemetry: _telemetry, ...unverifiedSystem } = system;
+          return {
+            ...unverifiedSystem,
+            connectionMethod,
+            connectionStatus: 'unavailable',
+            monitoringStatus,
+          };
+        });
+        if (migrated) this.save(data);
+        return data;
       } catch (err) {
         console.error('Error reading database file, using seed:', err);
         return { ...initialSeed };
@@ -205,7 +240,10 @@ class Database {
   addSolarSystem(systemData) {
     const newSys = {
       ...systemData,
-      id: `sys-${Date.now()}`
+      id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      connectionMethod: systemData.connectionMethod === 'Huawei FusionSolar' ? 'Huawei FusionSolar' : 'Not connected',
+      connectionStatus: 'unavailable',
+      monitoringStatus: 'unlinked',
     };
     this.data.solarSystems.push(newSys);
     this.save();

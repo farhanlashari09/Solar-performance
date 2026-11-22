@@ -7,12 +7,15 @@ import { fileURLToPath } from 'url';
 import { db, isAdminEmail } from './db.js';
 import { generateSolarAIResponse } from './aiBrain.js';
 import { sendOtpEmail, isValidEmail } from './mailer.js';
+import { canAccessSystem, configureAuth, createSession, requireAdmin, requireAuth, revokeSession } from './auth.js';
+import { fetchStationTelemetry, getFusionSolarConfiguration } from './fusionsolar.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const distPath = path.join(__dirname, '..', 'dist');
 
 dotenv.config();
+configureAuth(() => db.data.users, (user) => isAdminEmail(user.email));
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -173,6 +176,7 @@ app.post('/api/auth/register', (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Account created successfully in SolarCare.',
+      token: createSession(newUser),
       user: {
         id: newUser.id,
         name: newUser.name,
@@ -227,6 +231,7 @@ app.post('/api/auth/login', (req, res) => {
   res.json({
     success: true,
     message: 'Login successful.',
+    token: createSession(user),
     user: {
       id: user.id,
       name: user.name,
@@ -237,6 +242,15 @@ app.post('/api/auth/login', (req, res) => {
       role: isAdmin ? 'admin' : 'customer'
     }
   });
+});
+
+app.get('/api/auth/session', requireAuth, (req, res) => {
+  res.json({ success: true, user: req.user });
+});
+
+app.post('/api/auth/logout', requireAuth, (req, res) => {
+  revokeSession(req.sessionToken);
+  res.json({ success: true });
 });
 
 // Screen E: Forgot Password - Send recovery code to User's Gmail
@@ -334,34 +348,32 @@ app.post('/api/auth/forgot-password/reset', (req, res) => {
 // 2. SOLAR SYSTEMS ENDPOINTS (USER-SPECIFIC)
 // ==========================================
 
-// Get solar systems for logged-in user
-app.get('/api/systems/user/:userId', (req, res) => {
-  const { userId } = req.params;
-  const systems = db.getSolarSystemsForUser(userId);
+// Solar system access is scoped to the identity established by the server session.
+app.get('/api/systems', requireAuth, (req, res) => {
+  const systems = db.getSolarSystemsForUser(req.user.id);
   res.json({ success: true, systems });
 });
 
 // Add a new solar system for user
-app.post('/api/systems', (req, res) => {
-  const { userId, name, location, capacityKw, inverterBrand, inverterModel, installationDate, connectionMethod, panelCount, panelType, batteryCapacityKwh } = req.body;
-
-  if (!userId || !capacityKw) {
-    return res.status(400).json({ success: false, message: 'User ID aur system capacity darj karna zaroori hai.' });
+app.post('/api/systems', requireAuth, (req, res) => {
+  const { name, location, capacityKw, inverterBrand, inverterModel, installationDate, panelCount, panelType, batteryCapacityKwh, connectionMethod } = req.body;
+  const parsedCapacity = Number(capacityKw);
+  if (!name?.trim() || !location?.trim() || !Number.isFinite(parsedCapacity) || parsedCapacity <= 0) {
+    return res.status(400).json({ success: false, message: 'System name, location, and a valid capacity are required.' });
   }
 
   const newSystem = db.addSolarSystem({
-    userId,
-    name: name || 'My Rooftop Solar',
-    location: location || 'Pakistan',
-    capacityKw: parseFloat(capacityKw) || 10.0,
-    inverterBrand: inverterBrand || 'Huawei',
-    inverterModel: inverterModel || 'Standard Inverter',
-    installationDate: installationDate || new Date().toISOString().split('T')[0],
-    connectionMethod: connectionMethod || 'WiFi Cloud Datalogger',
-    connectionStatus: 'connected',
-    panelCount: parseInt(panelCount) || Math.round((parseFloat(capacityKw) || 10) * 1.8),
-    panelType: panelType || 'Tier-1 Mono PERC / TOPCon',
-    batteryCapacityKwh: batteryCapacityKwh ? parseFloat(batteryCapacityKwh) : 0,
+    userId: req.user.id,
+    name: name.trim(),
+    location: location.trim(),
+    capacityKw: parsedCapacity,
+    inverterBrand: typeof inverterBrand === 'string' ? inverterBrand.trim() : '',
+    connectionMethod: inverterBrand === 'Huawei' && connectionMethod === 'Huawei FusionSolar' ? connectionMethod : 'Not connected',
+    inverterModel: typeof inverterModel === 'string' ? inverterModel.trim() : '',
+    installationDate: typeof installationDate === 'string' ? installationDate : '',
+    panelCount: Number.isFinite(Number(panelCount)) ? Number(panelCount) : 0,
+    panelType: typeof panelType === 'string' ? panelType : '',
+    batteryCapacityKwh: Number.isFinite(Number(batteryCapacityKwh)) ? Number(batteryCapacityKwh) : 0,
     createdAt: new Date().toISOString()
   });
 
@@ -369,27 +381,117 @@ app.post('/api/systems', (req, res) => {
 });
 
 // Update solar system
-app.put('/api/systems/:id', (req, res) => {
+app.put('/api/systems/:id', requireAuth, (req, res) => {
   const { id } = req.params;
   const sys = db.data.solarSystems.find(s => s.id === id);
-  if (!sys) {
+  if (!sys || !canAccessSystem(req.user, sys)) {
     return res.status(404).json({ success: false, message: 'Solar system not found.' });
   }
-  Object.assign(sys, req.body);
+  const allowedFields = ['name', 'location', 'capacityKw', 'inverterBrand', 'inverterModel', 'installationDate', 'panelCount', 'panelType', 'batteryCapacityKwh'];
+  for (const field of allowedFields) {
+    if (Object.hasOwn(req.body, field)) sys[field] = req.body[field];
+  }
   db.save();
   res.json({ success: true, message: 'Solar system updated.', system: sys });
 });
 
 // Delete solar system
-app.delete('/api/systems/:id', (req, res) => {
+app.delete('/api/systems/:id', requireAuth, (req, res) => {
   const { id } = req.params;
-  const initialLen = db.data.solarSystems.length;
-  db.data.solarSystems = db.data.solarSystems.filter(s => s.id !== id);
-  if (db.data.solarSystems.length === initialLen) {
+  const existing = db.data.solarSystems.find(s => s.id === id);
+  if (!existing || !canAccessSystem(req.user, existing)) {
     return res.status(404).json({ success: false, message: 'Solar system not found.' });
   }
+  db.data.solarSystems = db.data.solarSystems.filter(s => s.id !== id);
   db.save();
   res.json({ success: true, message: 'Solar system deleted.' });
+});
+
+async function refreshSystemMonitoring(system, res) {
+  if (!system.providerStationCode) {
+    system.monitoringStatus = 'unlinked';
+    system.connectionStatus = 'unavailable';
+    db.save();
+    return res.status(409).json({
+      success: false,
+      monitoringStatus: system.monitoringStatus,
+      message: 'A FusionSolar station must be linked by an administrator before readings are available.',
+    });
+  }
+
+  try {
+    const telemetry = await fetchStationTelemetry(system.providerStationCode);
+    system.telemetry = telemetry;
+    system.connectionMethod = 'Huawei FusionSolar';
+    system.connectionStatus = 'connected';
+    system.monitoringStatus = 'connected';
+    delete system.monitoringError;
+    db.save();
+    return res.json({ success: true, system });
+  } catch (error) {
+    system.monitoringStatus = error.code === 'FUSIONSOLAR_UNCONFIGURED' ? 'unconfigured' : 'error';
+    system.connectionStatus = 'unavailable';
+    system.monitoringError = error.code === 'FUSIONSOLAR_UNCONFIGURED'
+      ? 'FusionSolar server credentials are not configured.'
+      : 'Unable to retrieve live FusionSolar readings.';
+    db.save();
+    return res.status(error.code === 'FUSIONSOLAR_UNCONFIGURED' ? 503 : 502).json({
+      success: false,
+      monitoringStatus: system.monitoringStatus,
+      message: system.monitoringError,
+    });
+  }
+}
+
+app.post('/api/systems/:id/monitoring/refresh', requireAuth, (req, res) => {
+  const system = db.data.solarSystems.find((candidate) => candidate.id === req.params.id);
+  if (!system || !canAccessSystem(req.user, system)) {
+    return res.status(404).json({ success: false, message: 'Solar system not found.' });
+  }
+  return refreshSystemMonitoring(system, res);
+});
+
+app.get('/api/admin/systems', requireAuth, requireAdmin, (req, res) => {
+  const usersById = new Map(db.data.users.map((user) => [user.id, user]));
+  const systems = db.data.solarSystems.map((system) => {
+    const owner = usersById.get(system.userId);
+    return {
+      ...system,
+      owner: owner ? { id: owner.id, name: owner.name, email: owner.email } : null,
+    };
+  });
+  res.json({
+    success: true,
+    providerConfigured: getFusionSolarConfiguration().configured,
+    systems,
+  });
+});
+
+app.put('/api/admin/systems/:id/provider', requireAuth, requireAdmin, (req, res) => {
+  const system = db.data.solarSystems.find((candidate) => candidate.id === req.params.id);
+  const stationCode = typeof req.body.stationCode === 'string' ? req.body.stationCode.trim() : '';
+  if (!system) return res.status(404).json({ success: false, message: 'Solar system not found.' });
+  if (system.inverterBrand.toLowerCase() !== 'huawei') {
+    return res.status(400).json({ success: false, message: 'Only Huawei systems can be linked to FusionSolar.' });
+  }
+  if (!stationCode || stationCode.length > 128) {
+    return res.status(400).json({ success: false, message: 'A valid FusionSolar station code is required.' });
+  }
+
+  system.providerStationCode = stationCode;
+  system.connectionMethod = 'Huawei FusionSolar';
+  system.connectionStatus = 'unavailable';
+  system.monitoringStatus = 'unlinked';
+  delete system.telemetry;
+  delete system.monitoringError;
+  db.save();
+  res.json({ success: true, system });
+});
+
+app.post('/api/admin/systems/:id/monitoring/refresh', requireAuth, requireAdmin, (req, res) => {
+  const system = db.data.solarSystems.find((candidate) => candidate.id === req.params.id);
+  if (!system) return res.status(404).json({ success: false, message: 'Solar system not found.' });
+  return refreshSystemMonitoring(system, res);
 });
 
 // ==========================================
@@ -421,7 +523,7 @@ app.patch('/api/requests/:id', (req, res) => {
 // 4. DATABASE MANAGEMENT ENDPOINTS
 // ==========================================
 
-app.get('/api/database/overview', (req, res) => {
+app.get('/api/database/overview', requireAuth, requireAdmin, (req, res) => {
   res.json({
     success: true,
     stats: {
@@ -438,7 +540,7 @@ app.get('/api/database/overview', (req, res) => {
   });
 });
 
-app.post('/api/database/reset', (req, res) => {
+app.post('/api/database/reset', requireAuth, requireAdmin, (req, res) => {
   db.resetDatabase();
   res.json({ success: true, message: 'Database reset to default seed records successfully.' });
 });

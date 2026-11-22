@@ -7,6 +7,7 @@ export type AuthScreen = 'login' | 'signup' | 'verify' | 'create-password' | 'fo
 interface AuthContextType {
   currentUser: User | null;
   isAuthenticated: boolean;
+  isSessionLoading: boolean;
   currentAuthScreen: AuthScreen;
   pendingEmail: string;
   isEmailVerified: boolean;
@@ -24,20 +25,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const USER_STORAGE_KEY = 'solarcare_user_session';
+const ACCESS_TOKEN_KEY = 'solarcare_access_token';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem(USER_STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return null;
-      }
-    }
-    return null; // Show Login screen by default
-  });
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
 
   const [currentAuthScreen, setCurrentAuthScreen] = useState<AuthScreen>('login');
   const [pendingEmail, setPendingEmail] = useState<string>('');
@@ -45,12 +37,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [verifiedResetCode, setVerifiedResetCode] = useState<string>('');
 
   useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem(USER_STORAGE_KEY);
-    }
-  }, [currentUser]);
+    localStorage.removeItem('solarcare_user_session');
+    authApi.session().then((res) => {
+      if (res.success && res.user) {
+        setCurrentUser(res.user);
+      } else {
+        sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+      }
+    }).finally(() => setIsSessionLoading(false));
+  }, []);
 
   // Screen A: Send Verification Code to User's Gmail
   const startSignUp = async (email: string) => {
@@ -97,6 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (res.success && res.user) {
+      if (res.token) sessionStorage.setItem(ACCESS_TOKEN_KEY, res.token);
       setCurrentUser(res.user);
       setIsEmailVerified(false);
       setPendingEmail('');
@@ -109,6 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     const res = await authApi.login({ email, password });
     if (res.success && res.user) {
+      if (res.token) sessionStorage.setItem(ACCESS_TOKEN_KEY, res.token);
       setCurrentUser(res.user);
       return { success: true, message: res.message };
     }
@@ -116,6 +113,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    void authApi.logout();
+    sessionStorage.removeItem(ACCESS_TOKEN_KEY);
     setCurrentUser(null);
     setCurrentAuthScreen('login');
     setIsEmailVerified(false);
@@ -176,6 +175,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         currentUser,
         isAuthenticated: !!currentUser,
+        isSessionLoading,
         currentAuthScreen,
         pendingEmail,
         isEmailVerified,

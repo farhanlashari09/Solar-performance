@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSolar } from '../../context/SolarContext';
 import { useAuth } from '../../context/AuthContext';
-import { ConnectionStatus, Language } from '../../types';
+import { Language } from '../../types';
 import {
   Sun,
   Zap,
@@ -32,19 +32,6 @@ const COMMON_INVERTER_BRANDS = [
   'Crown Micro',
   'Voltronic Power',
   'Other / Custom',
-];
-
-const COMMON_CITIES = [
-  'Lahore, Punjab',
-  'Karachi, Sindh',
-  'Islamabad / Rawalpindi',
-  'Multan, Punjab',
-  'Faisalabad, Punjab',
-  'Peshawar, KPK',
-  'Gujranwala, Punjab',
-  'Sialkot, Punjab',
-  'Quetta, Balochistan',
-  'Other Location',
 ];
 
 const LANG_OPTIONS: { code: Language; label: string; short: string }[] = [
@@ -100,18 +87,18 @@ export const SolarSetupScreen: React.FC = () => {
   };
 
   const [name, setName] = useState(msg('My Rooftop Solar', 'میرا سولر پلانٹ', 'Mera Rooftop Solar'));
-  const [location, setLocation] = useState('Lahore, Punjab');
+  const [location, setLocation] = useState('');
   const [capacityKw, setCapacityKw] = useState('10.0');
   const [inverterBrand, setInverterBrand] = useState('Huawei');
   const [inverterModel, setInverterModel] = useState('SUN2000-10KTL-M1');
   const [panelCount, setPanelCount] = useState('18');
   const [panelType, setPanelType] = useState('585W Monofacial Tier-1 N-Type TOPCon');
-  const [connectionMethod, setConnectionMethod] = useState('WiFi Inverter Cloud Datalogger');
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connected');
+  const [connectionMethod, setConnectionMethod] = useState('Not connected');
   const [batteryType, setBatteryType] = useState('none');
   const [batteryCapacityKwh, setBatteryCapacityKwh] = useState('0');
   const [installationDate, setInstallationDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Auto-update estimated panel count when capacity changes
   const handleCapacityChange = (val: string) => {
@@ -123,33 +110,34 @@ export const SolarSetupScreen: React.FC = () => {
     }
   };
 
-  const parsedKw = parseFloat(capacityKw) || 10.0;
-  const estDailyKwh = (parsedKw * 4.6).toFixed(1);
-  const estMonthlyKwh = Math.round(parsedKw * 138);
-  const estCo2SavingsTons = (parsedKw * 1.2).toFixed(1);
+  const parsedKw = parseFloat(capacityKw);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    const kw = parseFloat(capacityKw) || 10.0;
-    const count = parseInt(panelCount) || Math.round((kw * 1000) / 585);
-
-    addSolarSystem({
-      name: name.trim() || msg('My Solar Plant', 'میرا سولر سسٹم', 'Mera Solar Plant'),
-      location: location.trim() || 'Pakistan',
-      capacityKw: kw,
-      inverterBrand,
-      inverterModel: inverterModel.trim() || `${inverterBrand}-SmartInverter`,
-      installationDate: installationDate || new Date().toISOString().split('T')[0],
-      connectionMethod,
-      connectionStatus,
-      panelCount: count,
-      panelType,
-      batteryCapacityKwh: batteryType !== 'none' ? parseFloat(batteryCapacityKwh) || 5.0 : 0,
-    });
-
-    setIsSubmitting(false);
+    setErrorMessage('');
+    try {
+      const kw = Number(capacityKw);
+      await addSolarSystem({
+        name: name.trim(),
+        location: location.trim(),
+        capacityKw: kw,
+        inverterBrand,
+        inverterModel: inverterModel.trim(),
+        installationDate,
+        connectionMethod: inverterBrand === 'Huawei' && connectionMethod === 'Huawei FusionSolar'
+          ? 'Huawei FusionSolar'
+          : 'Not connected',
+        connectionStatus: 'unavailable',
+        panelCount: Number(panelCount) || 0,
+        panelType,
+        batteryCapacityKwh: batteryType !== 'none' ? Number(batteryCapacityKwh) || 0 : 0,
+      });
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Could not save this solar system.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -179,9 +167,9 @@ export const SolarSetupScreen: React.FC = () => {
               </h1>
               <p className="text-xs text-emerald-100 mt-0.5">
                 {msg(
-                  'Enter your solar plant specifications so your dashboard reflects your actual generation capacity.',
-                  'اپنے سولر سسٹم کی تفصیلات درج کریں تاکہ ڈیش بورڈ آپ کی اصل پیداوری صلاحیت کے مطابق کام کرے۔',
-                  'Apne solar system ki details darj karein taake dashboard aap ke system ke mutabiq calculation kare.'
+                  'Add your system details. Live readings appear only after a provider connection is verified.',
+                  'اپنے سسٹم کی تفصیلات درج کریں۔ لائیو ریڈنگز صرف تصدیق شدہ کنکشن کے بعد دکھائی جائیں گی۔',
+                  'System ki details darj karein. Live readings sirf provider connection verify hone ke baad dikhengi.'
                 )}
               </p>
             </div>
@@ -194,28 +182,10 @@ export const SolarSetupScreen: React.FC = () => {
           </button>
         </div>
 
-        {/* Live Calculation Preview Banner */}
         <div className="bg-emerald-950 px-8 py-3.5 border-b border-emerald-900 text-xs text-emerald-200 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-300" />
-            <span>
-              {msg('Configuring', 'ترتیب دیا جا رہا ہے', 'Configure kar rahe hain')}{' '}
-              <strong className="text-white font-mono">{parsedKw} kW</strong> System:
-            </span>
-          </div>
-          <div className="flex items-center gap-4 text-[11px]">
-            <span>
-              {msg('Est. Daily Yield:', 'تخمینہ روزانہ پیداوار:', 'Est. Daily Yield:')}{' '}
-              <strong className="text-emerald-300 font-mono">~{estDailyKwh} kWh</strong>
-            </span>
-            <span>
-              {msg('Monthly Est:', 'ماہانہ تخمینہ:', 'Monthly Est:')}{' '}
-              <strong className="text-emerald-300 font-mono">~{estMonthlyKwh} kWh</strong>
-            </span>
-            <span>
-              {msg('Annual CO2 Saved:', 'سالانہ کاربن کی بچت:', 'Annual CO2 Saved:')}{' '}
-              <strong className="text-amber-300 font-mono">~{estCo2SavingsTons} {msg('Tons', 'ٹن', 'Tons')}</strong>
-            </span>
+            <ShieldCheck className="w-4 h-4 text-emerald-300" />
+            <span>{msg('Measurements stay blank until verified live data is received.', 'تصدیق شدہ لائیو ڈیٹا ملنے تک پیمائش خالی رہے گی۔', 'Verified live data anay tak measurements blank rahengi.')}</span>
           </div>
         </div>
 
@@ -232,7 +202,7 @@ export const SolarSetupScreen: React.FC = () => {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. GreenHome 10kW Rooftop"
+                placeholder={msg('Name this system', 'سسٹم کا نام درج کریں', 'System ka naam')}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white font-medium"
               />
             </div>
@@ -250,14 +220,9 @@ export const SolarSetupScreen: React.FC = () => {
                   list="city-options"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g. Lahore, Punjab"
+                  placeholder={msg('Enter city or address', 'شہر یا پتہ درج کریں', 'Shehar ya address')}
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
                 />
-                <datalist id="city-options">
-                  {COMMON_CITIES.map((c) => (
-                    <option key={c} value={c} />
-                  ))}
-                </datalist>
               </div>
             </div>
 
@@ -276,7 +241,7 @@ export const SolarSetupScreen: React.FC = () => {
                   required
                   value={capacityKw}
                   onChange={(e) => handleCapacityChange(e.target.value)}
-                  placeholder="e.g. 10.0"
+                  placeholder="10.0"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white font-bold text-slate-900"
                 />
               </div>
@@ -296,7 +261,10 @@ export const SolarSetupScreen: React.FC = () => {
               </label>
               <select
                 value={inverterBrand}
-                onChange={(e) => setInverterBrand(e.target.value)}
+                onChange={(e) => {
+                  setInverterBrand(e.target.value);
+                  if (e.target.value !== 'Huawei') setConnectionMethod('Not connected');
+                }}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white font-medium"
               >
                 {COMMON_INVERTER_BRANDS.map((brand) => (
@@ -368,11 +336,12 @@ export const SolarSetupScreen: React.FC = () => {
                 onChange={(e) => setConnectionMethod(e.target.value)}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
               >
-                <option value="WiFi Inverter Cloud Datalogger">WiFi Inverter Cloud Datalogger (Real-time)</option>
-                <option value="4G GSM IoT Datalogger">4G GSM IoT Datalogger</option>
-                <option value="Local RS485 Modbus Direct">Local RS485 Modbus Direct</option>
-                <option value="Manual Meter Telemetry">Manual Meter Telemetry</option>
+                <option value="Not connected">Not connected</option>
+                <option value="Huawei FusionSolar">Huawei FusionSolar (admin setup required)</option>
               </select>
+              <p className="mt-1 text-[11px] text-slate-500">
+                {msg('Adding a provider here does not connect it. An administrator must link the verified FusionSolar station.', 'یہاں provider منتخب کرنے سے کنکشن نہیں بنتا۔ منتظم کو تصدیق شدہ FusionSolar station منسلک کرنا ہوگا۔', 'Provider select karne se connection nahi hota. Admin ko verified FusionSolar station link karna hoga.')}
+              </p>
             </div>
 
             {/* Battery Storage */}
@@ -415,16 +384,17 @@ export const SolarSetupScreen: React.FC = () => {
               <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>
                 {msg(
-                  `Your dashboard will be customized based on your ${parsedKw} kW solar capacity.`,
-                  `آپ کا ڈیش بورڈ آپ کی ${parsedKw} کلو واٹ صلاحیت کے مطابق چلے گا۔`,
-                  `Aap ka dashboard ab is system ki capacity (${parsedKw} kW) ke mutabiq chalega.`
+                  `System capacity: ${Number.isFinite(parsedKw) ? parsedKw : '—'} kW. No readings are simulated.`,
+                  `سسٹم کی صلاحیت: ${Number.isFinite(parsedKw) ? parsedKw : '—'} کلو واٹ۔ کوئی ریڈنگ فرضی نہیں ہوگی۔`,
+                  `System capacity ${Number.isFinite(parsedKw) ? parsedKw : '—'} kW. Koi simulated reading nahi hogi.`
                 )}
               </span>
             </div>
 
+            {errorMessage && <p role="alert" className="w-full text-sm text-rose-700">{errorMessage}</p>}
             <button
               type="submit"
-              disabled={isSubmitting || parsedKw <= 0}
+              disabled={isSubmitting || !name.trim() || !location.trim() || !Number.isFinite(parsedKw) || parsedKw <= 0}
               className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold text-sm shadow-lg shadow-emerald-700/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <CheckCircle2 className="w-5 h-5 text-amber-300" />

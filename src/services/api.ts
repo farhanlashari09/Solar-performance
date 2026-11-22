@@ -4,6 +4,11 @@ const API_BASE = (typeof window !== 'undefined' && window.location.port === '500
     ? 'http://127.0.0.1:5000/api'
     : 'http://localhost:5000/api';
 
+const authHeaders = (): Record<string, string> => {
+  const token = typeof window !== 'undefined' ? window.sessionStorage.getItem('solarcare_access_token') : null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export interface ApiResponse<T = any> {
   success: boolean;
   message?: string;
@@ -54,6 +59,23 @@ export const authApi = {
         success: false,
         message: 'Verification failed. Backend server may be offline.',
       };
+    }
+  },
+
+  async session(): Promise<ApiResponse> {
+    try {
+      const res = await fetch(`${API_BASE}/auth/session`, { headers: authHeaders() });
+      return await res.json();
+    } catch {
+      return { success: false, message: 'Could not validate the current session.' };
+    }
+  },
+
+  async logout(): Promise<void> {
+    try {
+      await fetch(`${API_BASE}/auth/logout`, { method: 'POST', headers: authHeaders() });
+    } catch {
+      // The local token is cleared by AuthContext regardless of network availability.
     }
   },
 
@@ -128,9 +150,9 @@ export const authApi = {
 };
 
 export const solarSystemsApi = {
-  async getSystemsForUser(userId: string): Promise<ApiResponse> {
+  async getSystemsForUser(): Promise<ApiResponse> {
     try {
-      const res = await fetch(`${API_BASE}/systems/user/${userId}`);
+      const res = await fetch(`${API_BASE}/systems`, { headers: authHeaders() });
       return await res.json();
     } catch (err) {
       return { success: false, message: 'Could not fetch solar systems from server.' };
@@ -141,7 +163,7 @@ export const solarSystemsApi = {
     try {
       const res = await fetch(`${API_BASE}/systems`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify(systemData),
       });
       return await res.json();
@@ -154,7 +176,7 @@ export const solarSystemsApi = {
     try {
       const res = await fetch(`${API_BASE}/systems/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify(updates),
       });
       return await res.json();
@@ -162,12 +184,46 @@ export const solarSystemsApi = {
       return { success: false, message: 'Could not update system.' };
     }
   },
+
+  async refreshMonitoring(id: string, admin = false): Promise<ApiResponse> {
+    try {
+      const path = admin ? `/admin/systems/${id}/monitoring/refresh` : `/systems/${id}/monitoring/refresh`;
+      const res = await fetch(`${API_BASE}${path}`, { method: 'POST', headers: authHeaders() });
+      return await res.json();
+    } catch {
+      return { success: false, message: 'Could not request live FusionSolar readings.' };
+    }
+  },
+};
+
+export const adminSystemsApi = {
+  async getAllSystems(): Promise<ApiResponse> {
+    try {
+      const res = await fetch(`${API_BASE}/admin/systems`, { headers: authHeaders() });
+      return await res.json();
+    } catch {
+      return { success: false, message: 'Could not fetch the system fleet.' };
+    }
+  },
+
+  async linkFusionSolarStation(systemId: string, stationCode: string): Promise<ApiResponse> {
+    try {
+      const res = await fetch(`${API_BASE}/admin/systems/${systemId}/provider`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ stationCode }),
+      });
+      return await res.json();
+    } catch {
+      return { success: false, message: 'Could not link the FusionSolar station.' };
+    }
+  },
 };
 
 export const databaseApi = {
   async getOverview(): Promise<ApiResponse> {
     try {
-      const res = await fetch(`${API_BASE}/database/overview`);
+      const res = await fetch(`${API_BASE}/database/overview`, { headers: authHeaders() });
       return await res.json();
     } catch (err) {
       return { success: false, message: 'Could not fetch database stats.' };
@@ -176,7 +232,7 @@ export const databaseApi = {
 
   async reset(): Promise<ApiResponse> {
     try {
-      const res = await fetch(`${API_BASE}/database/reset`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/database/reset`, { method: 'POST', headers: authHeaders() });
       return await res.json();
     } catch (err) {
       return { success: false, message: 'Could not reset database.' };

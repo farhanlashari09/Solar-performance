@@ -14,7 +14,6 @@ import {
   Bell,
   Settings,
   LogOut,
-  RefreshCw,
   X,
   ChevronRight,
   ShieldCheck,
@@ -34,10 +33,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const { t, isRtl } = useLanguage();
-  const { unreadAlertCount, resetDemoData } = useSolar();
+  const { unreadAlertCount } = useSolar();
   const { serviceRequests } = useMaintenance();
   const { logout, currentUser } = useAuth();
-  const isAdmin = currentUser?.email.trim().toLowerCase() === 'admin@solarcare.com';
+  const isAdmin = currentUser?.role === 'admin';
 
   const activeRequestsCount = serviceRequests.filter(r => r.status !== 'Completed').length;
 
@@ -74,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const navContent = (
-    <div className="flex flex-col h-full bg-slate-900 text-slate-300 border-r border-slate-800">
+    <div className="flex flex-col h-full bg-[#173e32] text-slate-200 border-r border-[#102f25]">
       {/* Mobile Header */}
       <div className="flex items-center justify-between p-4 lg:hidden border-b border-slate-800">
         <span className="font-extrabold text-white tracking-normal text-base">
@@ -103,8 +102,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => handleNavClick(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 isActive
-                  ? 'bg-emerald-600/90 text-white shadow-sm shadow-emerald-900/30 font-semibold'
-                  : 'hover:bg-slate-800/80 hover:text-white text-slate-300'
+                  ? 'bg-[#2e5f49] text-white shadow-sm shadow-black/20 font-semibold'
+                  : 'hover:bg-white/10 hover:text-white text-slate-200'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -128,24 +127,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </div>
 
-      {/* Bottom section: Demo Reset & Logout */}
+      {/* Bottom section: Logout */}
       <div className="p-3 border-t border-slate-800/80 space-y-2 bg-slate-950/40">
-        <button
-          onClick={() => {
-            if (confirm('Reset prototype demo state to clean defaults?')) {
-              resetDemoData();
-            }
-          }}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-emerald-400 hover:bg-slate-800/60 transition-colors"
-          title="Reset all demo alterations"
-        >
-          <div className="flex items-center gap-2">
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>{t.resetDemoData}</span>
-          </div>
-          <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-400">Demo</span>
-        </button>
-
         <button
           onClick={() => logout()}
           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 transition-colors"

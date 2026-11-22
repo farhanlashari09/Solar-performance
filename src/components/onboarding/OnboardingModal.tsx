@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSolar } from '../../context/SolarContext';
-import { ConnectionStatus } from '../../types';
 import {
   Sun,
   X,
@@ -29,32 +28,35 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
   const [capacityKw, setCapacityKw] = useState('10.0');
   const [inverterBrand, setInverterBrand] = useState('Huawei');
   const [inverterModel, setInverterModel] = useState('');
-  const [installationDate, setInstallationDate] = useState('2024-03-01');
-  const [connectionMethod, setConnectionMethod] = useState('Simulated Inverter Cloud Telemetry');
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('demo');
+  const [installationDate, setInstallationDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [connectionMethod, setConnectionMethod] = useState('Not connected');
   const [panelCount, setPanelCount] = useState('18');
+  const [errorMessage, setErrorMessage] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cap = parseFloat(capacityKw) || 10.0;
-    const count = parseInt(panelCount) || 18;
-
-    addSolarSystem({
-      name: name.trim() || 'My Rooftop Solar',
-      location: location.trim() || 'Lahore, Pakistan',
-      capacityKw: cap,
-      inverterBrand,
-      inverterModel: inverterModel.trim() || `${inverterBrand}-KTL-Series`,
-      installationDate: installationDate || new Date().toISOString().split('T')[0],
-      connectionMethod,
-      connectionStatus,
-      panelCount: count,
-      panelType: 'Monofacial Tier-1 N-Type TOPCon',
-    });
-
-    onClose();
+    setErrorMessage('');
+    try {
+      await addSolarSystem({
+        name: name.trim(),
+        location: location.trim(),
+        capacityKw: Number(capacityKw),
+        inverterBrand,
+        inverterModel: inverterModel.trim(),
+        installationDate,
+        connectionMethod: inverterBrand === 'Huawei' && connectionMethod === 'Huawei FusionSolar'
+          ? 'Huawei FusionSolar'
+          : 'Not connected',
+        connectionStatus: 'unavailable',
+        panelCount: Number(panelCount) || 0,
+        panelType: '',
+      });
+      onClose();
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Could not save this solar system.');
+    }
   };
 
   const handleSkip = () => {
@@ -112,7 +114,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
                 required
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder={t.onboarding.locationPlaceholder}
+                placeholder="Enter city or address"
                 className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
               />
             </div>
@@ -159,7 +161,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
               </label>
               <select
                 value={inverterBrand}
-                onChange={(e) => setInverterBrand(e.target.value)}
+                onChange={(e) => {
+                  setInverterBrand(e.target.value);
+                  if (e.target.value !== 'Huawei') setConnectionMethod('Not connected');
+                }}
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
               >
                 <option value="Huawei">Huawei</option>
@@ -203,82 +208,27 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
             </div>
           </div>
 
-          {/* Connection Method & Status Selection */}
+          {/* Provider selection does not imply a verified connection. */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
               {t.onboarding.connectionMethod}
             </label>
-            <div className="space-y-2">
-              <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${connectionStatus === 'demo' ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-200 bg-slate-50'}`}>
-                <input
-                  type="radio"
-                  name="connStatus"
-                  checked={connectionStatus === 'demo'}
-                  onChange={() => {
-                    setConnectionStatus('demo');
-                    setConnectionMethod('Simulated Cloud Telemetry (Demo)');
-                  }}
-                  className="mt-0.5 text-emerald-600 focus:ring-emerald-500"
-                />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900">{t.onboarding.connectionDemo}</span>
-                    <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded">Recommended for Prototype</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Generates realistic photovoltaic yield curve based on {capacityKw} kW capacity and ambient sunlight simulation.
-                  </p>
-                </div>
-              </label>
-
-              <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${connectionStatus === 'connected' ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-200 bg-slate-50'}`}>
-                <input
-                  type="radio"
-                  name="connStatus"
-                  checked={connectionStatus === 'connected'}
-                  onChange={() => {
-                    setConnectionStatus('connected');
-                    setConnectionMethod('WiFi Dongle / Modbus API');
-                  }}
-                  className="mt-0.5 text-emerald-600 focus:ring-emerald-500"
-                />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900">{t.onboarding.connectionWifi}</span>
-                    <span className="px-1.5 py-0.2 bg-blue-100 text-blue-800 text-[10px] font-bold rounded">Inverter API</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Connects to supported cloud portal API key (Huawei FusionSolar, Growatt ShineServer, SolisCloud).
-                  </p>
-                </div>
-              </label>
-
-              <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${connectionStatus === 'unavailable' ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-200 bg-slate-50'}`}>
-                <input
-                  type="radio"
-                  name="connStatus"
-                  checked={connectionStatus === 'unavailable'}
-                  onChange={() => {
-                    setConnectionStatus('unavailable');
-                    setConnectionMethod('Manual / Data Logger Disconnected');
-                  }}
-                  className="mt-0.5 text-emerald-600 focus:ring-emerald-500"
-                />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900">Data Unavailable State</span>
-                    <span className="px-1.5 py-0.2 bg-slate-200 text-slate-700 text-[10px] font-bold rounded">Simulation Case</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Demonstrates how SolarCare handles missing sensor packets without inventing false measurements.
-                  </p>
-                </div>
-              </label>
-            </div>
+            <select
+              value={connectionMethod}
+              onChange={(event) => setConnectionMethod(event.target.value)}
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
+            >
+              <option value="Not connected">Not connected</option>
+              <option value="Huawei FusionSolar">Huawei FusionSolar (admin setup required)</option>
+            </select>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Selecting a provider does not connect it. An administrator must link a verified station.
+            </p>
           </div>
 
           {/* Action buttons */}
           <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+            {errorMessage && <p role="alert" className="text-xs text-rose-700">{errorMessage}</p>}
             <button
               type="button"
               onClick={handleSkip}
@@ -289,6 +239,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
 
             <button
               type="submit"
+              disabled={!name.trim() || !location.trim() || !Number.isFinite(Number(capacityKw)) || Number(capacityKw) <= 0}
               className="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-700/20 transition-all"
             >
               {t.onboarding.saveAndStart}

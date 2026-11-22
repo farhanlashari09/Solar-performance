@@ -8,33 +8,33 @@ export default {
     extend: {
       colors: {
         // ── Core Brand Palette ────────────────────────────────
-        // Forest-to-Emerald professional green scale
+        // SolarCare forest palette shared with the landing page
         brand: {
-          50:  '#ecfdf5',
-          100: '#d1fae5',
-          200: '#a7f3d0',
-          300: '#6ee7b7',
-          400: '#34d399',
-          500: '#10b981',   // primary action
-          600: '#059669',
-          700: '#047857',
-          800: '#065f46',
-          900: '#064e3b',
-          950: '#022c22',
+          50:  '#f1f5ef',
+          100: '#e5eee4',
+          200: '#cfdfcf',
+          300: '#b0ceb6',
+          400: '#84ac8e',
+          500: '#4f8465',
+          600: '#3b7056',
+          700: '#2e5f49',
+          800: '#234d3b',
+          900: '#173e32',
+          950: '#0e2e25',
           // Legacy aliases kept for existing components
-          dark:    '#064e3b',
-          darker:  '#043d2e',
-          darkest: '#022c22',
-          accent:  '#10b981',
-          light:   '#ecfdf5',
-          border:  '#d1fae5',
+          dark:    '#234d3b',
+          darker:  '#173e32',
+          darkest: '#0e2e25',
+          accent:  '#4f8465',
+          light:   '#f1f5ef',
+          border:  '#cfdfcf',
         },
 
         // ── Primary interactive colour ─────────────────────────
         primary: {
-          DEFAULT: '#059669',
-          hover:   '#047857',
-          light:   '#ecfdf5',
+          DEFAULT: '#3b7056',
+          hover:   '#2e5f49',
+          light:   '#eff5ef',
         },
 
         // ── Page surfaces ──────────────────────────────────────
@@ -44,9 +44,9 @@ export default {
           cardHover:   '#f0fdf4',
           border:      '#e5e7eb',
           borderLight: '#f0fdf4',
-          sidebar:     '#064e3b',      // deep forest green sidebar
-          sidebarDeep: '#043d2e',
-          sidebarItem: '#065f46',
+          sidebar:     '#173e32',
+          sidebarDeep: '#0e2e25',
+          sidebarItem: '#234d3b',
           dark:        '#0a0f1a',      // hero dark section bg
           darkCard:    '#111827',
           darkBorder:  'rgba(255,255,255,0.08)',
@@ -115,18 +115,18 @@ export default {
 
       // ── Box Shadows ────────────────────────────────────────────
       boxShadow: {
-        'brand-sm':  '0 2px 8px rgba(5, 150, 105, 0.15)',
-        'brand-md':  '0 8px 24px rgba(5, 150, 105, 0.20)',
-        'brand-lg':  '0 16px 48px rgba(5, 150, 105, 0.28)',
+        'brand-sm':  '0 2px 8px rgba(46, 95, 73, 0.15)',
+        'brand-md':  '0 8px 24px rgba(46, 95, 73, 0.20)',
+        'brand-lg':  '0 16px 48px rgba(46, 95, 73, 0.28)',
         'card':      '0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04)',
-        'card-hover':'0 8px 32px rgba(5, 150, 105, 0.12)',
+        'card-hover':'0 8px 32px rgba(46, 95, 73, 0.12)',
         'dark-card': '0 4px 24px rgba(0,0,0,0.3)',
       },
 
       // ── Background Gradients ───────────────────────────────────
       backgroundImage: {
         'hero-dark': 'linear-gradient(160deg, #0a0f1a 0%, #0d1f2d 50%, #071a12 100%)',
-        'brand-gradient': 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+        'brand-gradient': 'linear-gradient(135deg, #2e5f49 0%, #4f8465 100%)',
         'gold-gradient':  'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
         'card-dark': 'linear-gradient(135deg, #111827 0%, #1a2535 100%)',
       },

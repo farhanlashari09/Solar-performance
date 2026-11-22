@@ -112,7 +112,7 @@ export const MySolarSystemsView: React.FC<MySolarSystemsViewProps> = ({
                   <div>
                     <span className="text-slate-400 text-[11px] block">Module Spec</span>
                     <span className="font-semibold text-slate-800 truncate block" title={s.panelType}>
-                      {s.panelType}
+                      {s.panelType || 'Not specified'}
                     </span>
                   </div>
                 </div>
@@ -129,18 +129,20 @@ export const MySolarSystemsView: React.FC<MySolarSystemsViewProps> = ({
 
                   <span
                     className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                      s.connectionStatus === 'demo'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : s.connectionStatus === 'connected'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-rose-100 text-rose-800'
+                      s.connectionStatus === 'connected'
+                        ? 'bg-[#e9f4ed] text-[#2e7158]'
+                        : 'bg-slate-100 text-slate-600'
                     }`}
                   >
-                    {s.connectionStatus === 'demo'
-                      ? 'Demo Data Active'
-                      : s.connectionStatus === 'connected'
-                      ? 'Connected'
-                      : 'Data Unavailable'}
+                    {s.connectionStatus === 'connected'
+                      ? 'Live readings'
+                      : s.monitoringStatus === 'unconfigured'
+                        ? 'Provider not configured'
+                        : s.monitoringStatus === 'error'
+                          ? 'Connection error'
+                          : s.providerStationCode
+                            ? 'Awaiting readings'
+                            : 'Not connected'}
                   </span>
                 </div>
               </div>

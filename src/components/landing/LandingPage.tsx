@@ -35,12 +35,20 @@ const LANG_OPTIONS: { code: Language; label: string; short: string }[] = [
   { code: 'ur', label: 'اردو', short: 'اردو' },
 ];
 
+const referenceDay = new Date();
+referenceDay.setDate(referenceDay.getDate() - 1);
+const referenceWeek = Array.from({ length: 7 }, (_, index) => {
+  const date = new Date(referenceDay);
+  date.setDate(referenceDay.getDate() - 6 + index);
+  return date;
+});
+const previousMonth = new Date(referenceDay.getFullYear(), referenceDay.getMonth(), 0);
 const chartRanges = {
   day: {
     values: [24, 33, 28, 54, 46, 61, 38, 72, 50, 81, 57, 68, 43, 62, 36, 51, 30, 43, 22],
     labels: ['6 AM', '8 AM', '10 AM', '12 PM', '2 PM', '4 PM', '6 PM', '8 PM'],
     total: '44.1 kWh',
-    caption: 'Today',
+    caption: `Illustrative · ${referenceDay.toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}`,
     target: '48 kWh',
     progress: 92,
   },
@@ -48,7 +56,7 @@ const chartRanges = {
     values: [20, 42, 34, 55, 48, 77, 62, 52, 69, 58, 84, 70, 63, 76, 52, 67, 55, 88, 74],
     labels: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
     total: '286.4 kWh',
-    caption: 'This week',
+    caption: `Illustrative · ${referenceWeek[0].toLocaleDateString('en', { month: 'short', day: 'numeric' })}–${referenceWeek[6].toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}`,
     target: '320 kWh',
     progress: 90,
   },
@@ -56,7 +64,7 @@ const chartRanges = {
     values: [18, 30, 26, 47, 42, 65, 50, 60, 75, 58, 81, 72, 68, 85, 74, 90, 71, 83, 78],
     labels: ['1', '5', '9', '13', '17', '21', '25', '30'],
     total: '1,248 kWh',
-    caption: 'This month',
+    caption: `Illustrative · ${previousMonth.toLocaleDateString('en', { month: 'long', year: 'numeric' })}`,
     target: '1,320 kWh',
     progress: 95,
   },
@@ -66,28 +74,28 @@ type ChartRange = keyof typeof chartRanges;
 
 const CAROUSEL_IMAGES = [
   {
-    src: 'https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=1800&q=90',
-    alt: 'Large solar panel array installed at sunset',
+    src: 'https://images.pexels.com/photos/356036/pexels-photo-356036.jpeg?auto=compress&cs=tinysrgb&w=1800',
+    alt: 'Rows of solar panels beneath a clear sky',
   },
   {
-    src: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=1800&q=90',
-    alt: 'Solar panels under clear monitoring conditions',
+    src: '/images/fusionsolar-inverter.svg',
+    alt: 'Solar inverter with a live monitoring display',
   },
   {
-    src: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1800&q=90',
-    alt: 'High quality aerial view of a solar installation',
+    src: 'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&w=1800&q=90',
+    alt: 'Aerial solar panel array surrounded by green land',
   },
   {
-    src: 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=1800&q=90',
-    alt: 'Renewable energy solar inverter infrastructure',
+    src: 'https://images.pexels.com/photos/9875414/pexels-photo-9875414.jpeg?auto=compress&cs=tinysrgb&w=1800',
+    alt: 'Installer checking a rooftop solar panel',
   },
   {
-    src: 'https://images.unsplash.com/photo-1592833159155-c62df1b65634?auto=format&fit=crop&w=1800&q=90',
-    alt: 'Solar panels with monitoring and clean energy equipment',
+    src: 'https://images.pexels.com/photos/433308/pexels-photo-433308.jpeg?auto=compress&cs=tinysrgb&w=1800',
+    alt: 'Solar panels in a scenic snowy landscape',
   },
   {
-    src: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1800&q=90',
-    alt: 'Engineer inspecting solar and electrical system equipment',
+    src: '/images/solar-monitoring-dashboard.svg',
+    alt: 'Solar monitoring dashboard with energy charts and system status',
   },
 ] as const;
 
@@ -141,9 +149,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
 
   useEffect(() => {
     const controller = new AbortController();
-    const location = activeSystem.location && activeSystem.location !== 'Not configured'
-      ? activeSystem.location
-      : 'Lahore, Punjab';
+    const location = activeSystem.location.trim();
+    if (!location) {
+      setLiveWeather(null);
+      setWeatherStatus('error');
+      return () => controller.abort();
+    }
 
     const loadWeather = async () => {
       setWeatherStatus('loading');
@@ -410,7 +421,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                     <p className={`text-sm font-semibold ${palette.text}`}>{t('System conditions', 'سسٹم کی صورتحال', 'System conditions')}</p>
                     <p className={`mt-1 max-w-[150px] truncate text-[10px] ${palette.sub}`}>
                       {liveWeather?.locationName
-                        || (activeSystem.location !== 'Not configured' ? activeSystem.location : t('Lahore, Pakistan', 'لاہور، پاکستان', 'Lahore, Pakistan'))}
+                        || activeSystem.location
+                        || t('Location not set', 'مقام درج نہیں', 'Location not set')}
                     </p>
                   </div>
                   <span className={`rounded-full px-2 py-1 text-[8px] font-semibold ${weatherStatus === 'live' ? 'bg-emerald-500/10 text-emerald-600' : palette.inset + ' ' + palette.sub}`}>
@@ -509,10 +521,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                     <h2 className={`text-sm font-semibold ${palette.text}`}>{t('Production vs target', 'پیداوار بمقابلہ ہدف', 'Production vs target')}</h2>
                     <p className={`mt-1 text-[10px] ${palette.sub}`}>
                       {chartRange === 'day'
-                        ? t('Today’s system performance', 'آج کی سسٹم کارکردگی', 'Aaj ki system performance')
+                        ? t('Reference-day example', 'مثالی دن کا حوالہ', 'Reference day example')
                         : chartRange === 'week'
-                          ? t('This week’s system performance', 'اس ہفتے کی سسٹم کارکردگی', 'Is haftay ki system performance')
-                          : t('This month’s system performance', 'اس ماہ کی سسٹم کارکردگی', 'Is maah ki system performance')}
+                          ? t('Reference-week example', 'مثالی ہفتے کا حوالہ', 'Reference week example')
+                          : t('Previous-month example', 'گزشتہ ماہ کی مثال', 'Pichlay mahinay ki misaal')}
                     </p>
                   </div>
                   <span className={`text-xl font-semibold ${palette.text}`}>{activeChart.progress}%</span>
