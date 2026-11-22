@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useSolar } from '../../context/SolarContext';
 import { Language } from '../../types';
 import {
   Activity,
@@ -63,19 +64,130 @@ const chartRanges = {
 
 type ChartRange = keyof typeof chartRanges;
 
+const CAROUSEL_IMAGES = [
+  {
+    src: 'https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=1800&q=90',
+    alt: 'Large solar panel array installed at sunset',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=1800&q=90',
+    alt: 'Solar panels under clear monitoring conditions',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1800&q=90',
+    alt: 'High quality aerial view of a solar installation',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=1800&q=90',
+    alt: 'Renewable energy solar inverter infrastructure',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1592833159155-c62df1b65634?auto=format&fit=crop&w=1800&q=90',
+    alt: 'Solar panels with monitoring and clean energy equipment',
+  },
+  {
+    src: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1800&q=90',
+    alt: 'Engineer inspecting solar and electrical system equipment',
+  },
+] as const;
+
+interface LiveWeather {
+  tempC: number;
+  feelsC: number;
+  condition: string;
+  humidityPct: number;
+  windKmh: number;
+  cloudsPct: number;
+  irradianceWm2: number;
+  forecast: Array<{ date: string; maxC: number; minC: number; code: number }>;
+  locationName: string;
+}
+
+const weatherCondition = (code: number) => {
+  if (code === 0) return 'Clear';
+  if (code <= 3) return 'Partly cloudy';
+  if (code <= 48) return 'Foggy';
+  if (code <= 67) return 'Rainy';
+  if (code <= 77) return 'Snowy';
+  if (code <= 82) return 'Rain showers';
+  if (code <= 99) return 'Thunderstorms';
+  return 'Cloudy';
+};
+
 export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) => {
   const { language, setLanguage, isRtl } = useLanguage();
+  const { activeSystem } = useSolar();
   const [dark, setDark] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [chartRange, setChartRange] = useState<ChartRange>('day');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [liveWeather, setLiveWeather] = useState<LiveWeather | null>(null);
+  const [weatherStatus, setWeatherStatus] = useState<'loading' | 'live' | 'error'>('loading');
 
   const t = (en: string, ur: string, roman: string) => {
     if (language === 'ur') return ur;
     if (language === 'ur-roman') return roman;
     return en;
   };
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setCarouselIndex((index) => (index + 1) % CAROUSEL_IMAGES.length);
+    }, 6500);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const location = activeSystem.location && activeSystem.location !== 'Not configured'
+      ? activeSystem.location
+      : 'Lahore, Punjab';
+
+    const loadWeather = async () => {
+      setWeatherStatus('loading');
+      try {
+        const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`;
+        const geocodeResponse = await fetch(geocodeUrl, { signal: controller.signal });
+        if (!geocodeResponse.ok) throw new Error('Weather location lookup failed');
+        const geocode = await geocodeResponse.json();
+        const place = geocode.results?.[0];
+        if (!place) throw new Error('Weather location was not found');
+
+        const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,wind_speed_10m,shortwave_radiation&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=5`;
+        const forecastResponse = await fetch(forecastUrl, { signal: controller.signal });
+        if (!forecastResponse.ok) throw new Error('Live weather request failed');
+        const forecast = await forecastResponse.json();
+        const current = forecast.current;
+        if (!current) throw new Error('Live weather data is unavailable');
+
+        setLiveWeather({
+          tempC: Math.round(current.temperature_2m),
+          feelsC: Math.round(current.apparent_temperature),
+          condition: weatherCondition(current.weather_code),
+          humidityPct: Math.round(current.relative_humidity_2m),
+          windKmh: Math.round(current.wind_speed_10m),
+          cloudsPct: Math.round(current.cloud_cover),
+          irradianceWm2: Math.round(current.shortwave_radiation ?? 0),
+          forecast: (forecast.daily?.time ?? []).map((date: string, index: number) => ({
+            date,
+            maxC: Math.round(forecast.daily.temperature_2m_max[index]),
+            minC: Math.round(forecast.daily.temperature_2m_min[index]),
+            code: forecast.daily.weather_code[index],
+          })),
+          locationName: [place.name, place.admin1].filter(Boolean).join(', '),
+        });
+        setWeatherStatus('live');
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') setWeatherStatus('error');
+      }
+    };
+
+    void loadWeather();
+    return () => controller.abort();
+  }, [activeSystem.location]);
+
   const currentLanguage = LANG_OPTIONS.find((option) => option.code === language) || LANG_OPTIONS[0];
   const navigation = [
     { label: t('Overview', 'جائزہ', 'Overview'), href: '#overview', icon: LayoutDashboard },
@@ -296,27 +408,35 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className={`text-sm font-semibold ${palette.text}`}>{t('System conditions', 'سسٹم کی صورتحال', 'System conditions')}</p>
-                    <p className={`mt-1 text-[10px] ${palette.sub}`}>{t('Sample local conditions', 'مقامی موسم کا نمونہ', 'Local weather preview')}</p>
+                    <p className={`mt-1 max-w-[150px] truncate text-[10px] ${palette.sub}`}>
+                      {liveWeather?.locationName
+                        || (activeSystem.location !== 'Not configured' ? activeSystem.location : t('Lahore, Pakistan', 'لاہور، پاکستان', 'Lahore, Pakistan'))}
+                    </p>
                   </div>
-                  <button type="button" onClick={onLogin} aria-label="View system details" className={`flex h-7 w-7 items-center justify-center rounded-full ${palette.inset} ${palette.sub}`}>
-                    <ArrowUpRight className="h-3.5 w-3.5" />
-                  </button>
+                  <span className={`rounded-full px-2 py-1 text-[8px] font-semibold ${weatherStatus === 'live' ? 'bg-emerald-500/10 text-emerald-600' : palette.inset + ' ' + palette.sub}`}>
+                    {weatherStatus === 'live' ? t('LIVE', 'لائیو', 'Live') : weatherStatus === 'loading' ? t('LOADING', 'لوڈنگ', 'Loading') : t('UNAVAILABLE', 'دستیاب نہیں', 'Unavailable')}
+                  </span>
                 </div>
 
                 <div className="mt-5 flex items-center justify-between gap-4">
                   <div className="flex items-end gap-3">
-                    <span className={`text-[42px] font-medium leading-none tracking-tight ${palette.text}`}>28°</span>
-                    <span className={`mb-1 text-[10px] leading-4 ${palette.sub}`}>{t('Sunny', 'دھوپ', 'Dhoop')}<br />{t('Feels like 26°', 'محسوس 26°', 'Feels like 26°')}</span>
+                    <span className={`text-[42px] font-medium leading-none tracking-tight ${palette.text}`}>
+                      {weatherStatus === 'live' && liveWeather ? `${liveWeather.tempC}°` : '—'}
+                    </span>
+                    <span className={`mb-1 text-[10px] leading-4 ${palette.sub}`}>
+                      {weatherStatus === 'live' && liveWeather ? liveWeather.condition : weatherStatus === 'loading' ? t('Loading weather', 'موسم لوڈ ہو رہا ہے', 'Weather load ho raha hai') : t('Weather unavailable', 'موسم دستیاب نہیں', 'Weather unavailable')}
+                      {weatherStatus === 'live' && liveWeather && <><br />{t(`Feels like ${liveWeather.feelsC}°`, `${liveWeather.feelsC}° محسوس`, `Feels like ${liveWeather.feelsC}°`)}</>}
+                    </span>
                   </div>
                   <CloudSun className="h-10 w-10 text-[#e8b733] drop-shadow-sm" strokeWidth={1.6} />
                 </div>
 
                 <div className={`mt-5 grid grid-cols-4 divide-x text-center ${palette.line}`}>
                   {[
-                    { label: t('Irradiance', 'تابکاری', 'Irradiance'), value: '892 W/m²' },
-                    { label: t('Humidity', 'نمی', 'Humidity'), value: '48%' },
-                    { label: t('Wind', 'ہوا', 'Wind'), value: '12 km/h' },
-                    { label: t('Clouds', 'بادل', 'Clouds'), value: '8%' },
+                    { label: t('Irradiance', 'تابکاری', 'Irradiance'), value: weatherStatus === 'live' && liveWeather ? `${liveWeather.irradianceWm2} W/m²` : '—' },
+                    { label: t('Humidity', 'نمی', 'Humidity'), value: weatherStatus === 'live' && liveWeather ? `${liveWeather.humidityPct}%` : '—' },
+                    { label: t('Wind', 'ہوا', 'Wind'), value: weatherStatus === 'live' && liveWeather ? `${liveWeather.windKmh} km/h` : '—' },
+                    { label: t('Clouds', 'بادل', 'Clouds'), value: weatherStatus === 'live' && liveWeather ? `${liveWeather.cloudsPct}%` : '—' },
                   ].map((item) => (
                     <div key={item.label} className="px-1">
                       <p className={`truncate text-[9px] ${palette.sub}`}>{item.label}</p>
@@ -326,19 +446,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                 </div>
 
                 <div className={`mt-4 grid grid-cols-5 border-t pt-3 ${palette.line}`}>
-                  {[
-                    { day: t('Today', 'آج', 'Aaj'), icon: Sun, temp: '24°/14°', color: 'text-[#e7ba39]' },
-                    { day: t('Tue', 'منگل', 'Mangal'), icon: CloudSun, temp: '26°/16°', color: 'text-sky-500' },
-                    { day: t('Wed', 'بدھ', 'Budh'), icon: CloudSun, temp: '25°/15°', color: 'text-sky-500' },
-                    { day: t('Thu', 'جمعرات', 'Jumeraat'), icon: Sun, temp: '23°/14°', color: 'text-[#e7ba39]' },
-                    { day: t('Fri', 'جمعہ', 'Jumma'), icon: CloudSun, temp: '22°/13°', color: 'text-sky-500' },
-                  ].map((forecast) => {
-                    const Icon = forecast.icon;
+                  {(liveWeather?.forecast ?? []).slice(0, 5).map((forecast, index) => {
+                    const Icon = forecast.code <= 1 ? Sun : CloudSun;
+                    const date = new Date(`${forecast.date}T12:00:00`);
+                    const day = index === 0
+                      ? t('Today', 'آج', 'Aaj')
+                      : date.toLocaleDateString(language === 'ur' ? 'ur-PK' : 'en-US', { weekday: 'short' });
                     return (
-                      <div key={forecast.day} className="flex flex-col items-center gap-1">
-                        <span className={`text-[9px] ${palette.sub}`}>{forecast.day}</span>
-                        <Icon className={`h-3.5 w-3.5 ${forecast.color}`} />
-                        <span className={`text-[8px] ${palette.faint}`}>{forecast.temp}</span>
+                      <div key={forecast.date} className="flex flex-col items-center gap-1">
+                        <span className={`text-[9px] ${palette.sub}`}>{day}</span>
+                        <Icon className={`h-3.5 w-3.5 ${forecast.code <= 1 ? 'text-[#e7ba39]' : 'text-sky-500'}`} />
+                        <span className={`text-[8px] ${palette.faint}`}>{forecast.maxC}°/{forecast.minC}°</span>
                       </div>
                     );
                   })}
@@ -410,12 +528,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
             </div>
 
             <section id="farms" className="dashboard-site relative min-h-[760px] overflow-hidden rounded-2xl bg-[#3f4942] md:min-h-[720px]">
-              <img
-                src="https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=1800&q=85"
-                alt={t('Solar panels supplying a home at sunset', 'غروب کے وقت گھر کو بجلی فراہم کرتے سولر پینل', 'Ghar ko energy dete solar panels')}
-                loading="lazy"
-                className="dashboard-site-image absolute inset-0 h-full w-full object-cover object-center"
-              />
+              {CAROUSEL_IMAGES.map((image, index) => (
+                <img
+                  key={image.src}
+                  src={image.src}
+                  alt={index === carouselIndex ? t(image.alt, image.alt, image.alt) : ''}
+                  aria-hidden={index !== carouselIndex}
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-1000 ${index === carouselIndex ? 'dashboard-carousel-active opacity-100' : 'opacity-0'}`}
+                />
+              ))}
               <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/65" />
               <div className="relative z-10 flex items-center justify-between p-4 sm:p-5">
                 <div className="flex items-center gap-3">
@@ -438,6 +560,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                     <ArrowUpRight className="h-3.5 w-3.5" />
                   </button>
                 </div>
+              </div>
+
+              <div className="absolute bottom-[170px] right-4 z-20 flex gap-1.5 sm:bottom-[150px] sm:right-5" role="group" aria-label="Solar site images">
+                {CAROUSEL_IMAGES.map((image, index) => (
+                  <button
+                    key={image.src}
+                    type="button"
+                    onClick={() => setCarouselIndex(index)}
+                    aria-label={`Show solar image ${index + 1}`}
+                    aria-current={index === carouselIndex}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${index === carouselIndex ? 'w-6 bg-white' : 'w-1.5 bg-white/55 hover:bg-white/85'}`}
+                  />
+                ))}
               </div>
 
               <div className="dashboard-site-overlay absolute inset-x-3 bottom-3 top-14 z-10 flex flex-col justify-between gap-2.5 sm:inset-x-4 sm:bottom-4 sm:top-16 sm:gap-3">

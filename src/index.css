@@ -92,6 +92,9 @@ select:user-valid:not(:placeholder-shown) {
 .dashboard-site-image {
   animation: dashboard-image-drift 28s ease-in-out infinite alternate;
 }
+.dashboard-carousel-active {
+  animation: dashboard-carousel-drift 6.5s ease-in-out both;
+}
 .dashboard-glass-card:hover {
   transform: translateY(-2px);
 }
@@ -154,6 +157,10 @@ select:user-valid:not(:placeholder-shown) {
 @keyframes dashboard-image-drift {
   from { transform: scale(1.01); }
   to { transform: scale(1.07); }
+}
+@keyframes dashboard-carousel-drift {
+  from { transform: scale(1.02); }
+  to { transform: scale(1.075); }
 }
 @keyframes dashboard-chart-draw {
   to { stroke-dashoffset: 0; }
