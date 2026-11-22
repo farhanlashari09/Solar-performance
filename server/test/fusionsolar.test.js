@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getFusionSolarConfiguration, parseStationKpi } from '../fusionsolar.js';
+import { getFusionSolarConfiguration, getMonitoringProviderStatus, parseStationKpi } from '../fusionsolar.js';
 
 test('station KPI parsing preserves provider readings and their timestamp', () => {
   const lastUpdatedAt = new Date(Date.now() - 60_000).toISOString();
@@ -40,6 +40,39 @@ test('FusionSolar is unconfigured when backend credentials are absent', () => {
     assert.deepEqual(getFusionSolarConfiguration(), {
       configured: false,
       message: 'FusionSolar credentials are not configured on the server.',
+    });
+
+    test('only providers with verified API support are advertised for live readings', () => {
+      const integrations = getMonitoringProviderStatus();
+      assert.deepEqual(integrations.map(({ id, supportsLiveTelemetry }) => [id, supportsLiveTelemetry]), [
+        ['huawei-fusionsolar', true],
+        ['growatt-shineserver', false],
+        ['soliscloud', false],
+      ]);
+      assert.ok(integrations.filter((provider) => !provider.supportsLiveTelemetry)
+        .every((provider) => provider.status === 'not-verified'));
+    });
+
+    test('invalid FusionSolar configuration is reported without exposing credentials', () => {
+      const settings = {
+        FUSIONSOLAR_BASE_URL: process.env.FUSIONSOLAR_BASE_URL,
+        FUSIONSOLAR_USERNAME: process.env.FUSIONSOLAR_USERNAME,
+        FUSIONSOLAR_PASSWORD: process.env.FUSIONSOLAR_PASSWORD,
+      };
+      try {
+        process.env.FUSIONSOLAR_BASE_URL = 'http://example.test';
+        process.env.FUSIONSOLAR_USERNAME = 'test-user';
+        process.env.FUSIONSOLAR_PASSWORD = 'test-password';
+        const provider = getMonitoringProviderStatus().find(({ id }) => id === 'huawei-fusionsolar');
+        assert.equal(provider.status, 'configuration-error');
+        assert.equal(provider.message, 'FusionSolar base URL must use HTTPS.');
+        assert.equal(JSON.stringify(provider).includes('test-password'), false);
+      } finally {
+        for (const [key, value] of Object.entries(settings)) {
+          if (value === undefined) delete process.env[key];
+          else process.env[key] = value;
+        }
+      }
     });
   } finally {
     for (const key of settings) {

@@ -36,6 +36,15 @@ import {
   LogOut
 } from 'lucide-react';
 
+interface MonitoringProviderStatus {
+  id: string;
+  name: string;
+  status: 'configured' | 'needs-credentials' | 'configuration-error' | 'not-verified';
+  supportsLiveTelemetry: boolean;
+  message: string;
+  documentationUrl: string;
+}
+
 export const AdminPortal: React.FC = () => {
   const { language, isRtl } = useLanguage();
   const {
@@ -89,6 +98,7 @@ export const AdminPortal: React.FC = () => {
   const [isLoadingFleet, setIsLoadingFleet] = useState(false);
   const [fleetError, setFleetError] = useState('');
   const [providerConfigured, setProviderConfigured] = useState(false);
+  const [providerIntegrations, setProviderIntegrations] = useState<MonitoringProviderStatus[]>([]);
 
   // Ticket Assignment State
   const [assigningTicketId, setAssigningTicketId] = useState<string | null>(null);
@@ -109,6 +119,7 @@ export const AdminPortal: React.FC = () => {
       setFleetError('');
       setFleetSystems(response.systems);
       setProviderConfigured(Boolean(response.providerConfigured));
+      setProviderIntegrations(response.providerIntegrations || []);
       setStationCodeInputs((previous) => ({
         ...previous,
         ...Object.fromEntries(response.systems.map((system: SolarSystem) => [system.id, system.providerStationCode || ''])),
@@ -126,6 +137,7 @@ export const AdminPortal: React.FC = () => {
     if (response.success && Array.isArray(response.systems)) {
       setFleetSystems(response.systems);
       setProviderConfigured(Boolean(response.providerConfigured));
+      setProviderIntegrations(response.providerIntegrations || []);
       setFleetError('');
       setLastDbSync(new Date().toLocaleTimeString());
     } else {
@@ -883,6 +895,43 @@ export const AdminPortal: React.FC = () => {
       {/* ============================================================== */}
       {activeTab === 'fleet' && (
         <div className="space-y-4">
+          <section className="rounded-xl border border-slate-200 bg-white p-4">
+            <h3 className="text-sm font-bold text-slate-900">Monitoring provider API access</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Only providers with a verified API adapter can return live readings. No unofficial endpoints or generated readings are used.
+            </p>
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              {providerIntegrations.map((provider) => (
+                <article key={provider.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-slate-800">{provider.name}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                      provider.supportsLiveTelemetry
+                        ? provider.status === 'configured' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      {provider.status === 'configured'
+                        ? 'Configured'
+                        : provider.status === 'needs-credentials'
+                          ? 'Needs credentials'
+                          : provider.status === 'configuration-error'
+                            ? 'Configuration issue'
+                          : 'Not verified'}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-[11px] leading-relaxed text-slate-600">{provider.message}</p>
+                  <a
+                    className="mt-2 inline-flex text-[11px] font-semibold text-emerald-800 underline-offset-2 hover:underline"
+                    href={provider.documentationUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Official provider site
+                  </a>
+                </article>
+              ))}
+            </div>
+          </section>
           <div className="flex flex-col justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-sm font-bold text-slate-900">All client systems</h2>

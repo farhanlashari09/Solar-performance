@@ -1,3 +1,45 @@
+const landingForest = {
+  50: '#eff5ef',
+  100: '#e5eee4',
+  200: '#cfdfcf',
+  300: '#b0ceb6',
+  400: '#84ac8e',
+  500: '#4f8465',
+  600: '#3b7056',
+  700: '#2e5f49',
+  800: '#234d3b',
+  900: '#173e32',
+  950: '#0e2e25',
+};
+
+const landingNeutral = {
+  50: '#f7f8f6',
+  100: '#f2f3f1',
+  200: '#e7e9e5',
+  300: '#d8dcd7',
+  400: '#b9bfba',
+  500: '#919a93',
+  600: '#727a74',
+  700: '#535c55',
+  800: '#39413b',
+  900: '#232925',
+  950: '#171c19',
+};
+
+const landingGold = {
+  50: '#fcf8df',
+  100: '#f8efbb',
+  200: '#f2e381',
+  300: '#ead455',
+  400: '#dfbd39',
+  500: '#cca52f',
+  600: '#aa8526',
+  700: '#83661f',
+  800: '#5d491d',
+  900: '#3b3018',
+  950: '#252014',
+};
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -7,6 +49,16 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Shared landing-page colors for Tailwind's existing component classes.
+        emerald: landingForest,
+        green: landingForest,
+        teal: landingForest,
+        blue: landingForest,
+        indigo: landingForest,
+        slate: landingNeutral,
+        gray: landingNeutral,
+        amber: landingGold,
+
         // ── Core Brand Palette ────────────────────────────────
         // SolarCare forest palette shared with the landing page
         brand: {
@@ -39,11 +91,11 @@ export default {
 
         // ── Page surfaces ──────────────────────────────────────
         surface: {
-          page:        '#f8fafc',      // lightest app background
+          page:        '#f2f3f1',      // landing-page neutral canvas
           card:        '#ffffff',
-          cardHover:   '#f0fdf4',
-          border:      '#e5e7eb',
-          borderLight: '#f0fdf4',
+          cardHover:   '#eff5ef',
+          border:      '#e7e9e5',
+          borderLight: '#eff5ef',
           sidebar:     '#173e32',
           sidebarDeep: '#0e2e25',
           sidebarItem: '#234d3b',
@@ -54,11 +106,11 @@ export default {
 
         // ── Typography ─────────────────────────────────────────
         ink: {
-          DEFAULT: '#111827',
-          strong:  '#030712',
-          muted:   '#6b7280',
-          subtle:  '#9ca3af',
-          white:   '#f9fafb',
+          DEFAULT: '#191d1a',
+          strong:  '#171c19',
+          muted:   '#727a74',
+          subtle:  '#919a93',
+          white:   '#f7f8f6',
         },
 
         // ── Accent: Solar Gold ─────────────────────────────────
@@ -115,9 +167,9 @@ export default {
 
       // ── Box Shadows ────────────────────────────────────────────
       boxShadow: {
-        'brand-sm':  '0 2px 8px rgba(46, 95, 73, 0.15)',
-        'brand-md':  '0 8px 24px rgba(46, 95, 73, 0.20)',
-        'brand-lg':  '0 16px 48px rgba(46, 95, 73, 0.28)',
+        'brand-sm':  '0 2px 8px rgba(46, 95, 73, 0.12)',
+        'brand-md':  '0 8px 24px rgba(46, 95, 73, 0.16)',
+        'brand-lg':  '0 16px 48px rgba(46, 95, 73, 0.22)',
         'card':      '0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04)',
         'card-hover':'0 8px 32px rgba(46, 95, 73, 0.12)',
         'dark-card': '0 4px 24px rgba(0,0,0,0.3)',

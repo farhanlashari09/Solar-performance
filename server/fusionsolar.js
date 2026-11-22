@@ -21,6 +21,42 @@ export function getFusionSolarConfiguration() {
   return { configured: true, baseUrl: baseUrl.toString().replace(/\/+$/, '') };
 }
 
+export function getMonitoringProviderStatus() {
+  const fusionSolar = getFusionSolarConfiguration();
+  return [
+    {
+      id: 'huawei-fusionsolar',
+      name: 'Huawei FusionSolar',
+      status: fusionSolar.configured
+        ? 'configured'
+        : fusionSolar.message === 'FusionSolar credentials are not configured on the server.'
+          ? 'needs-credentials'
+          : 'configuration-error',
+      supportsLiveTelemetry: true,
+      message: fusionSolar.configured
+        ? 'Server credentials are configured; link a Huawei station to request real readings.'
+        : fusionSolar.message,
+      documentationUrl: 'https://support.huawei.com/enterprise/en/fusionsolar',
+    },
+    {
+      id: 'growatt-shineserver',
+      name: 'Growatt ShineServer',
+      status: 'not-verified',
+      supportsLiveTelemetry: false,
+      message: 'A documented, no-cost vendor API and its access terms could not be verified; no adapter is enabled.',
+      documentationUrl: 'https://server.growatt.com/',
+    },
+    {
+      id: 'soliscloud',
+      name: 'SolisCloud',
+      status: 'not-verified',
+      supportsLiveTelemetry: false,
+      message: 'Public vendor API documentation and no-cost access terms could not be verified; no adapter is enabled.',
+      documentationUrl: 'https://www.soliscloud.com/',
+    },
+  ];
+}
+
 function isSuccessful(response) {
   return response?.success !== false && (response?.code === undefined || response.code === 0 || response.code === '0');
 }

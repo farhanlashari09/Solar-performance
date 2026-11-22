@@ -397,7 +397,14 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBackToLanding }) => {
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-brand-darkest via-brand-dark to-slate-900 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden ${isRtl ? 'font-urdu' : ''}`}>
+    <div
+      className={`min-h-screen bg-gradient-to-br from-brand-darkest via-brand-dark to-slate-900 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden ${isRtl ? 'font-urdu' : ''}`}
+      style={{
+        backgroundImage: "linear-gradient(135deg, rgba(23, 28, 25, 0.78), rgba(23, 28, 25, 0.42)), url('/images/solar-monitoring-display.jpg')",
+        backgroundPosition: 'center',
+        backgroundSize: 'cover',
+      }}
+    >
       {/* Background ambient lighting */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -413,6 +420,9 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBackToLanding }) => {
           <span>{msg('Back to Home', 'ہوم پیج', 'Back to Home')}</span>
         </button>
       )}
+      <span className="absolute bottom-4 left-4 z-10 rounded-full border border-white/20 bg-black/35 px-3 py-1.5 text-[10px] font-medium text-white/80 backdrop-blur-sm">
+        Illustrative interface · Not live telemetry
+      </span>
 
       {/* Language switcher — always visible top-right on dark background */}
       <div className="absolute top-5 right-5 z-20">

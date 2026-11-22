@@ -33,7 +33,7 @@ const AppContent: React.FC = () => {
   const [selectedTechForService, setSelectedTechForService] = useState<Technician | null>(null);
   const [showAuthFlow, setShowAuthFlow] = useState(false);
   const isAdmin = currentUser?.role === 'admin';
-  if (isSessionLoading) return <div className="min-h-screen bg-[#f7f8f6]" />;
+  if (isSessionLoading) return <div className="min-h-screen bg-[#f2f3f1]" />;
   // If user is unauthenticated, show the awesome Landing Page first,
   // or the AuthFlow if they click Log In / Sign Up
   if (!isAuthenticated) {
@@ -73,7 +73,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen bg-[#f7f8f6] flex flex-col ${isRtl ? 'font-urdu' : ''}`}>
+    <div className={`min-h-screen bg-[#f2f3f1] flex flex-col ${isRtl ? 'font-urdu' : ''}`}>
       {/* Header */}
       <Header
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}

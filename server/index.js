@@ -8,7 +8,7 @@ import { db, isAdminEmail } from './db.js';
 import { generateSolarAIResponse } from './aiBrain.js';
 import { sendOtpEmail, isValidEmail } from './mailer.js';
 import { canAccessSystem, configureAuth, createSession, requireAdmin, requireAuth, revokeSession } from './auth.js';
-import { fetchStationTelemetry, getFusionSolarConfiguration } from './fusionsolar.js';
+import { fetchStationTelemetry, getFusionSolarConfiguration, getMonitoringProviderStatus } from './fusionsolar.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -463,6 +463,7 @@ app.get('/api/admin/systems', requireAuth, requireAdmin, (req, res) => {
   res.json({
     success: true,
     providerConfigured: getFusionSolarConfiguration().configured,
+    providerIntegrations: getMonitoringProviderStatus(),
     systems,
   });
 });

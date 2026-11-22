@@ -90,6 +90,12 @@ Set `SOLARCARE_ADMIN_EMAILS` in the backend environment to a comma-separated lis
 
 The current integration requests station real-time KPIs (`active_power`, `day_cap`, and `total_cap`) from the FusionSolar Northbound API. It does not fetch dated production history. The station mapping is managed by an authenticated administrator, and all provider credentials remain on the backend. Access tokens are server-issued, expire after 12 hours, and are held in server memory; restarting the backend requires users to sign in again.
 
+### Other monitoring providers
+
+The admin fleet lists Growatt ShineServer and SolisCloud as **not verified** and does not offer a connection or reading path for them. The public Growatt monitoring portal ([ShineServer](https://server.growatt.com/)) and SolisCloud portal ([SolisCloud](https://www.soliscloud.com/)) were accessible, but publicly available official developer documentation and no-cost API access terms could not be verified for either integration. This is not a claim that the vendors do not offer partner APIs; do not enter account credentials or rely on unofficial/reverse-engineered endpoints. A supported adapter can be enabled after the vendor confirms an official API, permitted use, access terms, and account eligibility. No other provider is represented as free without that confirmation.
+
+The supplied monitoring-display image is illustrative only; its displayed metrics and status indicators are not connected to SolarCare data. The auth page labels the background image accordingly.
+
 ---
 
 ## 📁 File Structure & Organization

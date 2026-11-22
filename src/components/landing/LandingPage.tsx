@@ -78,24 +78,24 @@ const CAROUSEL_IMAGES = [
     alt: 'Rows of solar panels beneath a clear sky',
   },
   {
-    src: '/images/fusionsolar-inverter.svg',
-    alt: 'Solar inverter with a live monitoring display',
+    src: '/images/solar-monitoring-display.jpg',
+    alt: 'Illustrative solar monitoring dashboard display',
   },
   {
     src: 'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&w=1800&q=90',
     alt: 'Aerial solar panel array surrounded by green land',
   },
   {
-    src: 'https://images.pexels.com/photos/9875414/pexels-photo-9875414.jpeg?auto=compress&cs=tinysrgb&w=1800',
+    src: '/images/solar-panel-inspection.jpg',
     alt: 'Installer checking a rooftop solar panel',
   },
   {
-    src: 'https://images.pexels.com/photos/433308/pexels-photo-433308.jpeg?auto=compress&cs=tinysrgb&w=1800',
-    alt: 'Solar panels in a scenic snowy landscape',
+    src: '/images/solar-panels-with-inverters.jpg',
+    alt: 'Solar panels and inverters installed at a solar farm',
   },
   {
-    src: '/images/solar-monitoring-dashboard.svg',
-    alt: 'Solar monitoring dashboard with energy charts and system status',
+    src: '/images/scenic-solar-array.jpg',
+    alt: 'Solar panels in a scenic mountain landscape',
   },
 ] as const;
 
@@ -558,7 +558,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                   </a>
                   <div>
                     <h2 className="text-sm font-semibold text-white">{t('Solar site preview', 'سولر سائٹ کا پیش منظر', 'Solar site preview')}</h2>
-                    <p className="mt-0.5 text-[9px] text-white/65">{t('Sample system · Illustrative data', 'نمونہ سسٹم · نمائشی ڈیٹا', 'Sample system · Illustrative data')}</p>
+                    <p className="mt-0.5 text-[9px] text-white/65">
+                      {carouselIndex === 1
+                        ? t('Illustrative image · Not live telemetry', 'نمائشی تصویر · براہِ راست ٹیلی میٹری نہیں', 'Illustrative image · Live telemetry nahin')
+                        : t('Sample system · Illustrative data', 'نمونہ سسٹم · نمائشی ڈیٹا', 'Sample system · Illustrative data')}
+                    </p>
                   </div>
                 </div>
                 <div className="flex gap-1.5">
