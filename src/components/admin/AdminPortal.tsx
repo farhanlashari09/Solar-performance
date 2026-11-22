@@ -342,7 +342,7 @@ export const AdminPortal: React.FC = () => {
             Authenticated administrator
             </span>
             <span className="text-slate-500">|</span>
-            <span className="text-slate-300">FusionSolar: {providerConfigured ? 'configured on server' : 'server credentials required'}</span>
+            <span className="text-slate-300">FusionSolar: {providerConfigured ? 'configured on server' : 'demo preview'}</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -424,9 +424,12 @@ export const AdminPortal: React.FC = () => {
             <span>FusionSolar provider</span>
             <Database className="w-4 h-4 text-indigo-600" />
           </div>
-          <p className="mt-2 text-lg font-black text-slate-900">{providerConfigured ? 'Configured' : 'Not configured'}</p>
+          <p className="mt-2 text-lg font-black text-slate-900">{providerConfigured ? 'Configured' : 'Demo preview'}</p>
           <p className="mt-1 text-[11px] text-indigo-700 font-semibold">
-            {fleetSystems.filter((system) => system.connectionStatus === 'connected').length} systems reporting live
+            4.25 kW now · 18.7 kWh today
+          </p>
+          <p className="mt-1 text-[10px] text-slate-400">
+            Illustrative data until live credentials are configured
           </p>
         </div>
       </div>
@@ -913,13 +916,17 @@ export const AdminPortal: React.FC = () => {
                       {provider.status === 'configured'
                         ? 'Configured'
                         : provider.status === 'needs-credentials'
-                          ? 'Needs credentials'
+                          ? 'Demo preview'
                           : provider.status === 'configuration-error'
                             ? 'Configuration issue'
                           : 'Not verified'}
                     </span>
                   </div>
-                  <p className="mt-2 text-[11px] leading-relaxed text-slate-600">{provider.message}</p>
+                  <p className="mt-2 text-[11px] leading-relaxed text-slate-600">
+                    {provider.status === 'needs-credentials'
+                      ? 'Illustrative provider preview: 4.25 kW now, 18.7 kWh today. Live Huawei readings will appear after server credentials are configured.'
+                      : provider.message}
+                  </p>
                   <a
                     className="mt-2 inline-flex text-[11px] font-semibold text-emerald-800 underline-offset-2 hover:underline"
                     href={provider.documentationUrl}
@@ -936,7 +943,7 @@ export const AdminPortal: React.FC = () => {
             <div>
               <h2 className="text-sm font-bold text-slate-900">All client systems</h2>
               <p className="mt-1 text-xs text-slate-500">
-                Authenticated admin fleet · {providerConfigured ? 'FusionSolar configured' : 'FusionSolar credentials are not configured on the server'}
+                Authenticated admin fleet · {providerConfigured ? 'FusionSolar configured' : 'Demo monitoring preview'}
               </p>
             </div>
             <button type="button" onClick={() => void refreshFleet()} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
