@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { isVerifiedFusionSolarTelemetry } from './fusionsolar.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -112,8 +113,7 @@ class Database {
         const data = JSON.parse(raw);
         let migrated = false;
         data.solarSystems = (data.solarSystems || []).map((system) => {
-          const hasVerifiedTelemetry = system.telemetry?.source === 'Huawei FusionSolar'
-            && Number.isFinite(Date.parse(system.telemetry.lastUpdatedAt));
+          const hasVerifiedTelemetry = isVerifiedFusionSolarTelemetry(system.telemetry);
           if (hasVerifiedTelemetry) return system;
 
           const hasStation = typeof system.providerStationCode === 'string' && system.providerStationCode.length > 0;

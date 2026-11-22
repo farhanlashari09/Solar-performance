@@ -4,6 +4,7 @@ import { useSolar } from '../../context/SolarContext';
 import { useMaintenance } from '../../context/MaintenanceContext';
 import { useAuth } from '../../context/AuthContext';
 import { StatusBadge } from '../common/StatusBadge';
+import { SystemWeatherCard } from '../weather/SystemWeatherCard';
 import {
   Activity,
   AlertTriangle,
@@ -190,6 +191,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </button>
         </article>
       </section>
+
+      <SystemWeatherCard location={activeSystem.location} />
 
       <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <article className="solar-card rounded-2xl bg-white p-6">

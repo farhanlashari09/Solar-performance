@@ -358,7 +358,9 @@ app.get('/api/systems', requireAuth, (req, res) => {
 app.post('/api/systems', requireAuth, (req, res) => {
   const { name, location, capacityKw, inverterBrand, inverterModel, installationDate, panelCount, panelType, batteryCapacityKwh, connectionMethod } = req.body;
   const parsedCapacity = Number(capacityKw);
-  if (!name?.trim() || !location?.trim() || !Number.isFinite(parsedCapacity) || parsedCapacity <= 0) {
+  if (typeof name !== 'string' || !name.trim()
+    || typeof location !== 'string' || !location.trim()
+    || !Number.isFinite(parsedCapacity) || parsedCapacity <= 0) {
     return res.status(400).json({ success: false, message: 'System name, location, and a valid capacity are required.' });
   }
 

@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getFusionSolarConfiguration, getMonitoringProviderStatus, parseStationKpi } from '../fusionsolar.js';
+import {
+  getFusionSolarConfiguration,
+  getMonitoringProviderStatus,
+  isVerifiedFusionSolarTelemetry,
+  parseStationKpi,
+} from '../fusionsolar.js';
 
 test('station KPI parsing preserves provider readings and their timestamp', () => {
   const lastUpdatedAt = new Date(Date.now() - 60_000).toISOString();
@@ -30,6 +35,18 @@ test('KPI parsing rejects a station response that does not match the linked stat
     stationCode: 'different-station',
     dataItemMap: { active_power: '4.25' },
   }], 'station-1'), /no station KPI data/i);
+});
+
+test('future-dated or empty telemetry is not considered verified', () => {
+  assert.equal(isVerifiedFusionSolarTelemetry({
+    source: 'Huawei FusionSolar',
+    lastUpdatedAt: new Date(Date.now() + 60_000).toISOString(),
+    dailyEnergyKwh: 12,
+  }), false);
+  assert.equal(isVerifiedFusionSolarTelemetry({
+    source: 'Huawei FusionSolar',
+    lastUpdatedAt: new Date(Date.now() - 60_000).toISOString(),
+  }), false);
 });
 
 test('FusionSolar is unconfigured when backend credentials are absent', () => {

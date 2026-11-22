@@ -2,18 +2,13 @@ import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useSolar } from '../../context/SolarContext';
 import {
-  SunMedium,
   PlusCircle,
   CheckCircle,
   MapPin,
-  Cpu,
-  Calendar,
-  Zap,
   Radio,
-  Layers,
   ArrowRight,
-  ShieldCheck,
 } from 'lucide-react';
+import { SystemWeatherCard } from '../weather/SystemWeatherCard';
 
 interface MySolarSystemsViewProps {
   onOpenOnboarding: () => void;
@@ -144,6 +139,10 @@ export const MySolarSystemsView: React.FC<MySolarSystemsViewProps> = ({
                             ? 'Awaiting readings'
                             : 'Not connected'}
                   </span>
+                </div>
+
+                <div className="mt-4">
+                  <SystemWeatherCard location={s.location} compact />
                 </div>
               </div>
 

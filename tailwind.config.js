@@ -99,8 +99,8 @@ export default {
           sidebar:     '#173e32',
           sidebarDeep: '#0e2e25',
           sidebarItem: '#234d3b',
-          dark:        '#0a0f1a',      // hero dark section bg
-          darkCard:    '#111827',
+          dark:        landingNeutral[950],
+          darkCard:    landingNeutral[900],
           darkBorder:  'rgba(255,255,255,0.08)',
         },
 
@@ -115,11 +115,11 @@ export default {
 
         // ── Accent: Solar Gold ─────────────────────────────────
         solar: {
-          DEFAULT: '#f59e0b',
-          light:   '#fef3c7',
-          soft:    '#fde68a',
-          strong:  '#b45309',
-          dark:    '#78350f',
+          DEFAULT: landingGold[500],
+          light:   landingGold[100],
+          soft:    landingGold[200],
+          strong:  landingGold[700],
+          dark:    landingGold[900],
         },
 
         // ── Alert Severity ─────────────────────────────────────
@@ -140,11 +140,11 @@ export default {
 
         // ── Legacy aliases (do not remove — used in charts) ────
         solarAmber: {
-          50:  '#fffbeb',
-          100: '#fef3c7',
-          500: '#f59e0b',
-          600: '#d97706',
-          700: '#b45309',
+          50:  landingGold[50],
+          100: landingGold[100],
+          500: landingGold[500],
+          600: landingGold[600],
+          700: landingGold[700],
         },
         solarRed: {
           50:  '#fef2f2',
@@ -177,10 +177,10 @@ export default {
 
       // ── Background Gradients ───────────────────────────────────
       backgroundImage: {
-        'hero-dark': 'linear-gradient(160deg, #0a0f1a 0%, #0d1f2d 50%, #071a12 100%)',
+        'hero-dark': 'linear-gradient(160deg, #171c19 0%, #232925 50%, #0e2e25 100%)',
         'brand-gradient': 'linear-gradient(135deg, #2e5f49 0%, #4f8465 100%)',
-        'gold-gradient':  'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
-        'card-dark': 'linear-gradient(135deg, #111827 0%, #1a2535 100%)',
+        'gold-gradient':  `linear-gradient(135deg, ${landingGold[500]} 0%, ${landingGold[300]} 100%)`,
+        'card-dark': 'linear-gradient(135deg, #232925 0%, #39413b 100%)',
       },
 
       // ── Spacing & Sizes ────────────────────────────────────────
