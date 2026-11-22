@@ -74,19 +74,17 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({
             </h3>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {telemetry
-                ? 'A current FusionSolar snapshot is available. Dated hourly and daily history has not been received, so performance ratios and fault diagnoses are withheld.'
-                : activeSystem.monitoringError || 'No verified measurements are available. Setup values are not used to simulate production.'}
+                ? 'A saved system snapshot is available. Dated hourly and daily history is not included, so performance ratios are withheld.'
+                : 'This demo system has no live measurements. Setup values are used only for system information.'}
             </p>
           </div>
           <div>
             <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-700">
               <Database className="h-4 w-4 text-[#477b61]" strokeWidth={1.8} />
-              Provider details
+              Demo details
             </h3>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              {activeSystem.providerStationCode
-                ? `FusionSolar station ${activeSystem.providerStationCode} · ${activeSystem.monitoringStatus || 'awaiting readings'}`
-                : 'No provider station is linked. Ask an administrator to link the correct station.'}
+              No external API connection is used. Monitoring values are illustrative.
             </p>
           </div>
         </div>

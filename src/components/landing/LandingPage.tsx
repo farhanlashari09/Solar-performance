@@ -229,17 +229,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
     {
       q: t('Are production readings live?', 'کیا پیداوار کی ریڈنگز لائیو ہیں؟', 'Kya production readings live hain?'),
       a: t(
-        'Only readings returned by a verified provider connection are shown as live. The landing-page charts and photos are illustrative previews.',
-        'صرف تصدیق شدہ provider کنکشن سے موصول ہونے والی ریڈنگز لائیو دکھائی جاتی ہیں۔ لینڈنگ پیج کے چارٹس اور تصاویر صرف نمونہ ہیں۔',
-        'Live readings sirf verified provider connection se dikhayi jati hain. Landing page charts aur tasaveer sirf preview hain.'
+        'The website uses clear demo data so you can explore the dashboard before adding a real system.',
+        'ویب سائٹ واضح ڈیمو ڈیٹا استعمال کرتی ہے تاکہ آپ حقیقی سسٹم شامل کرنے سے پہلے ڈیش بورڈ دیکھ سکیں۔',
+        'Website clear demo data use karti hai taake aap real system add karne se pehle dashboard explore kar sakein.'
       ),
     },
     {
-      q: t('Can my inverter be connected?', 'کیا میرا انورٹر جوڑا جا سکتا ہے؟', 'Kya mera inverter connect ho sakta hai?'),
+      q: t('How can I add a solar system?', 'میں سولر سسٹم کیسے شامل کر سکتا ہوں؟', 'Main solar system kaise add karoon?'),
       a: t(
-        'Huawei FusionSolar is the supported inverter connection. Your station must be linked and verified by the administrator before live system monitoring appears.',
-        'Huawei FusionSolar سپورٹ شدہ انورٹر کنکشن ہے۔ لائیو سسٹم مانیٹرنگ ظاہر ہونے سے پہلے آپ کا اسٹیشن ایڈمنسٹریٹر کے ذریعے لنک اور تصدیق شدہ ہونا ضروری ہے۔',
-        'Huawei FusionSolar supported inverter connection hai. Live system monitoring dikhne se pehle aap ka station administrator ke zariye link aur verify hona zaroori hai.'
+        'Sign in, open My Solar Systems, and add the name, location, capacity, and basic equipment details.',
+        'سائن ان کریں، میرے سولر سسٹمز کھولیں اور نام، مقام، صلاحیت اور بنیادی سامان کی تفصیلات شامل کریں۔',
+        'Sign in karein, My Solar Systems kholein aur naam, location, capacity aur basic equipment details add karein.'
       ),
     },
   ];
@@ -632,9 +632,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                   <h3 className="text-sm font-semibold">{t('How SolarCare works', 'SolarCare کیسے کام کرتا ہے', 'SolarCare kaisay kaam karta hai')}</h3>
                   <p className="mt-2 text-xs leading-5 text-white/75">
                     {t(
-                      'Add your system location to see local weather. Production readings appear only after a real provider connection is verified.',
-                      'مقامی موسم دیکھنے کے لیے اپنے سسٹم کا مقام درج کریں۔ پیداوار کی ریڈنگ صرف حقیقی provider کنکشن کی تصدیق کے بعد دکھائی جاتی ہے۔',
-                      'Local weather ke liye system location add karein. Production readings sirf real provider connection verify honay par nazar aati hain.'
+                      'Add your system location to see local weather and use the simple demo dashboard.',
+                      'مقامی موسم دیکھنے اور آسان ڈیمو ڈیش بورڈ استعمال کرنے کے لیے اپنے سسٹم کا مقام درج کریں۔',
+                      'Local weather aur simple demo dashboard ke liye system location add karein.'
                     )}
                   </p>
                   <a href="#support" className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#e5e9a1] transition hover:gap-2.5">
@@ -687,7 +687,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
             <div>
               <p className={`dashboard-kicker ${dark ? 'text-emerald-300' : 'text-emerald-800'}`}>{t('Solar knowledge, within reach', 'سولر معلومات، آپ کے ساتھ', 'Solar maloomat, aap ke sath')}</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t('A clearer answer to every solar question.', 'ہر سولر سوال کا واضح جواب۔', 'Har solar sawal ka wazeh jawab.')}</h2>
-              <p className={`mt-4 max-w-md text-sm leading-6 ${palette.sub}`}>{t('Create an account, add your system location, and see local weather. Verified production data appears only after a real provider connection.', 'اکاؤنٹ بنائیں، اپنے سسٹم کا مقام درج کریں اور مقامی موسم دیکھیں۔ تصدیق شدہ پیداواری ڈیٹا حقیقی provider کنکشن کے بعد ہی دکھایا جاتا ہے۔', 'Account banayein, system location add karein aur local weather dekhein. Verified production data sirf real provider connection ke baad nazar aata hai.')}</p>
+              <p className={`mt-4 max-w-md text-sm leading-6 ${palette.sub}`}>{t('Create an account, add your system location, and explore local weather and simple demo monitoring.', 'اکاؤنٹ بنائیں، اپنے سسٹم کا مقام درج کریں اور مقامی موسم اور آسان ڈیمو مانیٹرنگ دیکھیں۔', 'Account banayein, system location add karein aur local weather aur simple demo monitoring explore karein.')}</p>
               <button type="button" onClick={onSignUp} className={`mt-6 inline-flex items-center gap-2 rounded-full px-5 py-3 text-xs font-semibold transition ${dark ? 'bg-[#d9e584] text-[#20251f] hover:bg-[#eff5bd]' : 'bg-[#1d2921] text-white hover:bg-[#3b5940]'}`}>
                 {t('Get started with SolarCare', 'SolarCare شروع کریں', 'SolarCare shuru karein')}
                 <ArrowUpRight className="h-4 w-4" />

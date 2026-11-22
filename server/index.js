@@ -8,7 +8,6 @@ import { db, isAdminEmail } from './db.js';
 import { generateSolarAIResponse } from './aiBrain.js';
 import { sendOtpEmail, isValidEmail } from './mailer.js';
 import { canAccessSystem, configureAuth, createSession, requireAdmin, requireAuth, revokeSession } from './auth.js';
-import { fetchStationTelemetry, getFusionSolarConfiguration, getMonitoringProviderStatus } from './fusionsolar.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -356,7 +355,7 @@ app.get('/api/systems', requireAuth, (req, res) => {
 
 // Add a new solar system for user
 app.post('/api/systems', requireAuth, (req, res) => {
-  const { name, location, capacityKw, inverterBrand, inverterModel, installationDate, panelCount, panelType, batteryCapacityKwh, connectionMethod } = req.body;
+  const { name, location, capacityKw, inverterBrand, inverterModel, installationDate, panelCount, panelType, batteryCapacityKwh } = req.body;
   const parsedCapacity = Number(capacityKw);
   if (typeof name !== 'string' || !name.trim()
     || typeof location !== 'string' || !location.trim()
@@ -370,7 +369,7 @@ app.post('/api/systems', requireAuth, (req, res) => {
     location: location.trim(),
     capacityKw: parsedCapacity,
     inverterBrand: typeof inverterBrand === 'string' ? inverterBrand.trim() : '',
-    connectionMethod: inverterBrand === 'Huawei' && connectionMethod === 'Huawei FusionSolar' ? connectionMethod : 'Not connected',
+    connectionMethod: 'Not connected',
     inverterModel: typeof inverterModel === 'string' ? inverterModel.trim() : '',
     installationDate: typeof installationDate === 'string' ? installationDate : '',
     panelCount: Number.isFinite(Number(panelCount)) ? Number(panelCount) : 0,
@@ -409,50 +408,6 @@ app.delete('/api/systems/:id', requireAuth, (req, res) => {
   res.json({ success: true, message: 'Solar system deleted.' });
 });
 
-async function refreshSystemMonitoring(system, res) {
-  if (!system.providerStationCode) {
-    system.monitoringStatus = 'unlinked';
-    system.connectionStatus = 'unavailable';
-    db.save();
-    return res.status(409).json({
-      success: false,
-      monitoringStatus: system.monitoringStatus,
-      message: 'A FusionSolar station must be linked by an administrator before readings are available.',
-    });
-  }
-
-  try {
-    const telemetry = await fetchStationTelemetry(system.providerStationCode);
-    system.telemetry = telemetry;
-    system.connectionMethod = 'Huawei FusionSolar';
-    system.connectionStatus = 'connected';
-    system.monitoringStatus = 'connected';
-    delete system.monitoringError;
-    db.save();
-    return res.json({ success: true, system });
-  } catch (error) {
-    system.monitoringStatus = error.code === 'FUSIONSOLAR_UNCONFIGURED' ? 'unconfigured' : 'error';
-    system.connectionStatus = 'unavailable';
-    system.monitoringError = error.code === 'FUSIONSOLAR_UNCONFIGURED'
-      ? 'FusionSolar server credentials are not configured.'
-      : 'Unable to retrieve live FusionSolar readings.';
-    db.save();
-    return res.status(error.code === 'FUSIONSOLAR_UNCONFIGURED' ? 503 : 502).json({
-      success: false,
-      monitoringStatus: system.monitoringStatus,
-      message: system.monitoringError,
-    });
-  }
-}
-
-app.post('/api/systems/:id/monitoring/refresh', requireAuth, (req, res) => {
-  const system = db.data.solarSystems.find((candidate) => candidate.id === req.params.id);
-  if (!system || !canAccessSystem(req.user, system)) {
-    return res.status(404).json({ success: false, message: 'Solar system not found.' });
-  }
-  return refreshSystemMonitoring(system, res);
-});
-
 app.get('/api/admin/systems', requireAuth, requireAdmin, (req, res) => {
   const usersById = new Map(db.data.users.map((user) => [user.id, user]));
   const systems = db.data.solarSystems.map((system) => {
@@ -464,37 +419,8 @@ app.get('/api/admin/systems', requireAuth, requireAdmin, (req, res) => {
   });
   res.json({
     success: true,
-    providerConfigured: getFusionSolarConfiguration().configured,
-    providerIntegrations: getMonitoringProviderStatus(),
     systems,
   });
-});
-
-app.put('/api/admin/systems/:id/provider', requireAuth, requireAdmin, (req, res) => {
-  const system = db.data.solarSystems.find((candidate) => candidate.id === req.params.id);
-  const stationCode = typeof req.body.stationCode === 'string' ? req.body.stationCode.trim() : '';
-  if (!system) return res.status(404).json({ success: false, message: 'Solar system not found.' });
-  if (system.inverterBrand.toLowerCase() !== 'huawei') {
-    return res.status(400).json({ success: false, message: 'Only Huawei systems can be linked to FusionSolar.' });
-  }
-  if (!stationCode || stationCode.length > 128) {
-    return res.status(400).json({ success: false, message: 'A valid FusionSolar station code is required.' });
-  }
-
-  system.providerStationCode = stationCode;
-  system.connectionMethod = 'Huawei FusionSolar';
-  system.connectionStatus = 'unavailable';
-  system.monitoringStatus = 'unlinked';
-  delete system.telemetry;
-  delete system.monitoringError;
-  db.save();
-  res.json({ success: true, system });
-});
-
-app.post('/api/admin/systems/:id/monitoring/refresh', requireAuth, requireAdmin, (req, res) => {
-  const system = db.data.solarSystems.find((candidate) => candidate.id === req.params.id);
-  if (!system) return res.status(404).json({ success: false, message: 'Solar system not found.' });
-  return refreshSystemMonitoring(system, res);
 });
 
 // ==========================================

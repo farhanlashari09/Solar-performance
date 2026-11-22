@@ -93,7 +93,6 @@ export const SolarSetupScreen: React.FC = () => {
   const [inverterModel, setInverterModel] = useState('SUN2000-10KTL-M1');
   const [panelCount, setPanelCount] = useState('18');
   const [panelType, setPanelType] = useState('585W Monofacial Tier-1 N-Type TOPCon');
-  const [connectionMethod, setConnectionMethod] = useState('Not connected');
   const [batteryType, setBatteryType] = useState('none');
   const [batteryCapacityKwh, setBatteryCapacityKwh] = useState('0');
   const [installationDate, setInstallationDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -125,9 +124,7 @@ export const SolarSetupScreen: React.FC = () => {
         inverterBrand,
         inverterModel: inverterModel.trim(),
         installationDate,
-        connectionMethod: inverterBrand === 'Huawei' && connectionMethod === 'Huawei FusionSolar'
-          ? 'Huawei FusionSolar'
-          : 'Not connected',
+        connectionMethod: 'Not connected',
         connectionStatus: 'unavailable',
         panelCount: Number(panelCount) || 0,
         panelType,
@@ -167,9 +164,9 @@ export const SolarSetupScreen: React.FC = () => {
               </h1>
               <p className="text-xs text-emerald-100 mt-0.5">
                 {msg(
-                  'Add your system details. Live readings appear only after a provider connection is verified.',
-                  'اپنے سسٹم کی تفصیلات درج کریں۔ لائیو ریڈنگز صرف تصدیق شدہ کنکشن کے بعد دکھائی جائیں گی۔',
-                  'System ki details darj karein. Live readings sirf provider connection verify hone ke baad dikhengi.'
+                  'Add your system details to create a simple demo system.',
+                  'سادہ ڈیمو سسٹم بنانے کے لیے اپنی سسٹم کی تفصیلات درج کریں۔',
+                  'Simple demo system banane ke liye apni system details darj karein.'
                 )}
               </p>
             </div>
@@ -263,7 +260,6 @@ export const SolarSetupScreen: React.FC = () => {
                 value={inverterBrand}
                 onChange={(e) => {
                   setInverterBrand(e.target.value);
-                  if (e.target.value !== 'Huawei') setConnectionMethod('Not connected');
                 }}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white font-medium"
               >
@@ -324,24 +320,6 @@ export const SolarSetupScreen: React.FC = () => {
                 <option value="600W+ High Efficiency Modules">600W+ High Efficiency Modules</option>
                 <option value="Standard Polycrystalline Panels">Standard Polycrystalline Panels</option>
               </select>
-            </div>
-
-            {/* Datalogger / Connection Method */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                {msg('Telemetry Connection', 'ٹیلی میٹری کنکشن', 'Connection Method')}
-              </label>
-              <select
-                value={connectionMethod}
-                onChange={(e) => setConnectionMethod(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
-              >
-                <option value="Not connected">Not connected</option>
-                <option value="Huawei FusionSolar">Huawei FusionSolar (admin setup required)</option>
-              </select>
-              <p className="mt-1 text-[11px] text-slate-500">
-                {msg('Adding a provider here does not connect it. An administrator must link the verified FusionSolar station.', 'یہاں provider منتخب کرنے سے کنکشن نہیں بنتا۔ منتظم کو تصدیق شدہ FusionSolar station منسلک کرنا ہوگا۔', 'Provider select karne se connection nahi hota. Admin ko verified FusionSolar station link karna hoga.')}
-              </p>
             </div>
 
             {/* Battery Storage */}

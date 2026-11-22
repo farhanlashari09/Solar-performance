@@ -128,40 +128,9 @@ export const SolarProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const diagnosticResult = evaluateSystemPerformance(activeSystem, weeklyReadings);
 
   const refreshMonitoring = async (id = activeSystem.id): Promise<string | null> => {
-    const response = await solarSystemsApi.refreshMonitoring(id);
-    if (response.success && response.system) {
-      setSystems((previous) => previous.map((system) => system.id === id ? response.system : system));
-      return null;
-    }
-    if (response.monitoringStatus) {
-      setSystems((previous) => previous.map((system) => system.id === id
-        ? { ...system, monitoringStatus: response.monitoringStatus, monitoringError: response.message }
-        : system));
-    }
-    return response.message || 'Could not refresh live readings.';
+    void id;
+    return 'Demo monitoring data is already up to date.';
   };
-
-  useEffect(() => {
-    if (!currentUser || !activeSystem.providerStationCode) return;
-    let active = true;
-    const refresh = async () => {
-      const response = await solarSystemsApi.refreshMonitoring(activeSystem.id);
-      if (!active) return;
-      if (response.success && response.system) {
-        setSystems((previous) => previous.map((system) => system.id === activeSystem.id ? response.system : system));
-      } else if (response.monitoringStatus) {
-        setSystems((previous) => previous.map((system) => system.id === activeSystem.id
-          ? { ...system, monitoringStatus: response.monitoringStatus, monitoringError: response.message }
-          : system));
-      }
-    };
-    void refresh();
-    const timer = window.setInterval(() => { void refresh(); }, 5 * 60 * 1000);
-    return () => {
-      active = false;
-      window.clearInterval(timer);
-    };
-  }, [currentUser?.id, activeSystem.id, activeSystem.providerStationCode]);
 
   const markAlertAsRead = (id: string) => {
     setAlerts(prev => prev.map(a => (a.id === id ? { ...a, isRead: true } : a)));
