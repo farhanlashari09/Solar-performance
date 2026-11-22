@@ -143,7 +143,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
             <div>
               <h2 className="text-base font-bold text-slate-900">Production history</h2>
-              <p className="mt-1 text-xs text-slate-500">Historical charts will appear when the provider supplies dated production records.</p>
+              <p className="mt-1 text-xs text-slate-500">Production history for this system will appear here when readings are available.</p>
             </div>
             <span className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ${status === 'connected' ? 'bg-[#e9f4ed] text-[#2e7158]' : 'bg-slate-100 text-slate-600'}`}>
               <span className={`h-1.5 w-1.5 rounded-full ${status === 'connected' ? 'bg-emerald-600' : 'bg-slate-400'}`} />
@@ -156,7 +156,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {telemetry ? 'Live snapshot received; historical series is not available yet.' : 'No production readings yet'}
             </p>
             <p className="mt-1 max-w-md text-xs leading-5 text-slate-500">
-              Production charts use dummy system data in this demo.
+              This view currently uses simple system information and does not show estimated production.
             </p>
             <p className="mt-3 text-[11px] text-slate-400">Last updated: {lastUpdated}</p>
           </div>

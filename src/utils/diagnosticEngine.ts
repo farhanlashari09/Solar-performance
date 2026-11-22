@@ -35,8 +35,8 @@ export function evaluateSystemPerformance(system: SolarSystem, dailyData: DailyP
     deviationPct: null,
     summary: 'Historical diagnostics are not available.',
     reasons: ['No supported dated production series is available to compare against a baseline.'],
-    recommendations: ['Use provider-reported readings only; do not infer system health from incomplete data.'],
+    recommendations: ['Use saved system readings only; do not infer system health from incomplete data.'],
     confidence: 'Inconclusive',
-    dataSourceNote: 'Provider history is not configured.',
+    dataSourceNote: 'Dated production history is not configured.',
   };
 }

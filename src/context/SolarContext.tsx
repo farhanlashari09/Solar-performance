@@ -8,7 +8,7 @@ import {
 } from '../types';
 import { evaluateSystemPerformance } from '../utils/diagnosticEngine';
 import { useAuth } from './AuthContext';
-import { solarSystemsApi } from '../services/api';
+import { adminSystemsApi, solarSystemsApi } from '../services/api';
 
 interface SolarContextType {
   systems: SolarSystem[];
@@ -75,7 +75,11 @@ export const SolarProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     let active = true;
-    solarSystemsApi.getSystemsForUser().then((res) => {
+    const loadSystems = currentUser.role === 'admin'
+      ? adminSystemsApi.getAllSystems()
+      : solarSystemsApi.getSystemsForUser();
+
+    loadSystems.then((res) => {
       if (!active) return;
       const loaded = res.success && Array.isArray(res.systems) ? res.systems : [];
       setSystems(loaded);
@@ -84,7 +88,7 @@ export const SolarProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         : (loaded[0]?.id || ''));
     });
     return () => { active = false; };
-  }, [currentUser?.id]);
+  }, [currentUser?.id, currentUser?.role]);
 
   useEffect(() => {
     if (currentUser) localStorage.setItem(alertsKey, JSON.stringify(alerts));

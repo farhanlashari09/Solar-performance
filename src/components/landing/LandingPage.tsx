@@ -645,8 +645,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
             </section>
           </div>
 
-          <div className={`flex flex-col gap-3 border-t px-4 py-3 text-[10px] sm:flex-row sm:items-center sm:justify-between sm:px-6 ${palette.footer}`}>
-            <p>{t('Illustrative dashboard preview · Your registered system data appears after sign in.', 'نمونہ ڈیش بورڈ · لاگ ان کے بعد آپ کے سسٹم کا ڈیٹا نظر آئے گا۔', 'Dashboard preview · Login ke baad aap ke system ka data nazar aaye ga.')}</p>
+          <div className={`flex flex-col gap-3 border-t px-4 py-3 text-[10px] sm:flex-row sm:items-center sm:justify-end sm:px-6 ${palette.footer}`}>
             <button type="button" onClick={onSignUp} className={`inline-flex items-center gap-1.5 self-start font-semibold transition hover:gap-2.5 sm:self-auto ${dark ? 'text-emerald-300' : 'text-emerald-700'}`}>
               {t('Set up your system', 'اپنا سسٹم سیٹ کریں', 'Apna system set karein')}
               <ArrowRight className="h-3 w-3" />

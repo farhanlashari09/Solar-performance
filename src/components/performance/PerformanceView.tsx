@@ -110,7 +110,7 @@ export const PerformanceView: React.FC<PerformanceViewProps> = ({
         <Activity className="mx-auto h-8 w-8 text-[#4c8066]" strokeWidth={1.7} />
         <h2 className="mt-3 text-sm font-semibold text-slate-700">Historical production is not available</h2>
         <p className="mx-auto mt-1 max-w-xl text-xs leading-5 text-slate-500">
-          This view will show dated records when the connected provider supplies them. No demo timeline or capacity-based estimate is shown here.
+          This view shows registered system data only. No external monitoring history or capacity-based estimate is shown.
         </p>
       </section>
     </div>

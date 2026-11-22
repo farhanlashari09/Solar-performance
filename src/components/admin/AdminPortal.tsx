@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useMaintenance } from '../../context/MaintenanceContext';
 import { useAuth } from '../../context/AuthContext';
+import { useSolar } from '../../context/SolarContext';
 import { Technician, ServiceStatus } from '../../types';
 import { SolarSystem } from '../../types';
 import { adminSystemsApi, solarSystemsApi } from '../../services/api';
@@ -36,8 +37,13 @@ import {
   LogOut
 } from 'lucide-react';
 
-export const AdminPortal: React.FC = () => {
+interface AdminPortalProps {
+  onOpenSystemDashboard: () => void;
+}
+
+export const AdminPortal: React.FC<AdminPortalProps> = ({ onOpenSystemDashboard }) => {
   const { language, isRtl } = useLanguage();
+  const { setActiveSystemId } = useSolar();
   const {
     technicians,
     addTechnician,
@@ -990,6 +996,16 @@ export const AdminPortal: React.FC = () => {
                   </div>
                 ) : (
                   <div className="flex gap-2 border-t border-slate-100 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveSystemId(sys.id);
+                        onOpenSystemDashboard();
+                      }}
+                      className="flex flex-[1.15] items-center justify-center gap-1.5 rounded-lg bg-[#2f604b] px-3 py-2 text-xs font-semibold text-white hover:bg-[#234d3b]"
+                    >
+                      <Activity className="h-3.5 w-3.5" /> View system
+                    </button>
                     <button type="button" onClick={() => beginEditSystem(sys)} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                       <Edit2 className="h-3.5 w-3.5" /> Edit
                     </button>
