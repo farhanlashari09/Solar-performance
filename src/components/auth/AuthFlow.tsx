@@ -499,13 +499,6 @@ export const AuthFlow: React.FC<AuthFlowProps> = ({ onBackToLanding }) => {
               <h2 className="text-xl font-bold text-slate-900">
                 {t.auth.loginTitle}
               </h2>
-              <p className="text-xs text-slate-500 mt-1">
-                {msg(
-                  'Enter your registered credentials to access your dashboard',
-                  'اپنے ڈیش بورڈ تک رسائی کے لیے رجسٹرڈ اسناد درج کریں',
-                  'Apne registered credentials enter karein'
-                )}
-              </p>
             </div>
 
             <form onSubmit={handleLoginSubmit} className="space-y-4">

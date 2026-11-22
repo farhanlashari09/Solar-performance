@@ -75,7 +75,7 @@ Authenticated dashboards and registered-system cards show current weather and a 
 
 ### Administrator access
 
-Set `SOLARCARE_ADMIN_EMAILS` in the backend environment to a comma-separated list of verified administrator account emails. The list is checked server-side; an empty value disables administrator-only fleet and provider-linking APIs. Do not use the shipped demo account as an administrator in a deployed environment.
+Administrator access is restricted server-side to `admin@solarcare.com`. No other account email receives the administrator role or administrator-only fleet/provider-linking permissions.
 
 ### Huawei FusionSolar setup
 

@@ -9,11 +9,7 @@ const DB_FILE = path.join(__dirname, 'data', 'solarcare_db.json');
 
 export const isAdminEmail = (email) => {
   if (typeof email !== 'string') return false;
-  const allowedEmails = (process.env.SOLARCARE_ADMIN_EMAILS || '')
-    .split(',')
-    .map((value) => value.trim().toLowerCase())
-    .filter(Boolean);
-  return allowedEmails.includes(email.trim().toLowerCase());
+  return email.trim().toLowerCase() === 'admin@solarcare.com';
 };
 
 // Ensure data folder exists

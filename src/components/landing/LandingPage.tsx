@@ -92,8 +92,8 @@ const CAROUSEL_IMAGES = [
     alt: 'Solar panels and inverters installed at a solar farm',
   },
   {
-    src: '/images/solar-monitoring-dashboard.svg',
-    alt: 'Illustrative solar monitoring dashboard with energy charts and system status',
+    src: '/images/solar-monitoring-display.jpg',
+    alt: 'Illustrative solar monitoring dashboard display',
   },
 ] as const;
 
@@ -128,6 +128,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
   const [chartRange, setChartRange] = useState<ChartRange>('day');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [activeLandingSection, setActiveLandingSection] = useState('#overview');
   const [liveWeather, setLiveWeather] = useState<LiveWeather | null>(null);
   const [weatherStatus, setWeatherStatus] = useState<'loading' | 'live' | 'error'>('loading');
 
@@ -234,11 +235,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
       ),
     },
     {
-      q: t('Where does local weather come from?', 'مقامی موسم کہاں سے آتا ہے؟', 'Local weather kahan se aata hai?'),
+      q: t('Can my inverter be connected?', 'کیا میرا انورٹر جوڑا جا سکتا ہے؟', 'Kya mera inverter connect ho sakta hai?'),
       a: t(
-        'This landing page shows current Open-Meteo conditions for Lahore, Pakistan. Signed-in system weather uses the location saved for each system.',
-        'یہ لینڈنگ پیج لاہور، پاکستان کے موجودہ Open-Meteo موسم کو دکھاتا ہے۔ لاگ ان کے بعد ہر سسٹم کے محفوظ مقام کے مطابق موسم دکھایا جاتا ہے۔',
-        'Yeh landing page Lahore, Pakistan ka mojooda Open-Meteo weather dikhata hai. Login ke baad har system ke saved location ka weather nazar aata hai.'
+        'Huawei FusionSolar is the supported inverter connection. Your station must be linked and verified by the administrator before live system monitoring appears.',
+        'Huawei FusionSolar سپورٹ شدہ انورٹر کنکشن ہے۔ لائیو سسٹم مانیٹرنگ ظاہر ہونے سے پہلے آپ کا اسٹیشن ایڈمنسٹریٹر کے ذریعے لنک اور تصدیق شدہ ہونا ضروری ہے۔',
+        'Huawei FusionSolar supported inverter connection hai. Live system monitoring dikhne se pehle aap ka station administrator ke zariye link aur verify hona zaroori hai.'
       ),
     },
   ];
@@ -275,7 +276,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                 <a
                   key={item.href}
                   href={item.href}
-                  className={`rounded-full px-4 py-2 text-[11px] font-medium transition ${palette.sub} ${palette.navHover}`}
+                  onClick={() => setActiveLandingSection(item.href)}
+                  className={`rounded-full px-4 py-2 text-[11px] font-medium transition ${
+                    activeLandingSection === item.href
+                        ? 'bg-black text-white'
+                        : `${palette.sub} ${palette.navHover}`
+                  }`}
                 >
                   {t(item.label, item.label, item.label)}
                 </a>
@@ -339,8 +345,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                       <a
                         key={item.href}
                         href={item.href}
-                        onClick={() => setMobileOpen(false)}
-                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition ${palette.sub} ${palette.navHover}`}
+                        onClick={() => {
+                          setActiveLandingSection(item.href);
+                          setMobileOpen(false);
+                        }}
+                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition ${
+                          activeLandingSection === item.href
+                            ? 'bg-black text-white'
+                            : `${palette.sub} ${palette.navHover}`
+                        }`}
                       >
                         <Icon className="h-4 w-4" />
                         {item.label}
@@ -386,9 +399,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                     <a
                       key={item.href}
                       href={item.href}
+                      onClick={() => setActiveLandingSection(item.href)}
                       title={item.label}
                       aria-label={item.label}
-                      className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${palette.sub} ${palette.navHover}`}
+                      className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
+                        activeLandingSection === item.href
+                          ? 'bg-black text-white'
+                          : `${palette.sub} ${palette.navHover}`
+                      }`}
                     >
                       <Icon className="h-4 w-4" />
                     </a>
@@ -533,7 +551,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                 if (index !== carouselIndex && index !== (carouselIndex + 1) % CAROUSEL_IMAGES.length) return null;
                 return (
                   <img
-                    key={image.src}
+                    key={`${image.src}-${index}`}
                     src={image.src}
                     alt={index === carouselIndex ? t(image.alt, image.alt, image.alt) : ''}
                     aria-hidden={index !== carouselIndex}
@@ -658,10 +676,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                   </div>
                   <h3 className={`mt-5 text-base font-semibold ${palette.text}`}>{title}</h3>
                   <p className={`mt-2 text-sm leading-6 ${palette.sub}`}>{text}</p>
-                  <button type="button" onClick={onSignUp} className={`mt-5 inline-flex items-center gap-2 text-xs font-semibold ${dark ? 'text-emerald-300' : 'text-emerald-800'}`}>
-                    {t('Explore SolarCare', 'SolarCare دیکھیں', 'SolarCare dekhein')}
-                    <ArrowUpRight className="h-3.5 w-3.5" />
-                  </button>
                 </article>
               ))}
             </div>
