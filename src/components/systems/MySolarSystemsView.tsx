@@ -129,15 +129,7 @@ export const MySolarSystemsView: React.FC<MySolarSystemsViewProps> = ({
                         : 'bg-slate-100 text-slate-600'
                     }`}
                   >
-                    {s.connectionStatus === 'connected'
-                      ? 'Live readings'
-                      : s.monitoringStatus === 'unconfigured'
-                        ? 'Provider not configured'
-                        : s.monitoringStatus === 'error'
-                          ? 'Connection error'
-                          : s.providerStationCode
-                            ? 'Awaiting readings'
-                            : 'Not connected'}
+                    {s.connectionStatus === 'connected' ? 'Active' : 'Demo system'}
                   </span>
                 </div>
 

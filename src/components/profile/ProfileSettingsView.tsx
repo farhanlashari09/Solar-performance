@@ -194,15 +194,7 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
                     ? 'bg-[#e9f4ed] text-[#2e7158]'
                     : 'bg-slate-100 text-slate-600'
                 }`}>
-                  {s.connectionStatus === 'connected'
-                    ? 'Live readings'
-                    : s.monitoringStatus === 'unconfigured'
-                      ? 'Provider not configured'
-                      : s.monitoringStatus === 'error'
-                        ? 'Connection error'
-                        : s.providerStationCode
-                          ? 'Awaiting readings'
-                          : 'Not connected'}
+                  {s.connectionStatus === 'connected' ? 'Active' : 'Demo system'}
                 </span>
               </div>
             </div>

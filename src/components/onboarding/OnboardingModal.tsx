@@ -29,7 +29,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
   const [inverterBrand, setInverterBrand] = useState('Huawei');
   const [inverterModel, setInverterModel] = useState('');
   const [installationDate, setInstallationDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [connectionMethod, setConnectionMethod] = useState('Not connected');
   const [panelCount, setPanelCount] = useState('18');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -46,9 +45,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
         inverterBrand,
         inverterModel: inverterModel.trim(),
         installationDate,
-        connectionMethod: inverterBrand === 'Huawei' && connectionMethod === 'Huawei FusionSolar'
-          ? 'Huawei FusionSolar'
-          : 'Not connected',
+        connectionMethod: 'Not connected',
         connectionStatus: 'unavailable',
         panelCount: Number(panelCount) || 0,
         panelType: '',
@@ -161,10 +158,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
               </label>
               <select
                 value={inverterBrand}
-                onChange={(e) => {
-                  setInverterBrand(e.target.value);
-                  if (e.target.value !== 'Huawei') setConnectionMethod('Not connected');
-                }}
+                onChange={(e) => setInverterBrand(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
               >
                 <option value="Huawei">Huawei</option>
@@ -208,23 +202,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
             </div>
           </div>
 
-          {/* Provider selection does not imply a verified connection. */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              {t.onboarding.connectionMethod}
-            </label>
-            <select
-              value={connectionMethod}
-              onChange={(event) => setConnectionMethod(event.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
-            >
-              <option value="Not connected">Not connected</option>
-              <option value="Huawei FusionSolar">Huawei FusionSolar (admin setup required)</option>
-            </select>
-            <p className="text-[11px] text-slate-500 mt-1">
-              Selecting a provider does not connect it. An administrator must link a verified station.
-            </p>
-          </div>
 
           {/* Action buttons */}
           <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">

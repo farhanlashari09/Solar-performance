@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { isVerifiedFusionSolarTelemetry } from './fusionsolar.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,11 +8,7 @@ const DB_FILE = path.join(__dirname, 'data', 'solarcare_db.json');
 
 export const isAdminEmail = (email) => {
   if (typeof email !== 'string') return false;
-  const allowedEmails = (process.env.SOLARCARE_ADMIN_EMAILS || '')
-    .split(',')
-    .map((value) => value.trim().toLowerCase())
-    .filter(Boolean);
-  return allowedEmails.includes(email.trim().toLowerCase());
+  return email.trim().toLowerCase() === 'admin@solarcare.com';
 };
 
 // Ensure data folder exists
@@ -113,27 +108,22 @@ class Database {
         const data = JSON.parse(raw);
         let migrated = false;
         data.solarSystems = (data.solarSystems || []).map((system) => {
-          const hasVerifiedTelemetry = isVerifiedFusionSolarTelemetry(system.telemetry);
-          if (hasVerifiedTelemetry) return system;
-
-          const hasStation = typeof system.providerStationCode === 'string' && system.providerStationCode.length > 0;
-          const monitoringStatus = hasStation && ['error', 'unconfigured'].includes(system.monitoringStatus)
-            ? system.monitoringStatus
-            : 'unlinked';
-          const connectionMethod = hasStation ? 'Huawei FusionSolar' : 'Not connected';
-          if (system.connectionStatus !== 'unavailable'
-            || system.monitoringStatus !== monitoringStatus
-            || system.connectionMethod !== connectionMethod
-            || system.telemetry) {
+          const {
+            telemetry: _telemetry,
+            providerStationCode: _providerStationCode,
+            monitoringError: _monitoringError,
+            ...simpleSystem
+          } = system;
+          const normalized = {
+            ...simpleSystem,
+            connectionMethod: 'Not connected',
+            connectionStatus: 'unavailable',
+            monitoringStatus: 'unlinked',
+          };
+          if (JSON.stringify(normalized) !== JSON.stringify(system)) {
             migrated = true;
           }
-          const { telemetry: _telemetry, ...unverifiedSystem } = system;
-          return {
-            ...unverifiedSystem,
-            connectionMethod,
-            connectionStatus: 'unavailable',
-            monitoringStatus,
-          };
+          return normalized;
         });
         if (migrated) this.save(data);
         return data;
@@ -241,7 +231,7 @@ class Database {
     const newSys = {
       ...systemData,
       id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      connectionMethod: systemData.connectionMethod === 'Huawei FusionSolar' ? 'Huawei FusionSolar' : 'Not connected',
+      connectionMethod: 'Not connected',
       connectionStatus: 'unavailable',
       monitoringStatus: 'unlinked',
     };

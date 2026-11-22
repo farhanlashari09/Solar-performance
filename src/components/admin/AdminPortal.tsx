@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useMaintenance } from '../../context/MaintenanceContext';
 import { useAuth } from '../../context/AuthContext';
+import { useSolar } from '../../context/SolarContext';
 import { Technician, ServiceStatus } from '../../types';
 import { SolarSystem } from '../../types';
 import { adminSystemsApi, solarSystemsApi } from '../../services/api';
@@ -36,17 +37,13 @@ import {
   LogOut
 } from 'lucide-react';
 
-interface MonitoringProviderStatus {
-  id: string;
-  name: string;
-  status: 'configured' | 'needs-credentials' | 'configuration-error' | 'not-verified';
-  supportsLiveTelemetry: boolean;
-  message: string;
-  documentationUrl: string;
+interface AdminPortalProps {
+  onOpenSystemDashboard: () => void;
 }
 
-export const AdminPortal: React.FC = () => {
+export const AdminPortal: React.FC<AdminPortalProps> = ({ onOpenSystemDashboard }) => {
   const { language, isRtl } = useLanguage();
+  const { setActiveSystemId } = useSolar();
   const {
     technicians,
     addTechnician,
@@ -94,11 +91,17 @@ export const AdminPortal: React.FC = () => {
   const [isRefreshingDb, setIsRefreshingDb] = useState(false);
   const [lastDbSync, setLastDbSync] = useState(new Date().toLocaleTimeString());
   const [fleetSystems, setFleetSystems] = useState<SolarSystem[]>([]);
-  const [stationCodeInputs, setStationCodeInputs] = useState<Record<string, string>>({});
   const [isLoadingFleet, setIsLoadingFleet] = useState(false);
   const [fleetError, setFleetError] = useState('');
-  const [providerConfigured, setProviderConfigured] = useState(false);
-  const [providerIntegrations, setProviderIntegrations] = useState<MonitoringProviderStatus[]>([]);
+  const [editingSystemId, setEditingSystemId] = useState<string | null>(null);
+  const [systemEditForm, setSystemEditForm] = useState({
+    name: '',
+    location: '',
+    capacityKw: 0,
+    inverterBrand: '',
+    inverterModel: '',
+    panelCount: 0,
+  });
 
   // Ticket Assignment State
   const [assigningTicketId, setAssigningTicketId] = useState<string | null>(null);
@@ -118,12 +121,6 @@ export const AdminPortal: React.FC = () => {
       }
       setFleetError('');
       setFleetSystems(response.systems);
-      setProviderConfigured(Boolean(response.providerConfigured));
-      setProviderIntegrations(response.providerIntegrations || []);
-      setStationCodeInputs((previous) => ({
-        ...previous,
-        ...Object.fromEntries(response.systems.map((system: SolarSystem) => [system.id, system.providerStationCode || ''])),
-      }));
       setLastDbSync(new Date().toLocaleTimeString());
     }).finally(() => {
       if (active) setIsLoadingFleet(false);
@@ -136,8 +133,6 @@ export const AdminPortal: React.FC = () => {
     const response = await adminSystemsApi.getAllSystems();
     if (response.success && Array.isArray(response.systems)) {
       setFleetSystems(response.systems);
-      setProviderConfigured(Boolean(response.providerConfigured));
-      setProviderIntegrations(response.providerIntegrations || []);
       setFleetError('');
       setLastDbSync(new Date().toLocaleTimeString());
     } else {
@@ -146,27 +141,42 @@ export const AdminPortal: React.FC = () => {
     setIsLoadingFleet(false);
   };
 
-  const saveStationCode = async (system: SolarSystem) => {
-    const response = await adminSystemsApi.linkFusionSolarStation(system.id, stationCodeInputs[system.id] || '');
-    if (!response.success) {
-      showNotification(response.message || 'Could not link the FusionSolar station.');
-      return;
-    }
-    setFleetSystems((previous) => previous.map((entry) => entry.id === system.id ? response.system : entry));
-    showNotification(`FusionSolar station linked for ${system.name}. Live readings are still pending.`);
+  const beginEditSystem = (system: SolarSystem) => {
+    setEditingSystemId(system.id);
+    setSystemEditForm({
+      name: system.name,
+      location: system.location,
+      capacityKw: system.capacityKw,
+      inverterBrand: system.inverterBrand,
+      inverterModel: system.inverterModel,
+      panelCount: system.panelCount,
+    });
   };
 
-  const refreshSystemTelemetry = async (system: SolarSystem) => {
-    const response = await solarSystemsApi.refreshMonitoring(system.id, true);
-    if (response.success && response.system) {
-      setFleetSystems((previous) => previous.map((entry) => entry.id === system.id ? response.system : entry));
-      showNotification(`Live readings updated for ${system.name}.`);
-    } else {
-      setFleetSystems((previous) => previous.map((entry) => entry.id === system.id
-        ? { ...entry, monitoringStatus: response.monitoringStatus || entry.monitoringStatus, monitoringError: response.message }
-        : entry));
-      showNotification(response.message || `Could not refresh ${system.name}.`);
+  const saveSystemEdit = async (systemId: string) => {
+    if (!systemEditForm.name.trim() || !systemEditForm.location.trim() || Number(systemEditForm.capacityKw) <= 0) {
+      showNotification('Name, location, and capacity are required.');
+      return;
     }
+    const response = await solarSystemsApi.updateSystem(systemId, systemEditForm);
+    if (!response.success || !response.system) {
+      showNotification(response.message || 'Could not update the solar system.');
+      return;
+    }
+    setFleetSystems((previous) => previous.map((system) => system.id === systemId ? response.system : system));
+    setEditingSystemId(null);
+    showNotification(`✓ ${response.system.name} updated successfully.`);
+  };
+
+  const deleteSystem = async (system: SolarSystem) => {
+    if (!window.confirm(`Delete ${system.name}?`)) return;
+    const response = await solarSystemsApi.deleteSystem(system.id);
+    if (!response.success) {
+      showNotification(response.message || 'Could not delete the solar system.');
+      return;
+    }
+    setFleetSystems((previous) => previous.filter((entry) => entry.id !== system.id));
+    showNotification(`✓ ${system.name} deleted.`);
   };
 
   const showNotification = (msg: string) => {
@@ -320,7 +330,7 @@ export const AdminPortal: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-slate-300 mt-0.5">
-                Review the client fleet, manage FusionSolar links, and dispatch service requests.
+                Review the client fleet, manage solar systems, and dispatch service requests.
               </p>
             </div>
           </div>
@@ -342,7 +352,7 @@ export const AdminPortal: React.FC = () => {
             Authenticated administrator
             </span>
             <span className="text-slate-500">|</span>
-            <span className="text-slate-300">FusionSolar: {providerConfigured ? 'configured on server' : 'server credentials required'}</span>
+            <span className="text-slate-300">Fleet mode: Demo data</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -421,12 +431,15 @@ export const AdminPortal: React.FC = () => {
 
         <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
-            <span>FusionSolar provider</span>
+            <span>Fleet status</span>
             <Database className="w-4 h-4 text-indigo-600" />
           </div>
-          <p className="mt-2 text-lg font-black text-slate-900">{providerConfigured ? 'Configured' : 'Not configured'}</p>
+          <p className="mt-2 text-lg font-black text-slate-900">Demo systems</p>
           <p className="mt-1 text-[11px] text-indigo-700 font-semibold">
-            {fleetSystems.filter((system) => system.connectionStatus === 'connected').length} systems reporting live
+            Editable solar fleet
+          </p>
+          <p className="mt-1 text-[10px] text-slate-400">
+            Admin-managed sample data
           </p>
         </div>
       </div>
@@ -895,48 +908,11 @@ export const AdminPortal: React.FC = () => {
       {/* ============================================================== */}
       {activeTab === 'fleet' && (
         <div className="space-y-4">
-          <section className="rounded-xl border border-slate-200 bg-white p-4">
-            <h3 className="text-sm font-bold text-slate-900">Monitoring provider API access</h3>
-            <p className="mt-1 text-xs text-slate-500">
-              Only providers with a verified API adapter can return live readings. No unofficial endpoints or generated readings are used.
-            </p>
-            <div className="mt-3 grid gap-3 md:grid-cols-3">
-              {providerIntegrations.map((provider) => (
-                <article key={provider.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-semibold text-slate-800">{provider.name}</span>
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                      provider.supportsLiveTelemetry
-                        ? provider.status === 'configured' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        : 'bg-slate-200 text-slate-700'
-                    }`}>
-                      {provider.status === 'configured'
-                        ? 'Configured'
-                        : provider.status === 'needs-credentials'
-                          ? 'Needs credentials'
-                          : provider.status === 'configuration-error'
-                            ? 'Configuration issue'
-                          : 'Not verified'}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-[11px] leading-relaxed text-slate-600">{provider.message}</p>
-                  <a
-                    className="mt-2 inline-flex text-[11px] font-semibold text-emerald-800 underline-offset-2 hover:underline"
-                    href={provider.documentationUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Official provider site
-                  </a>
-                </article>
-              ))}
-            </div>
-          </section>
           <div className="flex flex-col justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center">
             <div>
               <h2 className="text-sm font-bold text-slate-900">All client systems</h2>
               <p className="mt-1 text-xs text-slate-500">
-                Authenticated admin fleet · {providerConfigured ? 'FusionSolar configured' : 'FusionSolar credentials are not configured on the server'}
+                Authenticated admin fleet · Simple demo systems
               </p>
             </div>
             <button type="button" onClick={() => void refreshFleet()} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
@@ -971,47 +947,70 @@ export const AdminPortal: React.FC = () => {
                     <span>{sys.panelCount || 0} panels{sys.panelType ? ` · ${sys.panelType}` : ''}</span>
                   </p>
                 </div>
-                <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                  <div className="flex items-center justify-between gap-2 text-xs">
-                    <span className="font-semibold text-slate-700">
-                      {sys.connectionStatus === 'connected'
-                        ? 'Live · Huawei FusionSolar'
-                        : sys.monitoringStatus === 'unconfigured'
-                          ? 'Provider not configured'
-                          : sys.monitoringStatus === 'error'
-                            ? 'Connection error'
-                            : sys.providerStationCode
-                              ? 'Linked · awaiting readings'
-                              : 'Not connected'}
-                    </span>
-                    <span className="text-slate-400">{sys.telemetry?.lastUpdatedAt ? new Date(sys.telemetry.lastUpdatedAt).toLocaleString() : 'No readings'}</span>
-                  </div>
-                  <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-slate-500">
-                    <span>Now: {sys.telemetry?.activePowerKw ?? '—'} kW</span>
-                    <span>Today: {sys.telemetry?.dailyEnergyKwh ?? '—'} kWh</span>
-                  </div>
-                  {sys.monitoringError && <p className="mt-2 text-[11px] text-rose-700">{sys.monitoringError}</p>}
-                </div>
-                {sys.inverterBrand.toLowerCase() === 'huawei' && (
+                {editingSystemId === sys.id ? (
                   <div className="space-y-2 border-t border-slate-100 pt-3">
-                    <label className="block text-[11px] font-semibold text-slate-600" htmlFor={`station-${sys.id}`}>FusionSolar station code</label>
-                    <div className="flex gap-2">
+                    <input
+                      value={systemEditForm.name}
+                      onChange={(event) => setSystemEditForm((previous) => ({ ...previous, name: event.target.value }))}
+                      placeholder="System name"
+                      className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs"
+                    />
+                    <input
+                      value={systemEditForm.location}
+                      onChange={(event) => setSystemEditForm((previous) => ({ ...previous, location: event.target.value }))}
+                      placeholder="Location"
+                      className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
                       <input
-                        id={`station-${sys.id}`}
-                        value={stationCodeInputs[sys.id] || ''}
-                        onChange={(event) => setStationCodeInputs((previous) => ({ ...previous, [sys.id]: event.target.value }))}
-                        placeholder="Station code"
-                        className="min-w-0 flex-1 rounded-lg border border-slate-200 px-2.5 py-2 text-xs focus:border-[#4d8067] focus:outline-none focus:ring-2 focus:ring-[#4d8067]/20"
+                        type="number"
+                        value={systemEditForm.capacityKw}
+                        onChange={(event) => setSystemEditForm((previous) => ({ ...previous, capacityKw: Number(event.target.value) }))}
+                        placeholder="Capacity kW"
+                        className="rounded-lg border border-slate-200 px-2.5 py-2 text-xs"
                       />
-                      <button type="button" onClick={() => void saveStationCode(sys)} className="rounded-lg bg-[#2f604b] px-3 py-2 text-xs font-semibold text-white hover:bg-[#234d3b]">Link</button>
+                      <input
+                        type="number"
+                        value={systemEditForm.panelCount}
+                        onChange={(event) => setSystemEditForm((previous) => ({ ...previous, panelCount: Number(event.target.value) }))}
+                        placeholder="Panels"
+                        className="rounded-lg border border-slate-200 px-2.5 py-2 text-xs"
+                      />
                     </div>
+                    <input
+                      value={systemEditForm.inverterBrand}
+                      onChange={(event) => setSystemEditForm((previous) => ({ ...previous, inverterBrand: event.target.value }))}
+                      placeholder="Inverter brand"
+                      className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs"
+                    />
+                    <input
+                      value={systemEditForm.inverterModel}
+                      onChange={(event) => setSystemEditForm((previous) => ({ ...previous, inverterModel: event.target.value }))}
+                      placeholder="Inverter model"
+                      className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs"
+                    />
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => void saveSystemEdit(sys.id)} className="flex-1 rounded-lg bg-[#2f604b] px-3 py-2 text-xs font-semibold text-white hover:bg-[#234d3b]">Save</button>
+                      <button type="button" onClick={() => setEditingSystemId(null)} className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2 border-t border-slate-100 pt-3">
                     <button
                       type="button"
-                      disabled={!sys.providerStationCode}
-                      onClick={() => void refreshSystemTelemetry(sys)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                      onClick={() => {
+                        setActiveSystemId(sys.id);
+                        onOpenSystemDashboard();
+                      }}
+                      className="flex flex-[1.15] items-center justify-center gap-1.5 rounded-lg bg-[#2f604b] px-3 py-2 text-xs font-semibold text-white hover:bg-[#234d3b]"
                     >
-                      Refresh live readings
+                      <Activity className="h-3.5 w-3.5" /> View system
+                    </button>
+                    <button type="button" onClick={() => beginEditSystem(sys)} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                      <Edit2 className="h-3.5 w-3.5" /> Edit
+                    </button>
+                    <button type="button" onClick={() => void deleteSystem(sys)} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50">
+                      <Trash2 className="h-3.5 w-3.5" /> Delete
                     </button>
                   </div>
                 )}

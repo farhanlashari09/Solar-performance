@@ -1,8 +1,7 @@
 import { DiagnosticResult, SolarSystem, DailyProduction } from '../types';
 
 export function evaluateSystemPerformance(system: SolarSystem, dailyData: DailyProduction[]): DiagnosticResult {
-  const telemetryIsLive = system.telemetry?.source === 'Huawei FusionSolar'
-    && Number.isFinite(Date.parse(system.telemetry.lastUpdatedAt));
+  const telemetryIsLive = false;
   const hasDatedHistory = dailyData.length > 0;
 
   if (!telemetryIsLive || !hasDatedHistory) {
@@ -12,23 +11,21 @@ export function evaluateSystemPerformance(system: SolarSystem, dailyData: DailyP
       performancePct: null,
       deviationPct: null,
       summary: connected
-        ? 'Live readings are available; production history is not available yet.'
-        : 'No verified live readings are available for this system.',
+        ? 'Demo readings are available; production history is not available yet.'
+        : 'No live readings are used in demo mode.',
       reasons: [
         connected
-          ? 'The provider has returned a current system snapshot.'
-          : 'System setup details do not verify a provider connection.',
+          ? 'The system uses saved demonstration information.'
+          : 'System setup details are stored as simple demo data.',
         'Performance diagnostics require dated production history, which has not been received.',
       ],
       recommendations: [
-        system.providerStationCode
-          ? 'Refresh the FusionSolar connection after server credentials are configured.'
-          : 'Ask an administrator to link the correct FusionSolar station.',
+        'Ask an administrator to update the system details when needed.',
       ],
       confidence: 'Inconclusive',
       dataSourceNote: telemetryIsLive
-        ? `Huawei FusionSolar · last updated ${system.telemetry?.lastUpdatedAt}`
-        : system.monitoringError || 'No provider readings received.',
+        ? `Demo snapshot · last updated ${system.telemetry?.lastUpdatedAt}`
+        : 'No external API readings are used.',
     };
   }
 
@@ -38,8 +35,8 @@ export function evaluateSystemPerformance(system: SolarSystem, dailyData: DailyP
     deviationPct: null,
     summary: 'Historical diagnostics are not available.',
     reasons: ['No supported dated production series is available to compare against a baseline.'],
-    recommendations: ['Use provider-reported readings only; do not infer system health from incomplete data.'],
+    recommendations: ['Use saved system readings only; do not infer system health from incomplete data.'],
     confidence: 'Inconclusive',
-    dataSourceNote: 'Provider history is not configured.',
+    dataSourceNote: 'Dated production history is not configured.',
   };
 }

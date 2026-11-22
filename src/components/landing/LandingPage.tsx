@@ -84,7 +84,7 @@ const CAROUSEL_IMAGES = [
     alt: 'Aerial solar panel array surrounded by green land',
   },
   {
-    src: '/images/solar-panel-inspection.jpg',
+    src: 'https://images.pexels.com/photos/9875414/pexels-photo-9875414.jpeg?auto=compress&cs=tinysrgb&w=1800',
     alt: 'Installer checking a rooftop solar panel',
   },
   {
@@ -92,8 +92,8 @@ const CAROUSEL_IMAGES = [
     alt: 'Solar panels and inverters installed at a solar farm',
   },
   {
-    src: '/images/scenic-solar-array.jpg',
-    alt: 'Solar panels in a scenic mountain landscape',
+    src: '/images/solar-monitoring-display.jpg',
+    alt: 'Illustrative solar monitoring dashboard display',
   },
 ] as const;
 
@@ -125,10 +125,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
   const [dark, setDark] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
-  const [activeNav, setActiveNav] = useState('#overview');
   const [chartRange, setChartRange] = useState<ChartRange>('day');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [activeLandingSection, setActiveLandingSection] = useState('#overview');
   const [liveWeather, setLiveWeather] = useState<LiveWeather | null>(null);
   const [weatherStatus, setWeatherStatus] = useState<'loading' | 'live' | 'error'>('loading');
 
@@ -208,8 +208,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
     sub: dark ? 'text-white/60' : 'text-[#707672]',
     faint: dark ? 'text-white/40' : 'text-[#989e99]',
     line: dark ? 'border-white/[0.09]' : 'border-black/[0.07]',
-    active: dark ? 'bg-[#39413b] text-white' : 'bg-black text-white shadow-sm',
-    hover: dark ? 'hover:bg-white/[0.08]' : 'hover:bg-black/[0.04]',
+    hover: dark ? 'hover:bg-white/[0.08]' : 'hover:bg-black hover:text-white',
+    navHover: dark ? 'hover:bg-white/[0.08]' : 'hover:bg-black hover:text-white',
     footer: dark ? 'border-white/[0.09] text-white/50' : 'border-black/[0.07] text-[#808681]',
   };
   const activeChart = chartRanges[chartRange];
@@ -229,17 +229,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
     {
       q: t('Are production readings live?', 'کیا پیداوار کی ریڈنگز لائیو ہیں؟', 'Kya production readings live hain?'),
       a: t(
-        'Only readings returned by a verified provider connection are shown as live. The landing-page charts and photos are illustrative previews.',
-        'صرف تصدیق شدہ provider کنکشن سے موصول ہونے والی ریڈنگز لائیو دکھائی جاتی ہیں۔ لینڈنگ پیج کے چارٹس اور تصاویر صرف نمونہ ہیں۔',
-        'Live readings sirf verified provider connection se dikhayi jati hain. Landing page charts aur tasaveer sirf preview hain.'
+        'The website uses clear demo data so you can explore the dashboard before adding a real system.',
+        'ویب سائٹ واضح ڈیمو ڈیٹا استعمال کرتی ہے تاکہ آپ حقیقی سسٹم شامل کرنے سے پہلے ڈیش بورڈ دیکھ سکیں۔',
+        'Website clear demo data use karti hai taake aap real system add karne se pehle dashboard explore kar sakein.'
       ),
     },
     {
-      q: t('Where does local weather come from?', 'مقامی موسم کہاں سے آتا ہے؟', 'Local weather kahan se aata hai?'),
+      q: t('How can I add a solar system?', 'میں سولر سسٹم کیسے شامل کر سکتا ہوں؟', 'Main solar system kaise add karoon?'),
       a: t(
-        'This landing page shows current Open-Meteo conditions for Lahore, Pakistan. Signed-in system weather uses the location saved for each system.',
-        'یہ لینڈنگ پیج لاہور، پاکستان کے موجودہ Open-Meteo موسم کو دکھاتا ہے۔ لاگ ان کے بعد ہر سسٹم کے محفوظ مقام کے مطابق موسم دکھایا جاتا ہے۔',
-        'Yeh landing page Lahore, Pakistan ka mojooda Open-Meteo weather dikhata hai. Login ke baad har system ke saved location ka weather nazar aata hai.'
+        'Sign in, open My Solar Systems, and add the name, location, capacity, and basic equipment details.',
+        'سائن ان کریں، میرے سولر سسٹمز کھولیں اور نام، مقام، صلاحیت اور بنیادی سامان کی تفصیلات شامل کریں۔',
+        'Sign in karein, My Solar Systems kholein aur naam, location, capacity aur basic equipment details add karein.'
       ),
     },
   ];
@@ -276,10 +276,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                 <a
                   key={item.href}
                   href={item.href}
-                  onClick={() => setActiveNav(item.href)}
-                  aria-current={activeNav === item.href ? 'location' : undefined}
+                  onClick={() => setActiveLandingSection(item.href)}
                   className={`rounded-full px-4 py-2 text-[11px] font-medium transition ${
-                    activeNav === item.href ? palette.active : `${palette.sub} ${palette.hover}`
+                    activeLandingSection === item.href
+                        ? 'bg-black text-white'
+                        : `${palette.sub} ${palette.navHover}`
                   }`}
                 >
                   {t(item.label, item.label, item.label)}
@@ -344,10 +345,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                       <a
                         key={item.href}
                         href={item.href}
-                        onClick={() => { setActiveNav(item.href); setMobileOpen(false); }}
-                        aria-current={activeNav === item.href ? 'location' : undefined}
-                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium ${
-                          activeNav === item.href ? palette.active : `${palette.sub} ${palette.hover}`
+                        onClick={() => {
+                          setActiveLandingSection(item.href);
+                          setMobileOpen(false);
+                        }}
+                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition ${
+                          activeLandingSection === item.href
+                            ? 'bg-black text-white'
+                            : `${palette.sub} ${palette.navHover}`
                         }`}
                       >
                         <Icon className="h-4 w-4" />
@@ -394,12 +399,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                     <a
                       key={item.href}
                       href={item.href}
+                      onClick={() => setActiveLandingSection(item.href)}
                       title={item.label}
                       aria-label={item.label}
-                      onClick={() => setActiveNav(item.href)}
-                      aria-current={activeNav === item.href ? 'location' : undefined}
                       className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
-                        activeNav === item.href ? palette.active : `${palette.sub} ${palette.hover}`
+                        activeLandingSection === item.href
+                          ? 'bg-black text-white'
+                          : `${palette.sub} ${palette.navHover}`
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -408,10 +414,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                 })}
               </nav>
               <div className="flex flex-col items-center gap-2">
-                <a href="#support" title="Support information" aria-label="Support information" onClick={() => setActiveNav('#support')} className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${activeNav === '#support' ? palette.active : `${palette.sub} ${palette.hover}`}`}>
+                <a href="#support" title="Support information" aria-label="Support information" className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${palette.sub} ${palette.navHover}`}>
                   <CircleHelp className="h-4 w-4" />
                 </a>
-                <a href="#contact" title="Contact SolarCare" aria-label="Contact SolarCare" onClick={() => setActiveNav('#contact')} className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${activeNav === '#contact' ? palette.active : `${palette.sub} ${palette.hover}`}`}>
+                <a href="#contact" title="Contact SolarCare" aria-label="Contact SolarCare" className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${palette.sub} ${palette.navHover}`}>
                   <Mail className="h-4 w-4" />
                 </a>
               </div>
@@ -489,7 +495,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                         type="button"
                         onClick={() => setChartRange(range)}
                         aria-pressed={chartRange === range}
-                        className={`rounded-md px-2 py-1.5 text-[9px] font-medium transition ${chartRange === range ? palette.active : palette.sub}`}
+                        className={`rounded-md px-2 py-1.5 text-[9px] font-medium transition ${chartRange === range ? (dark ? 'bg-[#39413b] text-white' : 'bg-[#e3e8e2] text-[#171b18]') : palette.sub} ${palette.navHover}`}
                       >
                         {range === 'day' ? t('Daily', 'روزانہ', 'Daily') : range === 'week' ? t('Weekly', 'ہفتہ وار', 'Weekly') : t('Monthly', 'ماہانہ', 'Monthly')}
                       </button>
@@ -545,7 +551,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                 if (index !== carouselIndex && index !== (carouselIndex + 1) % CAROUSEL_IMAGES.length) return null;
                 return (
                   <img
-                    key={image.src}
+                    key={`${image.src}-${index}`}
                     src={image.src}
                     alt={index === carouselIndex ? t(image.alt, image.alt, image.alt) : ''}
                     aria-hidden={index !== carouselIndex}
@@ -572,13 +578,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                   </div>
                 </div>
                 <div className="flex gap-1.5">
-                  <a href="#weather" onClick={() => setActiveNav('#weather')} aria-label="View local weather" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-white/20">
+                  <a href="#weather" aria-label="View local weather" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-black hover:text-white">
                     <Activity className="h-3.5 w-3.5" />
                   </a>
-                  <a href="#support" onClick={() => setActiveNav('#support')} aria-label="View support information" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-white/20">
+                  <a href="#support" aria-label="View support information" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-black hover:text-white">
                     <CircleHelp className="h-3.5 w-3.5" />
                   </a>
-                  <button type="button" onClick={onSignUp} aria-label="Create an account to add a solar system" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-white/20">
+                  <button type="button" onClick={onSignUp} aria-label="Create an account to add a solar system" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-black hover:text-white">
                     <ArrowUpRight className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -626,12 +632,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                   <h3 className="text-sm font-semibold">{t('How SolarCare works', 'SolarCare کیسے کام کرتا ہے', 'SolarCare kaisay kaam karta hai')}</h3>
                   <p className="mt-2 text-xs leading-5 text-white/75">
                     {t(
-                      'Add your system location to see local weather. Production readings appear only after a real provider connection is verified.',
-                      'مقامی موسم دیکھنے کے لیے اپنے سسٹم کا مقام درج کریں۔ پیداوار کی ریڈنگ صرف حقیقی provider کنکشن کی تصدیق کے بعد دکھائی جاتی ہے۔',
-                      'Local weather ke liye system location add karein. Production readings sirf real provider connection verify honay par nazar aati hain.'
+                      'Add your system location to see local weather and use the simple demo dashboard.',
+                      'مقامی موسم دیکھنے اور آسان ڈیمو ڈیش بورڈ استعمال کرنے کے لیے اپنے سسٹم کا مقام درج کریں۔',
+                      'Local weather aur simple demo dashboard ke liye system location add karein.'
                     )}
                   </p>
-                  <a href="#support" onClick={() => setActiveNav('#support')} className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#e5e9a1] transition hover:gap-2.5">
+                  <a href="#support" className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#e5e9a1] transition hover:gap-2.5">
                     {t('Visit support', 'مدد دیکھیں', 'Support dekhein')} <ArrowRight className="h-3 w-3" />
                   </a>
                 </article>
@@ -639,8 +645,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
             </section>
           </div>
 
-          <div className={`flex flex-col gap-3 border-t px-4 py-3 text-[10px] sm:flex-row sm:items-center sm:justify-between sm:px-6 ${palette.footer}`}>
-            <p>{t('Illustrative dashboard preview · Your registered system data appears after sign in.', 'نمونہ ڈیش بورڈ · لاگ ان کے بعد آپ کے سسٹم کا ڈیٹا نظر آئے گا۔', 'Dashboard preview · Login ke baad aap ke system ka data nazar aaye ga.')}</p>
+          <div className={`flex flex-col gap-3 border-t px-4 py-3 text-[10px] sm:flex-row sm:items-center sm:justify-end sm:px-6 ${palette.footer}`}>
             <button type="button" onClick={onSignUp} className={`inline-flex items-center gap-1.5 self-start font-semibold transition hover:gap-2.5 sm:self-auto ${dark ? 'text-emerald-300' : 'text-emerald-700'}`}>
               {t('Set up your system', 'اپنا سسٹم سیٹ کریں', 'Apna system set karein')}
               <ArrowRight className="h-3 w-3" />
@@ -670,10 +675,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                   </div>
                   <h3 className={`mt-5 text-base font-semibold ${palette.text}`}>{title}</h3>
                   <p className={`mt-2 text-sm leading-6 ${palette.sub}`}>{text}</p>
-                  <button type="button" onClick={onSignUp} className={`mt-5 inline-flex items-center gap-2 text-xs font-semibold ${dark ? 'text-emerald-300' : 'text-emerald-800'}`}>
-                    {t('Explore SolarCare', 'SolarCare دیکھیں', 'SolarCare dekhein')}
-                    <ArrowUpRight className="h-3.5 w-3.5" />
-                  </button>
                 </article>
               ))}
             </div>
@@ -685,7 +686,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
             <div>
               <p className={`dashboard-kicker ${dark ? 'text-emerald-300' : 'text-emerald-800'}`}>{t('Solar knowledge, within reach', 'سولر معلومات، آپ کے ساتھ', 'Solar maloomat, aap ke sath')}</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t('A clearer answer to every solar question.', 'ہر سولر سوال کا واضح جواب۔', 'Har solar sawal ka wazeh jawab.')}</h2>
-              <p className={`mt-4 max-w-md text-sm leading-6 ${palette.sub}`}>{t('Create an account, add your system location, and see local weather. Verified production data appears only after a real provider connection.', 'اکاؤنٹ بنائیں، اپنے سسٹم کا مقام درج کریں اور مقامی موسم دیکھیں۔ تصدیق شدہ پیداواری ڈیٹا حقیقی provider کنکشن کے بعد ہی دکھایا جاتا ہے۔', 'Account banayein, system location add karein aur local weather dekhein. Verified production data sirf real provider connection ke baad nazar aata hai.')}</p>
+              <p className={`mt-4 max-w-md text-sm leading-6 ${palette.sub}`}>{t('Create an account, add your system location, and explore local weather and simple demo monitoring.', 'اکاؤنٹ بنائیں، اپنے سسٹم کا مقام درج کریں اور مقامی موسم اور آسان ڈیمو مانیٹرنگ دیکھیں۔', 'Account banayein, system location add karein aur local weather aur simple demo monitoring explore karein.')}</p>
               <button type="button" onClick={onSignUp} className={`mt-6 inline-flex items-center gap-2 rounded-full px-5 py-3 text-xs font-semibold transition ${dark ? 'bg-[#d9e584] text-[#20251f] hover:bg-[#eff5bd]' : 'bg-[#1d2921] text-white hover:bg-[#3b5940]'}`}>
                 {t('Get started with SolarCare', 'SolarCare شروع کریں', 'SolarCare shuru karein')}
                 <ArrowUpRight className="h-4 w-4" />

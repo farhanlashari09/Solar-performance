@@ -185,15 +185,18 @@ export const solarSystemsApi = {
     }
   },
 
-  async refreshMonitoring(id: string, admin = false): Promise<ApiResponse> {
+  async deleteSystem(id: string): Promise<ApiResponse> {
     try {
-      const path = admin ? `/admin/systems/${id}/monitoring/refresh` : `/systems/${id}/monitoring/refresh`;
-      const res = await fetch(`${API_BASE}${path}`, { method: 'POST', headers: authHeaders() });
+      const res = await fetch(`${API_BASE}/systems/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
       return await res.json();
     } catch {
-      return { success: false, message: 'Could not request live FusionSolar readings.' };
+      return { success: false, message: 'Could not delete system.' };
     }
   },
+
 };
 
 export const adminSystemsApi = {
@@ -206,18 +209,6 @@ export const adminSystemsApi = {
     }
   },
 
-  async linkFusionSolarStation(systemId: string, stationCode: string): Promise<ApiResponse> {
-    try {
-      const res = await fetch(`${API_BASE}/admin/systems/${systemId}/provider`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ stationCode }),
-      });
-      return await res.json();
-    } catch {
-      return { success: false, message: 'Could not link the FusionSolar station.' };
-    }
-  },
 };
 
 export const databaseApi = {

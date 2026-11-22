@@ -40,10 +40,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const recentMaintenance = serviceRequests.filter((request) => request.systemId === activeSystem.id).slice(0, 2);
   const status = activeSystem.monitoringStatus || (activeSystem.connectionStatus === 'connected' ? 'connected' : 'unlinked');
   const statusText = {
-    connected: 'Live connection',
-    unlinked: 'Station not linked',
-    unconfigured: 'Provider not configured',
-    error: 'Connection error',
+    connected: 'Active demo',
+    unlinked: 'Demo system',
+    unconfigured: 'Demo system',
+    error: 'Demo system',
   }[status];
   const lastUpdated = telemetry?.lastUpdatedAt && Number.isFinite(Date.parse(telemetry.lastUpdatedAt))
     ? new Date(telemetry.lastUpdatedAt).toLocaleString()
@@ -83,12 +83,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <button
               type="button"
               onClick={handleRefresh}
-              disabled={isRefreshing || !activeSystem.providerStationCode}
+              disabled={isRefreshing}
               className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
-              title={!activeSystem.providerStationCode ? 'An administrator must link a FusionSolar station first.' : undefined}
             >
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Refresh live data
+              Refresh preview
             </button>
             <button
               type="button"
@@ -125,7 +124,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—'}
               <span className="ml-2 text-sm font-medium text-slate-500">{unit}</span>
             </p>
-            <p className="mt-2 text-[11px] text-slate-400">{telemetry ? 'Reported by FusionSolar' : 'Waiting for verified provider readings'}</p>
+            <p className="mt-2 text-[11px] text-slate-400">{telemetry ? 'Saved preview data' : 'No live readings in demo mode'}</p>
           </article>
         ))}
 
@@ -144,7 +143,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
             <div>
               <h2 className="text-base font-bold text-slate-900">Production history</h2>
-              <p className="mt-1 text-xs text-slate-500">Historical charts will appear when the provider supplies dated production records.</p>
+              <p className="mt-1 text-xs text-slate-500">Production history for this system will appear here when readings are available.</p>
             </div>
             <span className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ${status === 'connected' ? 'bg-[#e9f4ed] text-[#2e7158]' : 'bg-slate-100 text-slate-600'}`}>
               <span className={`h-1.5 w-1.5 rounded-full ${status === 'connected' ? 'bg-emerald-600' : 'bg-slate-400'}`} />
@@ -157,9 +156,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {telemetry ? 'Live snapshot received; historical series is not available yet.' : 'No production readings yet'}
             </p>
             <p className="mt-1 max-w-md text-xs leading-5 text-slate-500">
-              {activeSystem.providerStationCode
-                ? (activeSystem.monitoringError || 'The dashboard will show measurements after a successful FusionSolar response.')
-                : 'Ask an administrator to link this system to its FusionSolar station. No sample readings are generated.'}
+              This view currently uses simple system information and does not show estimated production.
             </p>
             <p className="mt-3 text-[11px] text-slate-400">Last updated: {lastUpdated}</p>
           </div>
@@ -176,10 +173,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <p className="text-xs font-semibold text-slate-700">{activeSystem.connectionMethod || 'Not connected'}</p>
               <p className="mt-1 text-[11px] leading-5 text-slate-500">
                 {activeSystem.monitoringError || (status === 'connected'
-                  ? 'Live readings have been received from the provider.'
-                  : 'System setup does not establish a provider connection or create telemetry.')}
+                  ? 'Saved demo readings are available.'
+                  : 'This system uses simple demonstration data only.')}
               </p>
-              <p className="mt-3 text-[11px] text-slate-400">Last provider response: {lastUpdated}</p>
+              <p className="mt-3 text-[11px] text-slate-400">Last demo update: {lastUpdated}</p>
             </div>
           </div>
           <button
