@@ -51,9 +51,9 @@ export const en = {
     verifyBtn: 'Verify Email',
     resendCode: 'Resend Code',
     backToEmail: '← Back to Email',
-    demoCodeHint: 'Demo verification mode: Enter code 123456 or click below',
-    autoFillDemoCode: 'Auto-fill Demo Code (123456)',
-    invalidCode: 'Invalid code. Please enter 123456 for this prototype demo.',
+    demoCodeHint: 'Enter the verification code sent to your email.',
+    autoFillDemoCode: 'Fill verification code',
+    invalidCode: 'The verification code is invalid. Check the email and try again.',
     codeExpired: 'Code expired. Please request a new code.',
 
     // Create Password
@@ -79,8 +79,8 @@ export const en = {
     loginBtn: 'Sign In',
     noAccount: "Don't have an account?",
     signUpLink: 'Register now',
-    invalidCredentials: 'Invalid email or password. Use demo account or create a new one.',
-    demoLoginTip: 'Quick Demo Login: Any email with password (8+ chars) or demo credentials.',
+    invalidCredentials: 'Invalid email or password. Check your credentials and try again.',
+    demoLoginTip: 'Use the email address and password registered to your account.',
 
     // Forgot Password
     forgotTitle: 'Reset Password',
@@ -110,7 +110,7 @@ export const en = {
     connectionWifi: 'WiFi Dongle / Modbus API',
     connectionManual: 'Manual / Scheduled Inverter Logs',
     saveAndStart: 'Save & View Dashboard',
-    skipForNow: 'Skip for now (use default sample system)',
+    skipForNow: 'Finish setup later',
   },
 
   // Dashboard
@@ -243,7 +243,7 @@ export const en = {
     timelineInProgress: 'In Progress',
     timelineCompleted: 'Completed',
     currentStage: 'Current Stage',
-    demoControlsNotice: 'Demo Mode: Advance request status to simulate technician workflow in real time.',
+    demoControlsNotice: 'Service-request examples are illustrative and do not dispatch a technician.',
     simulateAccept: 'Simulate: Technician Accepts',
     simulateStart: 'Simulate: Start Work',
     simulateComplete: 'Simulate: Complete Service with Report',

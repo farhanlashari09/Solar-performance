@@ -51,9 +51,9 @@ export const ur = {
     verifyBtn: 'ای میل تصدیق کریں',
     resendCode: 'کوڈ دوبارہ بھیجیں',
     backToEmail: '← واپس ای میل پر جائیں',
-    demoCodeHint: 'ڈیمو تصدیقی موڈ: کوڈ 123456 درج کریں یا نیچے کلک کریں',
-    autoFillDemoCode: 'ڈیمو کوڈ خود بخود بھریں (123456)',
-    invalidCode: 'غلط کوڈ۔ براہ کرم اس ڈیمو کے لیے 123456 درج کریں۔',
+    demoCodeHint: 'اپنے ای میل پر بھیجا گیا تصدیقی کوڈ درج کریں۔',
+    autoFillDemoCode: 'تصدیقی کوڈ درج کریں',
+    invalidCode: 'تصدیقی کوڈ درست نہیں۔ ای میل چیک کر کے دوبارہ کوشش کریں۔',
     codeExpired: 'کوڈ کی میعاد ختم ہو چکی ہے، نیا کوڈ حاصل کریں۔',
 
     // Create Password
@@ -79,8 +79,8 @@ export const ur = {
     loginBtn: 'لاگ ان کریں',
     noAccount: 'کیا آپ کا اکاؤنٹ نہیں ہے؟',
     signUpLink: 'نیا اکاؤنٹ بنائیں',
-    invalidCredentials: 'غلط ای میل یا پاس ورڈ۔ ڈیمو اکاؤنٹ استعمال کریں یا نیا بنائیں۔',
-    demoLoginTip: 'فوری ڈیمو لاگ ان: کوئی بھی ای میل اور 8 ہندسوں کا پاس ورڈ درج کریں۔',
+    invalidCredentials: 'ای میل یا پاس ورڈ درست نہیں۔ اپنی معلومات چیک کر کے دوبارہ کوشش کریں۔',
+    demoLoginTip: 'اپنے اکاؤنٹ میں رجسٹرڈ ای میل اور پاس ورڈ استعمال کریں۔',
 
     // Forgot Password
     forgotTitle: 'پاس ورڈ بحال کریں',
@@ -110,7 +110,7 @@ export const ur = {
     connectionWifi: 'وائی فائی ڈونگل / موڈبس اے پی آئی',
     connectionManual: 'دستی / شیڈول شدہ انورٹر لاگ',
     saveAndStart: 'محفوظ کریں اور ڈیش بورڈ دیکھیں',
-    skipForNow: 'ابھی چھوڑیں (نمونہ سسٹم استعمال کریں)',
+    skipForNow: 'سیٹ اپ بعد میں مکمل کریں',
   },
 
   // Dashboard
@@ -243,7 +243,7 @@ export const ur = {
     timelineInProgress: 'کام جاری ہے',
     timelineCompleted: 'مکمل ہو گیا',
     currentStage: 'موجودہ مرحلہ',
-    demoControlsNotice: 'ڈیمو موڈ: ٹیکنیشن کے کام کا حقیقی تجربہ کرنے کے لیے اسٹیٹس تبدیل کریں۔',
+    demoControlsNotice: 'سروس درخواستوں کی مثالیں صرف وضاحتی ہیں اور ٹیکنیشن نہیں بھیجتیں۔',
     simulateAccept: 'ٹیکنیشن نے قبول کیا',
     simulateStart: 'کام شروع کیا گیا',
     simulateComplete: 'رپورٹ کے ساتھ مکمل کریں',

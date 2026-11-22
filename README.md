@@ -71,6 +71,8 @@ System me **Nodemailer** integrated hai jo user ke Gmail account par **6-digit s
 
 System name, location, and capacity are required. Saving setup does not mark a system connected or create telemetry. Current production cards remain empty until a successful provider response; historical charts and diagnostics remain unavailable until dated provider history is supported.
 
+Authenticated dashboards and registered-system cards show current weather and a five-day local forecast from Open-Meteo's free geocoding and forecast APIs. Weather requests use the required system location and show loading or unavailable states instead of estimated conditions.
+
 ### Administrator access
 
 Set `SOLARCARE_ADMIN_EMAILS` in the backend environment to a comma-separated list of verified administrator account emails. The list is checked server-side; an empty value disables administrator-only fleet and provider-linking APIs. Do not use the shipped demo account as an administrator in a deployed environment.

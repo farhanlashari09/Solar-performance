@@ -51,9 +51,9 @@ export const urRoman = {
     verifyBtn: 'Email Verify Karein',
     resendCode: 'Code Dobara Bhejein',
     backToEmail: '← Wapis Email Par Jayein',
-    demoCodeHint: 'Demo verification mode: Code 123456 enter karein ya neechay click karein',
-    autoFillDemoCode: 'Auto-fill Demo Code (123456)',
-    invalidCode: 'Ghalat code hai. Is prototype demo ke liye 123456 darj karein.',
+    demoCodeHint: 'Apne email par bheja gaya verification code enter karein.',
+    autoFillDemoCode: 'Verification code darj karein',
+    invalidCode: 'Verification code durust nahi. Email check kar ke dobara koshish karein.',
     codeExpired: 'Code expire ho chuka hai, naya code mangwayein.',
 
     // Create Password
@@ -79,8 +79,8 @@ export const urRoman = {
     loginBtn: 'Sign In Karein',
     noAccount: 'Naye user hain?',
     signUpLink: 'Naya account banayein',
-    invalidCredentials: 'Email ya password ghalat hai. Demo account use karein ya naya banayein.',
-    demoLoginTip: 'Quick Demo Login: Koi bhi email aur 8+ characters ka password enter karein.',
+    invalidCredentials: 'Email ya password durust nahi. Apni maloomat check kar ke dobara koshish karein.',
+    demoLoginTip: 'Apne account mein registered email aur password use karein.',
 
     // Forgot Password
     forgotTitle: 'Password Reset Karein',
@@ -110,7 +110,7 @@ export const urRoman = {
     connectionWifi: 'WiFi Dongle / Modbus API',
     connectionManual: 'Manual / Scheduled Inverter Logs',
     saveAndStart: 'Save Karein & Dashboard Dekhein',
-    skipForNow: 'Abhi skip karein (default sample system use karein)',
+    skipForNow: 'Setup baad mein mukammal karein',
   },
 
   // Dashboard
@@ -243,7 +243,7 @@ export const urRoman = {
     timelineInProgress: 'Kaam Jaari Hai',
     timelineCompleted: 'Mukammal Ho Gaya',
     currentStage: 'Mojooda Stage',
-    demoControlsNotice: 'Demo Mode: Technician ka status simulate karnay ke liye neechay buttons dabayein.',
+    demoControlsNotice: 'Service request ki misaalein sirf wazahat ke liye hain, technician dispatch nahi hota.',
     simulateAccept: 'Simulate: Technician Ne Accept Kiya',
     simulateStart: 'Simulate: Kaam Shuru Hua',
     simulateComplete: 'Simulate: Kaam Report Ke Sath Complete',

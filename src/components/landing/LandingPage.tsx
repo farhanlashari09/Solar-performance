@@ -1,28 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { useSolar } from '../../context/SolarContext';
 import { Language } from '../../types';
 import {
   Activity,
   ArrowRight,
   ArrowUpRight,
   Check,
+  CircleHelp,
   ChevronDown,
   CloudSun,
   Globe,
-  Grid2X2,
   LayoutDashboard,
+  Mail,
   Menu,
   Moon,
-  Settings,
   ShieldCheck,
   Sun,
-  Wrench,
   X,
-  Zap,
 } from 'lucide-react';
 
 const CURRENT_YEAR = new Date().getFullYear();
+const LANDING_WEATHER_LOCATION = 'Lahore, Pakistan';
 
 interface LandingPageProps {
   onLogin: () => void;
@@ -124,10 +122,10 @@ const weatherCondition = (code: number) => {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) => {
   const { language, setLanguage, isRtl } = useLanguage();
-  const { activeSystem } = useSolar();
   const [dark, setDark] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [activeNav, setActiveNav] = useState('#overview');
   const [chartRange, setChartRange] = useState<ChartRange>('day');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -149,17 +147,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
 
   useEffect(() => {
     const controller = new AbortController();
-    const location = activeSystem.location.trim();
-    if (!location) {
-      setLiveWeather(null);
-      setWeatherStatus('error');
-      return () => controller.abort();
-    }
-
     const loadWeather = async () => {
+      setLiveWeather(null);
       setWeatherStatus('loading');
       try {
-        const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`;
+        const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(LANDING_WEATHER_LOCATION)}&count=1&language=en&format=json`;
         const geocodeResponse = await fetch(geocodeUrl, { signal: controller.signal });
         if (!geocodeResponse.ok) throw new Error('Weather location lookup failed');
         const geocode = await geocodeResponse.json();
@@ -197,15 +189,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
 
     void loadWeather();
     return () => controller.abort();
-  }, [activeSystem.location]);
+  }, []);
 
   const currentLanguage = LANG_OPTIONS.find((option) => option.code === language) || LANG_OPTIONS[0];
   const navigation = [
     { label: t('Overview', 'جائزہ', 'Overview'), href: '#overview', icon: LayoutDashboard },
-    { label: t('Solar Farms', 'سولر فارمز', 'Solar Farms'), href: '#farms', icon: Sun },
-    { label: t('Panels', 'پینلز', 'Panels'), href: '#panels', icon: Grid2X2 },
-    { label: t('Inverters', 'انورٹرز', 'Inverters'), href: '#inverters', icon: Zap },
+    { label: t('Solar sites', 'سولر سائٹس', 'Solar sites'), href: '#farms', icon: Sun },
     { label: t('Weather', 'موسم', 'Weather'), href: '#weather', icon: CloudSun },
+    { label: t('Support', 'مدد', 'Support'), href: '#support', icon: CircleHelp },
+    { label: t('Contact', 'رابطہ', 'Contact'), href: '#contact', icon: Mail },
   ];
   const palette = {
     page: dark ? 'bg-[#171c19]' : 'bg-[#b8bab7]',
@@ -216,7 +208,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
     sub: dark ? 'text-white/60' : 'text-[#707672]',
     faint: dark ? 'text-white/40' : 'text-[#989e99]',
     line: dark ? 'border-white/[0.09]' : 'border-black/[0.07]',
-    active: dark ? 'bg-[#39413b] text-white' : 'bg-white text-[#191d1a] shadow-sm',
+    active: dark ? 'bg-[#39413b] text-white' : 'bg-black text-white shadow-sm',
     hover: dark ? 'hover:bg-white/[0.08]' : 'hover:bg-black/[0.04]',
     footer: dark ? 'border-white/[0.09] text-white/50' : 'border-black/[0.07] text-[#808681]',
   };
@@ -227,27 +219,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
   const chartAreaPoints = `0,100 ${chartPoints} 100,100`;
   const faqs = [
     {
-      q: t('Which solar inverters can I monitor?', 'کون سے سولر انورٹر مانیٹر کیے جا سکتے ہیں؟', 'Kin solar inverters ko monitor kar sakta hoon?'),
+      q: t('How do I get started?', 'شروع کیسے کروں؟', 'Shuru kaisay karoon?'),
       a: t(
-        'SolarCare supports common inverter brands and connection types. Your available data depends on the inverter and monitoring connection configured for your system.',
-        'SolarCare عام انورٹر برانڈز اور کنکشن کی اقسام کو سپورٹ کرتا ہے۔ دستیاب ڈیٹا آپ کے انورٹر اور مانیٹرنگ کنکشن پر منحصر ہے۔',
-        'SolarCare aam inverter brands aur connection types ko support karta hai. Data aap ke inverter aur monitoring connection par depend karta hai.'
+        'Create an account, then add your system name, city, and capacity. The saved location is used for local weather.',
+        'اکاؤنٹ بنائیں، پھر سسٹم کا نام، شہر اور صلاحیت درج کریں۔ محفوظ کیا گیا مقام مقامی موسم کے لیے استعمال ہوتا ہے۔',
+        'Account banayein, phir system ka naam, shehar aur capacity darj karein. Saved location local weather ke liye use hoti hai.'
       ),
     },
     {
-      q: t('What should I do about an inverter warning?', 'انورٹر وارننگ پر کیا کرنا چاہیے؟', 'Inverter warning par kya karna chahiye?'),
+      q: t('Are production readings live?', 'کیا پیداوار کی ریڈنگز لائیو ہیں؟', 'Kya production readings live hain?'),
       a: t(
-        'Note the inverter brand and exact warning, then use the Solar Assistant or contact a qualified technician. Never open equipment or touch live solar wiring.',
-        'انورٹر کا برانڈ اور وارننگ نوٹ کریں، پھر سولر اسسٹنٹ یا ماہر ٹیکنیشن سے رابطہ کریں۔ سامان نہ کھولیں اور بجلی کی تاروں کو نہ چھوئیں۔',
-        'Inverter ka brand aur exact warning note karein, phir Solar Assistant ya qualified technician se rabta karein. Live wiring ko kabhi na chhuyein.'
+        'Only readings returned by a verified provider connection are shown as live. The landing-page charts and photos are illustrative previews.',
+        'صرف تصدیق شدہ provider کنکشن سے موصول ہونے والی ریڈنگز لائیو دکھائی جاتی ہیں۔ لینڈنگ پیج کے چارٹس اور تصاویر صرف نمونہ ہیں۔',
+        'Live readings sirf verified provider connection se dikhayi jati hain. Landing page charts aur tasaveer sirf preview hain.'
       ),
     },
     {
-      q: t('Is the dashboard data live?', 'کیا ڈیش بورڈ کا ڈیٹا لائیو ہے؟', 'Kya dashboard ka data live hai?'),
+      q: t('Where does local weather come from?', 'مقامی موسم کہاں سے آتا ہے؟', 'Local weather kahan se aata hai?'),
       a: t(
-        'This landing-page dashboard is an illustrative preview. Your signed-in dashboard uses the readings and connection status available for your registered solar system.',
-        'یہ لینڈنگ پیج ڈیش بورڈ ایک نمونہ پیش منظر ہے۔ لاگ ان کے بعد آپ کے ڈیش بورڈ میں رجسٹرڈ سسٹم کی دستیاب ریڈنگز اور کنکشن کی حالت دکھائی جاتی ہے۔',
-        'Yeh landing page dashboard sirf preview hai. Login ke baad aap ke registered system ki available readings aur connection status dikhte hain.'
+        'This landing page shows current Open-Meteo conditions for Lahore, Pakistan. Signed-in system weather uses the location saved for each system.',
+        'یہ لینڈنگ پیج لاہور، پاکستان کے موجودہ Open-Meteo موسم کو دکھاتا ہے۔ لاگ ان کے بعد ہر سسٹم کے محفوظ مقام کے مطابق موسم دکھایا جاتا ہے۔',
+        'Yeh landing page Lahore, Pakistan ka mojooda Open-Meteo weather dikhata hai. Login ke baad har system ke saved location ka weather nazar aata hai.'
       ),
     },
   ];
@@ -279,19 +271,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
               <span className={`text-lg font-bold tracking-tight ${palette.text}`}>SolarCare</span>
             </a>
 
-            <nav aria-label="Main navigation" className={`hidden items-center gap-1 rounded-full p-1 md:flex ${palette.inset}`}>
+            <nav aria-label="Main navigation" className={`hidden items-center gap-1 rounded-full p-1 lg:flex ${palette.inset}`}>
               {navigation.map((item) => (
                 <a
                   key={item.href}
                   href={item.href}
-                  className={`rounded-full px-4 py-2 text-[11px] font-medium transition ${palette.sub} ${palette.hover}`}
+                  onClick={() => setActiveNav(item.href)}
+                  aria-current={activeNav === item.href ? 'location' : undefined}
+                  className={`rounded-full px-4 py-2 text-[11px] font-medium transition ${
+                    activeNav === item.href ? palette.active : `${palette.sub} ${palette.hover}`
+                  }`}
                 >
                   {t(item.label, item.label, item.label)}
                 </a>
               ))}
             </nav>
 
-            <div className="hidden items-center gap-1 sm:flex">
+            <div className="hidden items-center gap-1 lg:flex">
               <div className="relative">
                 <button
                   type="button"
@@ -334,13 +330,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
               onClick={() => setMobileOpen((open) => !open)}
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={mobileOpen}
-              className={`flex h-9 w-9 items-center justify-center rounded-full transition sm:hidden ${palette.hover} ${palette.text}`}
+              className={`flex h-9 w-9 items-center justify-center rounded-full transition lg:hidden ${palette.hover} ${palette.text}`}
             >
               {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
 
             {mobileOpen && (
-              <div className={`absolute inset-x-3 top-full z-40 mt-1 rounded-2xl border p-3 shadow-xl sm:hidden ${palette.panel}`}>
+              <div className={`absolute inset-x-3 top-full z-40 mt-1 rounded-2xl border p-3 shadow-xl lg:hidden ${palette.panel}`}>
                 <nav aria-label="Mobile navigation" className="grid gap-1">
                   {navigation.map((item) => {
                     const Icon = item.icon;
@@ -348,8 +344,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                       <a
                         key={item.href}
                         href={item.href}
-                        onClick={() => setMobileOpen(false)}
-                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium ${palette.sub} ${palette.hover}`}
+                        onClick={() => { setActiveNav(item.href); setMobileOpen(false); }}
+                        aria-current={activeNav === item.href ? 'location' : undefined}
+                        className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium ${
+                          activeNav === item.href ? palette.active : `${palette.sub} ${palette.hover}`
+                        }`}
                       >
                         <Icon className="h-4 w-4" />
                         {item.label}
@@ -389,7 +388,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
           <div className="grid gap-3 p-3 md:grid-cols-[52px_minmax(260px,0.82fr)_minmax(0,1.8fr)] lg:gap-4 lg:p-4">
             <aside className={`hidden flex-col items-center justify-between rounded-2xl border py-3 md:flex ${palette.panel}`}>
               <nav aria-label="Dashboard shortcuts" className="flex flex-col items-center gap-2">
-                {navigation.map((item, index) => {
+                {navigation.map((item) => {
                   const Icon = item.icon;
                   return (
                     <a
@@ -397,7 +396,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                       href={item.href}
                       title={item.label}
                       aria-label={item.label}
-                      className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${index === 0 ? (dark ? 'bg-[#f2f3ef] text-[#171b18]' : 'bg-[#191d1a] text-white') : `${palette.sub} ${palette.hover}`}`}
+                      onClick={() => setActiveNav(item.href)}
+                      aria-current={activeNav === item.href ? 'location' : undefined}
+                      className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${
+                        activeNav === item.href ? palette.active : `${palette.sub} ${palette.hover}`
+                      }`}
                     >
                       <Icon className="h-4 w-4" />
                     </a>
@@ -405,11 +408,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                 })}
               </nav>
               <div className="flex flex-col items-center gap-2">
-                <a href="#support" title="Technician support" aria-label="Technician support" className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${palette.sub} ${palette.hover}`}>
-                  <Wrench className="h-4 w-4" />
+                <a href="#support" title="Support information" aria-label="Support information" onClick={() => setActiveNav('#support')} className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${activeNav === '#support' ? palette.active : `${palette.sub} ${palette.hover}`}`}>
+                  <CircleHelp className="h-4 w-4" />
                 </a>
-                <a href="#support" title="Profile and support" aria-label="Profile and support" className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${palette.sub} ${palette.hover}`}>
-                  <Settings className="h-4 w-4" />
+                <a href="#contact" title="Contact SolarCare" aria-label="Contact SolarCare" onClick={() => setActiveNav('#contact')} className={`flex h-9 w-9 items-center justify-center rounded-xl transition ${activeNav === '#contact' ? palette.active : `${palette.sub} ${palette.hover}`}`}>
+                  <Mail className="h-4 w-4" />
                 </a>
               </div>
             </aside>
@@ -420,9 +423,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                   <div>
                     <p className={`text-sm font-semibold ${palette.text}`}>{t('System conditions', 'سسٹم کی صورتحال', 'System conditions')}</p>
                     <p className={`mt-1 max-w-[150px] truncate text-[10px] ${palette.sub}`}>
-                      {liveWeather?.locationName
-                        || activeSystem.location
-                        || t('Location not set', 'مقام درج نہیں', 'Location not set')}
+                      {liveWeather?.locationName || LANDING_WEATHER_LOCATION}
                     </p>
                   </div>
                   <span className={`rounded-full px-2 py-1 text-[8px] font-semibold ${weatherStatus === 'live' ? 'bg-emerald-500/10 text-emerald-600' : palette.inset + ' ' + palette.sub}`}>
@@ -539,17 +540,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
               </section>
             </div>
 
-            <section id="farms" className="dashboard-site relative min-h-[760px] overflow-hidden rounded-2xl bg-[#3f4942] md:min-h-[720px]">
-              {CAROUSEL_IMAGES.map((image, index) => (
-                <img
-                  key={image.src}
-                  src={image.src}
-                  alt={index === carouselIndex ? t(image.alt, image.alt, image.alt) : ''}
-                  aria-hidden={index !== carouselIndex}
-                  loading={index === 0 ? 'eager' : 'lazy'}
-                  className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-1000 ${index === carouselIndex ? 'dashboard-carousel-active opacity-100' : 'opacity-0'}`}
-                />
-              ))}
+            <section id="farms" className="dashboard-site relative min-h-[600px] overflow-hidden rounded-2xl bg-[#3f4942] md:min-h-[620px]">
+              {CAROUSEL_IMAGES.map((image, index) => {
+                if (index !== carouselIndex && index !== (carouselIndex + 1) % CAROUSEL_IMAGES.length) return null;
+                return (
+                  <img
+                    key={image.src}
+                    src={image.src}
+                    alt={index === carouselIndex ? t(image.alt, image.alt, image.alt) : ''}
+                    aria-hidden={index !== carouselIndex}
+                    loading={index === carouselIndex ? 'eager' : 'lazy'}
+                    decoding="async"
+                    fetchPriority={index === carouselIndex ? 'high' : 'low'}
+                    className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-1000 ${index === carouselIndex ? 'dashboard-carousel-active opacity-100' : 'opacity-0'}`}
+                  />
+                );
+              })}
               <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/65" />
               <div className="relative z-10 flex items-center justify-between p-4 sm:p-5">
                 <div className="flex items-center gap-3">
@@ -566,11 +572,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
                   </div>
                 </div>
                 <div className="flex gap-1.5">
-                  <a href="#energy" aria-label="View energy chart" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-white/20">
+                  <a href="#weather" onClick={() => setActiveNav('#weather')} aria-label="View local weather" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-white/20">
                     <Activity className="h-3.5 w-3.5" />
                   </a>
-                  <a href="#panels" aria-label="View panel information" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-white/20">
-                    <Grid2X2 className="h-3.5 w-3.5" />
+                  <a href="#support" onClick={() => setActiveNav('#support')} aria-label="View support information" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-white/20">
+                    <CircleHelp className="h-3.5 w-3.5" />
                   </a>
                   <button type="button" onClick={onSignUp} aria-label="Create an account to add a solar system" className="flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-md transition hover:bg-white/20">
                     <ArrowUpRight className="h-3.5 w-3.5" />
@@ -594,84 +600,40 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
               <div className="dashboard-site-overlay absolute inset-x-3 bottom-3 top-14 z-10 flex flex-col justify-between gap-2.5 sm:inset-x-4 sm:bottom-4 sm:top-16 sm:gap-3">
                 <div className="grid justify-items-end">
                   <article className="dashboard-glass-card w-full max-w-[270px] rounded-2xl border border-white/20 bg-[#30322e]/70 p-3.5 text-white shadow-xl backdrop-blur-xl sm:max-w-[290px] sm:p-4">
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-xs font-semibold">{t('Network performance', 'نیٹ ورک کارکردگی', 'Network performance')}</p>
-                        <p className="mt-1 text-[9px] text-white/55">{t('System health overview', 'سسٹم صحت کا جائزہ', 'System health overview')}</p>
+                        <p className="text-xs font-semibold">{t('Local weather', 'مقامی موسم', 'Local weather')}</p>
+                        <p className="mt-1 text-[9px] text-white/65">{liveWeather?.locationName || LANDING_WEATHER_LOCATION}</p>
                       </div>
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15"><ArrowUpRight className="h-3.5 w-3.5" /></span>
+                      <CloudSun className="h-6 w-6 shrink-0 text-[#e8b733]" />
                     </div>
-                    <div className="relative mx-auto mt-1 h-[105px] w-full max-w-[210px]">
-                      <svg viewBox="0 0 200 120" className="h-full w-full" role="img" aria-label="Illustrative efficiency 94.2 percent">
-                        <defs>
-                          <linearGradient id="efficiency-gradient" x1="0%" x2="100%" y1="0%" y2="0%">
-                            <stop offset="0%" stopColor="#5dc878" />
-                            <stop offset="57%" stopColor="#d7cc4c" />
-                            <stop offset="100%" stopColor="#f09a42" />
-                          </linearGradient>
-                        </defs>
-                        <path d="M18 105 A82 82 0 0 1 182 105" fill="none" stroke="rgba(255,255,255,.2)" strokeWidth="10" pathLength="100" />
-                        <path d="M18 105 A82 82 0 0 1 182 105" fill="none" stroke="url(#efficiency-gradient)" strokeWidth="10" strokeLinecap="butt" pathLength="100" strokeDasharray="100" strokeDashoffset="8" className="dashboard-gauge-progress" />
-                        <text x="100" y="82" textAnchor="middle" className="dashboard-gauge-value">94.2%</text>
-                        <text x="100" y="98" textAnchor="middle" className="dashboard-gauge-label">{t('Efficiency', 'کارکرد', 'Efficiency')}</text>
-                      </svg>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 border-t border-white/15 pt-2.5 text-[8px]">
-                      {[
-                        { label: t('Online', 'آن لائن', 'Online'), value: '11 / 12', color: 'bg-[#64cf82]' },
-                        { label: t('Panels', 'پینل', 'Panels'), value: '48 active', color: 'bg-[#e4c64d]' },
-                        { label: t('Capacity', 'صلاحیت', 'Capacity'), value: '34.8 kW', color: 'bg-[#f0a14b]' },
-                      ].map((item) => (
-                        <div key={item.label}>
-                          <p className="flex items-center gap-1 text-white/60"><span className={`h-1.5 w-1.5 rounded-full ${item.color}`} />{item.label}</p>
-                          <p className="mt-1 font-semibold text-white/90">{item.value}</p>
-                        </div>
-                      ))}
+                    <div className="mt-4 flex items-end gap-2 border-t border-white/15 pt-3">
+                      <span className="text-3xl font-semibold leading-none">
+                        {weatherStatus === 'live' && liveWeather ? `${liveWeather.tempC}°C` : '—'}
+                      </span>
+                      <span className="pb-0.5 text-[10px] text-white/70">
+                        {weatherStatus === 'live' && liveWeather
+                          ? liveWeather.condition
+                          : weatherStatus === 'loading'
+                            ? t('Loading current conditions', 'موجودہ موسم لوڈ ہو رہا ہے', 'Mojooda mausam load ho raha hai')
+                            : t('Weather unavailable', 'موسم دستیاب نہیں', 'Weather unavailable')}
+                      </span>
                     </div>
                   </article>
                 </div>
 
-                <article id="panels" className="dashboard-glass-card min-w-0 rounded-2xl border border-white/20 bg-[#30322e]/75 p-3.5 text-white shadow-xl backdrop-blur-xl sm:p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <h3 className="text-xs font-semibold">{t('Panel inventory', 'پینل انوینٹری', 'Panel inventory')}</h3>
-                        <p className="mt-1 text-[9px] text-white/55">{t('Sample telemetry readings', 'نمونہ ٹیلی میٹری ریڈنگز', 'Sample telemetry readings')}</p>
-                      </div>
-                    </div>
-                    <div className="mt-3 overflow-x-auto">
-                      <table className="w-full min-w-[380px] text-left text-[9px]">
-                        <thead className="text-white/55">
-                          <tr>
-                            <th className="pb-2 font-medium">{t('Array', 'ارے', 'Array')}</th>
-                            <th className="pb-2 font-medium">{t('Temp', 'درجہ حرارت', 'Temp')}</th>
-                            <th className="pb-2 font-medium">{t('Voltage', 'وولٹیج', 'Voltage')}</th>
-                            <th className="pb-2 font-medium">{t('Efficiency', 'کارکردگی', 'Efficiency')}</th>
-                            <th className="pb-2 font-medium">{t('Status', 'حالت', 'Status')}</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/10">
-                          {[
-                            ['Array 01', '42°C', '42.1 V', '96.0%', 'Active'],
-                            ['Array 01', '43°C', '42.0 V', '95.1%', 'Active'],
-                            ['Array 02', '45°C', '41.7 V', '93.3%', 'Review'],
-                            ['Array 02', '44°C', '41.9 V', '94.2%', 'Active'],
-                          ].map((row, index) => (
-                            <tr key={`${row[0]}-${index}`}>
-                              <td className="py-2 pr-2 font-medium">{row[0]}</td>
-                              <td className="py-2 pr-2 text-white/75">{row[1]}</td>
-                              <td className="py-2 pr-2 text-white/75">{row[2]}</td>
-                              <td className="py-2 pr-2 text-white/75">{row[3]}</td>
-                              <td className="py-2">
-                                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[8px] ${row[4] === 'Active' ? 'bg-emerald-400/15 text-emerald-100' : 'bg-amber-300/15 text-amber-100'}`}>
-                                  <span className={`h-1 w-1 rounded-full ${row[4] === 'Active' ? 'bg-emerald-300' : 'bg-amber-300'}`} />
-                                  {row[4]}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                <article className="dashboard-glass-card min-w-0 max-w-xl rounded-2xl border border-white/20 bg-[#30322e]/75 p-4 text-white shadow-xl backdrop-blur-xl sm:p-5">
+                  <h3 className="text-sm font-semibold">{t('How SolarCare works', 'SolarCare کیسے کام کرتا ہے', 'SolarCare kaisay kaam karta hai')}</h3>
+                  <p className="mt-2 text-xs leading-5 text-white/75">
+                    {t(
+                      'Add your system location to see local weather. Production readings appear only after a real provider connection is verified.',
+                      'مقامی موسم دیکھنے کے لیے اپنے سسٹم کا مقام درج کریں۔ پیداوار کی ریڈنگ صرف حقیقی provider کنکشن کی تصدیق کے بعد دکھائی جاتی ہے۔',
+                      'Local weather ke liye system location add karein. Production readings sirf real provider connection verify honay par nazar aati hain.'
+                    )}
+                  </p>
+                  <a href="#support" onClick={() => setActiveNav('#support')} className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#e5e9a1] transition hover:gap-2.5">
+                    {t('Visit support', 'مدد دیکھیں', 'Support dekhein')} <ArrowRight className="h-3 w-3" />
+                  </a>
                 </article>
               </div>
             </section>
@@ -686,7 +648,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
           </div>
         </main>
 
-        <section id="panels-info" className={`scroll-mt-6 px-1 py-14 sm:px-2 sm:py-20 lg:py-24 ${dark ? 'text-white' : 'text-[#1b211d]'}`}>
+        <section id="services" className={`scroll-mt-6 px-1 py-14 sm:px-2 sm:py-20 lg:py-24 ${dark ? 'text-white' : 'text-[#1b211d]'}`}>
           <div className="mx-auto max-w-7xl">
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -697,13 +659,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
             </div>
             <div className="grid gap-3 md:grid-cols-3">
               {[
-                { icon: Activity, image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=900&q=80', alt: t('Solar panels monitored for energy production', 'توانائی کی پیداوار کے لیے زیر نگرانی سولر پینلز', 'Energy production ke liye monitor hotay solar panels'), title: t('Performance monitoring', 'کارکردگی کی نگرانی', 'Performance monitoring'), text: t('Review production, trends, and system health in one clear view.', 'پیداوار، رجحانات اور سسٹم کی صحت ایک واضح منظر میں دیکھیں۔', 'Production, trends aur system health aik jagah dekhein.') },
-                { icon: ShieldCheck, image: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=900&q=80', alt: t('Technician inspecting electrical equipment', 'الیکٹریکل آلات کا معائنہ کرتا ٹیکنیشن', 'Electrical equipment inspect karta technician'), title: t('Guided diagnostics', 'رہنمائی کے ساتھ تشخیص', 'Guided diagnostics'), text: t('Understand common alerts and explore safe next steps for your system.', 'عام الرٹس سمجھیں اور محفوظ اگلے اقدامات دیکھیں۔', 'Aam alerts samjhein aur mehfooz aglay qadam dekhein.') },
-                { icon: Wrench, image: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=900&q=80', alt: t('Support team discussing a customer request', 'صارف کی درخواست پر گفتگو کرتی معاونت ٹیم', 'Customer ki request par baat karti support team'), title: t('Technician support', 'ٹیکنیشن معاونت', 'Technician support'), text: t('Find solar professionals for inspection, maintenance, and repair.', 'معائنے، دیکھ بھال اور مرمت کے لیے سولر ماہرین تلاش کریں۔', 'Inspection, maintenance aur repair ke liye solar experts dhoondein.') },
+                { icon: Activity, image: '/images/solar-monitoring-display.jpg', alt: t('Solar monitoring dashboard display', 'سولر مانیٹرنگ ڈیش بورڈ', 'Solar monitoring dashboard'), title: t('Performance monitoring', 'کارکردگی کی نگرانی', 'Performance monitoring'), text: t('Review production, trends, and system health in one clear view.', 'پیداوار، رجحانات اور سسٹم کی صحت ایک واضح منظر میں دیکھیں۔', 'Production, trends aur system health aik jagah dekhein.') },
+                { icon: ShieldCheck, image: '/images/solar-panel-inspection.jpg', alt: t('Technician inspecting a solar installation', 'سولر سسٹم کا معائنہ کرتا ٹیکنیشن', 'Solar system inspect karta technician'), title: t('Guided diagnostics', 'رہنمائی کے ساتھ تشخیص', 'Guided diagnostics'), text: t('Understand common alerts and explore safe next steps for your system.', 'عام الرٹس سمجھیں اور محفوظ اگلے اقدامات دیکھیں۔', 'Aam alerts samjhein aur mehfooz aglay qadam dekhein.') },
+                { icon: CircleHelp, image: '/images/scenic-solar-array.jpg', alt: t('Solar installation in a scenic landscape', 'خوبصورت منظر میں سولر تنصیب', 'Scenic solar installation'), title: t('Helpful support', 'مددگار معاونت', 'Madadgar support'), text: t('Find clear setup information and contact SolarCare when you need help.', 'سیٹ اپ کی واضح معلومات دیکھیں اور ضرورت پر SolarCare سے رابطہ کریں۔', 'Setup ki wazeh maloomat aur zaroorat par SolarCare se rabta karein.') },
               ].map(({ icon: Icon, image, alt, title, text }) => (
                 <article key={title} className={`dashboard-feature-card rounded-2xl border p-5 sm:p-6 ${palette.panel}`}>
                   <div className="relative h-40 overflow-hidden rounded-xl sm:h-48">
-                    <img src={image} alt={alt} loading="lazy" className="dashboard-feature-image h-full w-full object-cover" />
+                    <img src={image} alt={alt} loading="lazy" decoding="async" className="dashboard-feature-image h-full w-full object-cover" />
                     <span className={`absolute bottom-3 left-3 flex h-10 w-10 items-center justify-center rounded-xl shadow-lg backdrop-blur ${dark ? 'bg-[#232925]/85 text-emerald-300' : 'bg-white/90 text-emerald-800'}`}><Icon className="h-5 w-5" /></span>
                   </div>
                   <h3 className={`mt-5 text-base font-semibold ${palette.text}`}>{title}</h3>
@@ -718,18 +680,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
           </div>
         </section>
 
-        <section id="inverters" className={`scroll-mt-6 rounded-[22px] border p-5 sm:rounded-[28px] sm:p-8 lg:p-10 ${palette.frame} ${palette.line}`}>
+        <section id="support" className={`scroll-mt-6 rounded-[22px] border p-5 sm:rounded-[28px] sm:p-8 lg:p-10 ${palette.frame} ${palette.line}`}>
           <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
               <p className={`dashboard-kicker ${dark ? 'text-emerald-300' : 'text-emerald-800'}`}>{t('Solar knowledge, within reach', 'سولر معلومات، آپ کے ساتھ', 'Solar maloomat, aap ke sath')}</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{t('A clearer answer to every solar question.', 'ہر سولر سوال کا واضح جواب۔', 'Har solar sawal ka wazeh jawab.')}</h2>
-              <p className={`mt-4 max-w-md text-sm leading-6 ${palette.sub}`}>{t('Ask about panels, inverters, batteries, wiring, system sizing, and everyday performance.', 'پینلز، انورٹرز، بیٹری، وائرنگ، سسٹم کے سائز اور روزمرہ کارکردگی کے بارے میں پوچھیں۔', 'Panels, inverter, battery, wiring, system sizing aur performance ke sawal poochein.')}</p>
+              <p className={`mt-4 max-w-md text-sm leading-6 ${palette.sub}`}>{t('Create an account, add your system location, and see local weather. Verified production data appears only after a real provider connection.', 'اکاؤنٹ بنائیں، اپنے سسٹم کا مقام درج کریں اور مقامی موسم دیکھیں۔ تصدیق شدہ پیداواری ڈیٹا حقیقی provider کنکشن کے بعد ہی دکھایا جاتا ہے۔', 'Account banayein, system location add karein aur local weather dekhein. Verified production data sirf real provider connection ke baad nazar aata hai.')}</p>
               <button type="button" onClick={onSignUp} className={`mt-6 inline-flex items-center gap-2 rounded-full px-5 py-3 text-xs font-semibold transition ${dark ? 'bg-[#d9e584] text-[#20251f] hover:bg-[#eff5bd]' : 'bg-[#1d2921] text-white hover:bg-[#3b5940]'}`}>
                 {t('Get started with SolarCare', 'SolarCare شروع کریں', 'SolarCare shuru karein')}
                 <ArrowUpRight className="h-4 w-4" />
               </button>
             </div>
-            <div id="support" className="space-y-2">
+            <div className="space-y-2">
               {faqs.map((faq, index) => {
                 const expanded = openFaq === index;
                 return (
@@ -751,6 +713,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
           </div>
         </section>
 
+        <section id="contact" className={`scroll-mt-6 mt-8 flex flex-col gap-4 rounded-[22px] border p-5 sm:flex-row sm:items-center sm:justify-between sm:rounded-[28px] sm:p-8 ${palette.frame} ${palette.line}`}>
+          <div>
+            <h2 className={`text-lg font-semibold ${palette.text}`}>{t('Contact SolarCare', 'SolarCare سے رابطہ', 'SolarCare se rabta')}</h2>
+            <p className={`mt-1 text-sm ${palette.sub}`}>{t('For help with setup or your account, email us.', 'سیٹ اپ یا اکاؤنٹ میں مدد کے لیے ہمیں ای میل کریں۔', 'Setup ya account mein madad ke liye email karein.')}</p>
+          </div>
+          <a href="mailto:farhanlashari61675@gmail.com" className={`inline-flex w-fit items-center gap-2 rounded-full px-5 py-3 text-xs font-semibold transition ${dark ? 'bg-[#d9e584] text-[#20251f] hover:bg-[#eff5bd]' : 'bg-[#1d2921] text-white hover:bg-[#3b5940]'}`}>
+            <Mail className="h-4 w-4" />
+            farhanlashari61675@gmail.com
+          </a>
+        </section>
+
         <footer className={`flex flex-col gap-4 px-2 py-7 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-4 ${dark ? 'text-white/55' : 'text-[#59615b]'}`}>
           <a href="#overview" className="flex items-center gap-2 font-semibold text-inherit">
             <Sun className="h-4 w-4 text-emerald-600" />
@@ -759,7 +732,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onSignUp }) =
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <button type="button" onClick={onLogin} className={`transition ${dark ? 'hover:text-emerald-300' : 'hover:text-emerald-800'}`}>{t('Log in', 'لاگ ان', 'Log in')}</button>
             <button type="button" onClick={onSignUp} className={`transition ${dark ? 'hover:text-emerald-300' : 'hover:text-emerald-800'}`}>{t('Create account', 'اکاؤنٹ بنائیں', 'Account banayen')}</button>
-            <a href="mailto:farhanlashari61675@gmail.com" className={`transition ${dark ? 'hover:text-emerald-300' : 'hover:text-emerald-800'}`}>farhanlashari61675@gmail.com</a>
           </div>
           <span>© {CURRENT_YEAR} SolarCare</span>
         </footer>

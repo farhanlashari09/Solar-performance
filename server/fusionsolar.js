@@ -57,6 +57,20 @@ export function getMonitoringProviderStatus() {
   ];
 }
 
+export function isVerifiedFusionSolarTelemetry(telemetry) {
+  const timestamp = Date.parse(telemetry?.lastUpdatedAt);
+  const hasMeasurement = [
+    telemetry?.activePowerKw,
+    telemetry?.dailyEnergyKwh,
+    telemetry?.totalEnergyKwh,
+  ].some((value) => typeof value === 'number' && Number.isFinite(value));
+
+  return telemetry?.source === 'Huawei FusionSolar'
+    && Number.isFinite(timestamp)
+    && timestamp <= Date.now()
+    && hasMeasurement;
+}
+
 function isSuccessful(response) {
   return response?.success !== false && (response?.code === undefined || response.code === 0 || response.code === '0');
 }
